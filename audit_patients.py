@@ -7,8 +7,8 @@ import pydicom
 import os
 import glob
 
-DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
 
+DATA_DIR = os.path.join(os.getcwd(), "Prostate prime d11 CT RT RP and RD")
 patient_dirs = sorted([d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))])
 
 print(f"Total patient folders: {len(patient_dirs)}")

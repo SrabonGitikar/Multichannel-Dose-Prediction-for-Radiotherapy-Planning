@@ -17,3 +17,6 @@ Prostate prime d11 CT RT RP and RD/
 
 # OS specific
 .DS_Store
+*.zip
+*.tar.gz
+.env
