@@ -1,0 +1,19 @@
+# Environments
+dose_env/
+__pycache__/
+*.pyc
+
+# Medical Data & Huge Folders (DO NOT PUSH TO GITHUB)
+nnUNet_raw/
+nnUNet_preprocessed/
+nnUNet_results/
+Prostate prime d11 CT RT RP and RD/
+*.nii.gz
+*.dcm
+
+# Model weights
+*.pth
+*.pt
+
+# OS specific
+.DS_Store
