@@ -115,15 +115,72 @@ val_transforms = Compose([
 
 # 3. Clinical Loss Function & Physics Hooks
 class ClinicalDoseLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, d_prescription=60.0, max_bladder=40.0, max_rectum=45.0):
         super().__init__()
         # Baseline MSE
         self.mse = nn.MSELoss()
         
-    def forward(self, pred_dose, true_dose):
-        # We can expand this later with DVH penalties or organ-specific weights
-        loss = self.mse(pred_dose, true_dose)
-        return loss
+        # Clinical parameters (Set these to your exact clinical protocol)
+        self.d_prescription = d_prescription
+        self.max_bladder = max_bladder
+        self.max_rectum = max_rectum
+        
+        # Hyperparameter weights (Lambdas from PDF)
+        self.lambda_mse = 1.0
+        self.lambda_ptv = 5.0
+        self.lambda_oar = 2.0
+        self.lambda_smooth = 0.5
+        
+    def forward(self, pred_dose, true_dose, inputs):
+        # 1. L_MSE: Baseline Voxel-wise Reconstruction
+        loss_mse = self.mse(pred_dose, true_dose)
+        
+        # 2. L_PTV: PTV Coverage Penalty
+        # Extract PTV mask (Channel 1, 1.0 = inside PTV)
+        ptv_mask = inputs[:, 1:2, ...] == 1.0
+        ptv_pred = pred_dose[ptv_mask]
+        
+        if len(ptv_pred) > 0:
+            # Penalize only if predicted dose is less than prescription (ReLU behavior)
+            underdose_error = torch.relu(self.d_prescription - ptv_pred)
+            loss_ptv = torch.mean(underdose_error ** 2)
+        else:
+            loss_ptv = torch.tensor(0.0, device=pred_dose.device)
+            
+        # 3. L_OAR: Organ-at-Risk Penalty
+        # Extract Bladder (Channel 2) and Rectum (Channel 3) masks using SDM logic (<= 0 is inside organ)
+        bladder_mask = inputs[:, 2:3, ...] <= 0.0
+        rectum_mask = inputs[:, 3:4, ...] <= 0.0
+        
+        bladder_pred = pred_dose[bladder_mask]
+        rectum_pred = pred_dose[rectum_mask]
+        
+        loss_oar = torch.tensor(0.0, device=pred_dose.device)
+        
+        if len(bladder_pred) > 0:
+            bladder_mean = torch.mean(bladder_pred)
+            # Penalize only if mean dose exceeds max tolerance
+            loss_oar += torch.relu(bladder_mean - self.max_bladder) ** 2
+            
+        if len(rectum_pred) > 0:
+            rectum_mean = torch.mean(rectum_pred)
+            # Penalize only if mean dose exceeds max tolerance
+            loss_oar += torch.relu(rectum_mean - self.max_rectum) ** 2
+            
+        # 4. L_smooth: Spatial Smoothness Constraint (Total Variation / Sobolev)
+        # Calculate gradients along D, H, W axes
+        grad_d = torch.abs(pred_dose[:, :, 1:, :, :] - pred_dose[:, :, :-1, :, :])
+        grad_h = torch.abs(pred_dose[:, :, :, 1:, :] - pred_dose[:, :, :, :-1, :])
+        grad_w = torch.abs(pred_dose[:, :, :, :, 1:] - pred_dose[:, :, :, :, :-1])
+        loss_smooth = torch.mean(grad_d**2) + torch.mean(grad_h**2) + torch.mean(grad_w**2)
+        
+        # Total Weighted PGNN Loss
+        loss_total = (self.lambda_mse * loss_mse) + \
+                     (self.lambda_ptv * loss_ptv) + \
+                     (self.lambda_oar * loss_oar) + \
+                     (self.lambda_smooth * loss_smooth)
+                     
+        return loss_total
 
 # 4. Main Training Setup
 def main():
@@ -140,11 +197,11 @@ def main():
     os.makedirs(cache_dir, exist_ok=True)
     
     train_ds = PersistentDataset(data=train_files, transform=train_transforms, cache_dir=cache_dir)
-    # Reduced batch size and workers for 12GB GPU limits
-    train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=2)
+    # Increased batch size and workers for AWS H100
+    train_loader = DataLoader(train_ds, batch_size=32, shuffle=True, num_workers=8)
     
     val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=cache_dir)
-    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=1)
+    val_loader = DataLoader(val_ds, batch_size=4, shuffle=False, num_workers=4)
     
     # Construct Custom MONAI U-Net
     print("Building 3D U-Net...")
@@ -169,8 +226,8 @@ def main():
     
     print(f"Model and dataloaders ready on {device}!")
     
-    # Simple Training Loop (Dummy run for local testing)
-    epochs = 10
+    # Simple Training Loop
+    epochs = 300
     best_val_loss = float('inf')
     
     for epoch in range(epochs):
@@ -189,7 +246,7 @@ def main():
             # Autocast for mixed precision
             with torch.cuda.amp.autocast(enabled=torch.cuda.is_available(), dtype=torch.float16):
                 outputs = model(inputs)
-                loss = loss_function(outputs, targets)
+                loss = loss_function(outputs, targets, inputs)
                 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -217,12 +274,12 @@ def main():
                     outputs = sliding_window_inference(
                         inputs=inputs, 
                         roi_size=PATCH_SIZE, 
-                        sw_batch_size=1,  # Reduced to 1 for 12GB GPU
+                        sw_batch_size=4, 
                         predictor=model,
                         overlap=0.25
                     )
                 
-                loss = loss_function(outputs, targets)
+                loss = loss_function(outputs, targets, inputs)
                 val_loss += loss.item()
                 
                 # Calculate Clinical Metrics
