@@ -31,38 +31,23 @@ from skimage.draw import polygon
 
 # CONFIGURATION
 
-DATA_DIR = os.path.join(os.getcwd(), "Prostate prime d11 CT RT RP and RD")
+# DATA_DIR = os.path.join(os.getcwd(), "Prostate prime d11 CT RT RP and RD")
+DATA_DIR = os.path.join(os.getcwd(), "data/d12")
 OUTPUT_DIR = os.path.join(os.getcwd(), "nnUNet_raw/Dataset001_ProstateDose")
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
+# Updated based on ROI audit from 12 patients
 # We try each pattern in order and use the FIRST match found.
 STRUCTURE_PATTERNS = {
     "PTV": [
-        r"^CTVP$",           # Simple naming (CTVP)
-        r"^CTV_62",          # CTV_62/20
-        r"^PTV_62",          # PTV_62/20
-        r"^CTV62$",          # CTV62
-        r"^PTV62$",          # PTV62
-        r"^CTV_36",          # SBRT: CTV_36.25/5
-        r"^PTV_36",          # SBRT: PTV_36.25/5
-        r"^CTV 36",          # SBRT: CTV 36.25 (space variant)
-        r"^PTV 36",          # SBRT: PTV 36.25 (space variant)
-        r"^CTV_44",          # Lower-dose CTV
-        r"^PTV_44",          # Lower-dose PTV
-        r"^CTV_25",          # SBRT: CTV_25/5
-        r"^PTV_25",          # SBRT: PTV_25/5
-        r"^CTV 25",          # SBRT: CTV 25 (space variant)
-        r"^PTV 25",          # SBRT: PTV 25 (space variant)
+        r"^CTV_62/20$",         # Only match exact CTV_62/20
     ],
     "Bladder": [
-        r"^Bladder$",        # Standard
-        r"^BLADDER$",        # Uppercase variant
+        r"^Bladder$",           # Standard (most common)
     ],
     "Anorectum": [
-        r"^Anorectum$",      # Standard
-        r"^ANORECTUM$",      # Uppercase variant
-        r"^Rectum$",         # Alternative name
+        r"^Anorectum$",         # Standard (most common)
     ],
 }
 
@@ -116,11 +101,13 @@ def match_structure_name(roi_names, structure_type):
     Given a list of ROI names and a structure type (PTV, Bladder, Anorectum),
     find the best matching ROI name using the priority-ordered regex patterns.
     Returns the matched ROI name, or None if no match.
+    
+    Note: Uses case-sensitive matching to match exact ROI names only.
     """
     patterns = STRUCTURE_PATTERNS[structure_type]
     for pattern in patterns:
         for name in roi_names:
-            if re.match(pattern, name, re.IGNORECASE):
+            if re.match(pattern, name):  # Case-sensitive exact match
                 return name
     return None
 

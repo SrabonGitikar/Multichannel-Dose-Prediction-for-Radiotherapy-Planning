@@ -165,8 +165,8 @@ def main():
     
     args = parser.parse_args()
     
-    global MODEL_PATH
-    MODEL_PATH = args.model
+    global best_dose_model
+    best_dose_model = args.model
     
     try:
         pred_dose, metadata = run_inference(args.patient, args.output_dir)

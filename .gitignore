@@ -20,3 +20,4 @@ Prostate prime d11 CT RT RP and RD/
 *.zip
 *.tar.gz
 .env
+data/*

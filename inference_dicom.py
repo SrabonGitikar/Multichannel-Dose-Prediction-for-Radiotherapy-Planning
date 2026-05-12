@@ -54,14 +54,17 @@ MODEL_PATH = "best_dose_model.pth"
 CHANNELS = ["0000", "0001", "0002", "0003"]
 
 # Structure matching patterns (same as dicom_to_nnunet.py)
+# Using exact ROI names only
 STRUCTURE_PATTERNS = {
     "PTV": [
-        r"^CTVP$", r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$",
-        r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36",
-        r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25", r"^CTV 25", r"^PTV 25",
+        r"^CTV_62/20$",         # Only exact CTV_62/20
     ],
-    "Bladder": [r"^Bladder$", r"^BLADDER$"],
-    "Anorectum": [r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$"],
+    "Bladder": [
+        r"^Bladder$",           # Only exact Bladder
+    ],
+    "Anorectum": [
+        r"^Anorectum$",         # Only exact Anorectum
+    ],
 }
 
 
@@ -85,11 +88,11 @@ def find_rtstruct(dicom_dir):
 
 
 def match_structure_name(roi_names, structure_type):
-    """Match ROI name using regex patterns."""
+    """Match ROI name using regex patterns. Case-sensitive exact match."""
     patterns = STRUCTURE_PATTERNS[structure_type]
     for pattern in patterns:
         for name in roi_names:
-            if re.match(pattern, name, re.IGNORECASE):
+            if re.match(pattern, name):  # Case-sensitive exact match
                 return name
     return None
 
