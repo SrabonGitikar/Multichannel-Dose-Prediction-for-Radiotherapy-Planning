@@ -40,6 +40,13 @@ Once training is complete, you can use the trained model to generate predictions
 python inference.py
 ```
 
+```bash
+python inference_dicom.py \
+    --input-dir /path/to/patient/dicom \
+    --output-dose predicted_dose.dcm \
+    --model best_dose_model.pth
+```
+
 ### 7. Visualize Predictions (Optional)
 Plot masks and predictions to visually verify the outputs.
 ```bash

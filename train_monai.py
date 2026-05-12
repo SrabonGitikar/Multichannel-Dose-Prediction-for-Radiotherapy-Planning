@@ -16,7 +16,9 @@ from monai.transforms import (
     RandSpatialCropd,
     RandFlipd,
     ToTensord,
-    ConcatItemsd
+    ConcatItemsd,
+    SpatialPadd,
+    DeleteItemsd
 )
 # pyrefly: ignore [missing-import]
 from monai.networks.nets import UNet
@@ -29,7 +31,7 @@ import torch.optim as optim
 
 # 1. Configuration 
 # Defaulting to relative path so it doesn't break on AWS. Override via env var.
-DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
+DATA_DIR = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
@@ -80,12 +82,21 @@ train_transforms = Compose([
         mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear")
     ),
     
+    # Pad to ensure consistent size before cropping (handles variable patient dimensions)
+    SpatialPadd(
+        keys=["ch_0", "ch_1", "ch_2", "ch_3", "dose_label"],
+        spatial_size=PATCH_SIZE
+    ),
+    
     # Normalize CT Hounsfield Units only (ch_0)
     # We leave masks and SDMs as they are physically meaningful
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
     
     # Concatenate the 4 input channels into a single "image" tensor
     ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
+    
+    # Remove individual channel keys to prevent collation errors
+    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
     
     # Randomly crop 3D patches from the patient volume
     RandSpatialCropd(
@@ -94,6 +105,11 @@ train_transforms = Compose([
         random_center=True,
         random_size=False
     ),
+    
+    # Data augmentation: random flip
+    RandFlipd(keys=["image", "dose_label"], spatial_axis=[0], prob=0.5),
+    RandFlipd(keys=["image", "dose_label"], spatial_axis=[1], prob=0.5),
+    RandFlipd(keys=["image", "dose_label"], spatial_axis=[2], prob=0.5),
     
     # Convert to PyTorch Tensors
     ToTensord(keys=["image", "dose_label"])
@@ -108,8 +124,15 @@ val_transforms = Compose([
         pixdim=TARGET_SPACING,
         mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear")
     ),
+    # Pad validation images to ensure consistent size for batching
+    SpatialPadd(
+        keys=["ch_0", "ch_1", "ch_2", "ch_3", "dose_label"],
+        spatial_size=(512, 512, 256)
+    ),
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
     ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
+    # Remove individual channel keys to prevent collation errors
+    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
     ToTensord(keys=["image", "dose_label"])
 ])
 
@@ -201,7 +224,9 @@ def main():
     train_loader = DataLoader(train_ds, batch_size=32, shuffle=True, num_workers=8)
     
     val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=cache_dir)
-    val_loader = DataLoader(val_ds, batch_size=4, shuffle=False, num_workers=4)
+    # Batch size 1 for validation - images have different sizes after resampling
+    # sliding_window_inference handles full volume prediction per patient
+    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=2)
     
     # Construct Custom MONAI U-Net
     print("Building 3D U-Net...")
@@ -222,7 +247,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), 1e-4)
     
     # Mixed precision scaler for H100 speedup
-    scaler = torch.cuda.amp.GradScaler(enabled=torch.cuda.is_available())
+    scaler = torch.amp.GradScaler('cuda', enabled=torch.cuda.is_available())
     
     print(f"Model and dataloaders ready on {device}!")
     
@@ -244,7 +269,7 @@ def main():
             optimizer.zero_grad()
             
             # Autocast for mixed precision
-            with torch.cuda.amp.autocast(enabled=torch.cuda.is_available(), dtype=torch.float16):
+            with torch.amp.autocast('cuda', enabled=torch.cuda.is_available(), dtype=torch.float16):
                 outputs = model(inputs)
                 loss = loss_function(outputs, targets, inputs)
                 
@@ -270,7 +295,7 @@ def main():
                 targets = batch["dose_label"].to(device)
                 
                 # Full volume inference using sliding window
-                with torch.cuda.amp.autocast(enabled=torch.cuda.is_available(), dtype=torch.float16):
+                with torch.amp.autocast('cuda', enabled=torch.cuda.is_available(), dtype=torch.float16):
                     outputs = sliding_window_inference(
                         inputs=inputs, 
                         roi_size=PATCH_SIZE, 
