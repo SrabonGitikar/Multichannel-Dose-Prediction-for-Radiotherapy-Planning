@@ -30,7 +30,6 @@ import torch.nn as nn
 import torch.optim as optim
 
 # 1. Configuration 
-# Defaulting to relative path so it doesn't break on AWS. Override via env var.
 DATA_DIR = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
