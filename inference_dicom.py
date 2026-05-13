@@ -25,7 +25,7 @@ import pydicom
 # pyrefly: ignore [missing-import]
 from pydicom.dataset import FileDataset
 # pyrefly: ignore [missing-import]
-from pydicom.uid import ExplicitVRLittleEndian, RTDoseStorage, generate_uid
+from pydicom.uid import ExplicitVRLittleEndian, RTDoseStorage, generate_uid, RLELossless
 # pyrefly: ignore [missing-import]
 import SimpleITK as sitk
 # pyrefly: ignore [missing-import]
@@ -54,6 +54,10 @@ PATCH_SIZE = (96, 96, 96)
 MIN_PADDING = (16, 16, 16)
 MODEL_PATH = "best_dose_model.pth"
 CHANNELS = ["0000", "0001", "0002", "0003"]
+
+# Get project root directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir) if os.path.basename(script_dir) == "utils" else script_dir
 
 # Structure matching patterns (same as dicom_to_nnunet.py)
 # Using exact ROI names only
@@ -331,12 +335,54 @@ def create_rtdose_dicom(predicted_dose, ct_image, reference_dicom_dir, output_pa
     spacing = ct_image.GetSpacing()
     direction = ct_image.GetDirection()
     
-    # Create new DICOM dataset using FileDataset
-    # Generate UIDs
+    # Find all DICOM files in reference directory
+    all_dcm_files = glob.glob(os.path.join(reference_dicom_dir, "**/*.dcm"), recursive=True)
+    
+    # Categorize by modality
+    ct_files = []
+    rtstruct_file = None
+    rtplan_file = None
+    for f in all_dcm_files:
+        try:
+            ds = pydicom.dcmread(f, stop_before_pixels=True)
+            mod = getattr(ds, 'Modality', '')
+            if mod == 'CT':
+                ct_files.append(f)
+            elif mod == 'RTSTRUCT':
+                rtstruct_file = f
+            elif mod == 'RTPLAN':
+                rtplan_file = f
+        except:
+            continue
+    
+    # Read reference CT for patient metadata
+    if ct_files:
+        ref_ds = pydicom.dcmread(ct_files[0], stop_before_pixels=True)
+        # Use patient's EXISTING UIDs (critical for TPS linking!)
+        study_instance_uid = getattr(ref_ds, 'StudyInstanceUID', generate_uid())
+        frame_of_ref_uid = getattr(ref_ds, 'FrameOfReferenceUID', generate_uid())
+        patient_id = getattr(ref_ds, 'PatientID', "Unknown")
+        patient_name_val = getattr(ref_ds, 'PatientName', patient_name or "Anonymous")
+        patient_birth = getattr(ref_ds, 'PatientBirthDate', "")
+        patient_sex = getattr(ref_ds, 'PatientSex', "")
+        accession_number = getattr(ref_ds, 'AccessionNumber', "")
+        study_id = getattr(ref_ds, 'StudyID', "")
+        institution = getattr(ref_ds, 'InstitutionName', "")
+    else:
+        # Fallback if no reference DICOM found
+        study_instance_uid = generate_uid()
+        frame_of_ref_uid = generate_uid()
+        patient_id = "Unknown"
+        patient_name_val = patient_name or "Anonymous"
+        patient_birth = ""
+        patient_sex = ""
+        accession_number = ""
+        study_id = ""
+        institution = ""
+    
+    # Generate NEW UIDs for this dose file only
     sop_instance_uid = generate_uid()
     series_instance_uid = generate_uid()
-    study_instance_uid = generate_uid()
-    frame_of_ref_uid = generate_uid()
     
     # Create file meta information
     file_meta = pydicom.dataset.FileMetaDataset()
@@ -348,28 +394,35 @@ def create_rtdose_dicom(predicted_dose, ct_image, reference_dicom_dir, output_pa
     # Create the main dataset
     ds = FileDataset(None, {}, file_meta=file_meta, preamble=b'\x00' * 128)
     
-    # Patient Information (copy from reference if available)
-    ct_files = glob.glob(os.path.join(reference_dicom_dir, "*CT*")) or \
-               glob.glob(os.path.join(reference_dicom_dir, "*.dcm"))
+    # Patient Information (copy ALL from reference - critical for TPS/Slicer linkage)
+    ds.PatientName = patient_name_val
+    ds.PatientID = patient_id
+    ds.PatientBirthDate = patient_birth
+    ds.PatientSex = patient_sex
+    
+    # Copy optional patient fields if they exist
     if ct_files:
         ref_ds = pydicom.dcmread(ct_files[0], stop_before_pixels=True)
-        ds.PatientName = getattr(ref_ds, 'PatientName', patient_name or "Anonymous")
-        ds.PatientID = getattr(ref_ds, 'PatientID', "Unknown")
-        ds.PatientBirthDate = getattr(ref_ds, 'PatientBirthDate', "")
-        ds.PatientSex = getattr(ref_ds, 'PatientSex', "")
+        for tag in ['PatientBirthTime', 'PatientAge', 'IssuerOfPatientID', 
+                    'OtherPatientIDs', 'OtherPatientNames', 'PatientComments',
+                    'PatientIdentityRemoved', 'DeidentificationMethod']:
+            if hasattr(ref_ds, tag):
+                setattr(ds, tag, getattr(ref_ds, tag))
+        
+        # Copy study-level fields from original (keep study consistent)
+        ds.StudyDate = getattr(ref_ds, 'StudyDate', datetime.date.today().strftime("%Y%m%d"))
+        ds.StudyTime = getattr(ref_ds, 'StudyTime', datetime.datetime.now().strftime("%H%M%S"))
+        ds.StudyDescription = getattr(ref_ds, 'StudyDescription', "AI Predicted Dose")
+        ds.StudyID = getattr(ref_ds, 'StudyID', "")
+        ds.AccessionNumber = getattr(ref_ds, 'AccessionNumber', "")
+        ds.ReferringPhysicianName = getattr(ref_ds, 'ReferringPhysicianName', "")
+        ds.InstitutionName = getattr(ref_ds, 'InstitutionName', "")
+        ds.InstitutionalDepartmentName = getattr(ref_ds, 'InstitutionalDepartmentName', "")
     else:
-        ds.PatientName = patient_name or "Anonymous"
-        ds.PatientID = "Unknown"
-    
-    # Study Information
-    if ct_files:
-        study_instance_uid = getattr(ref_ds, 'StudyInstanceUID', study_instance_uid)
-        frame_of_ref_uid = getattr(ref_ds, 'FrameOfReferenceUID', frame_of_ref_uid)
-    
-    ds.StudyInstanceUID = study_instance_uid
-    ds.StudyDate = datetime.date.today().strftime("%Y%m%d")
-    ds.StudyTime = datetime.datetime.now().strftime("%H%M%S")
-    ds.StudyDescription = "AI Predicted Dose"
+        ds.StudyInstanceUID = study_instance_uid
+        ds.StudyDate = datetime.date.today().strftime("%Y%m%d")
+        ds.StudyTime = datetime.datetime.now().strftime("%H%M%S")
+        ds.StudyDescription = "AI Predicted Dose"
     
     # Series Information
     ds.SeriesInstanceUID = series_instance_uid
@@ -400,6 +453,43 @@ def create_rtdose_dicom(predicted_dose, ct_image, reference_dicom_dir, output_pa
     ]
     
     ds.FrameOfReferenceUID = frame_of_ref_uid
+    ds.PositionReferenceIndicator = ""
+    
+    # Add Referenced Structure Set Sequence (link to RTSTRUCT)
+    if rtstruct_file:
+        try:
+            rtstruct_ds = pydicom.dcmread(rtstruct_file, stop_before_pixels=True)
+            rtstruct_uid = getattr(rtstruct_ds, 'SOPClassUID', '1.2.840.10008.5.1.4.1.1.481.3')
+            rtstruct_sop_uid = getattr(rtstruct_ds, 'SOPInstanceUID', generate_uid())
+            
+            ref_struct_item = pydicom.Dataset()
+            ref_struct_item.ReferencedSOPClassUID = rtstruct_uid
+            ref_struct_item.ReferencedSOPInstanceUID = rtstruct_sop_uid
+            ds.ReferencedStructureSetSequence = pydicom.Sequence([ref_struct_item])
+        except Exception as e:
+            print(f"    Warning: Could not link to RTSTRUCT: {e}")
+    
+    # Add Referenced RT Plan Sequence (link to RTPLAN)
+    if rtplan_file:
+        try:
+            rtplan_ds = pydicom.dcmread(rtplan_file, stop_before_pixels=True)
+            rtplan_uid = getattr(rtplan_ds, 'SOPClassUID', '1.2.840.10008.5.1.4.1.1.481.5')
+            rtplan_sop_uid = getattr(rtplan_ds, 'SOPInstanceUID', generate_uid())
+            
+            ref_plan_item = pydicom.Dataset()
+            ref_plan_item.ReferencedSOPClassUID = rtplan_uid
+            ref_plan_item.ReferencedSOPInstanceUID = rtplan_sop_uid
+            ds.ReferencedRTPlanSequence = pydicom.Sequence([ref_plan_item])
+        except Exception as e:
+            print(f"    Warning: Could not link to RTPLAN: {e}")
+    
+    # Additional metadata
+    ds.AccessionNumber = accession_number
+    ds.StudyID = study_id
+    ds.InstitutionName = institution
+    ds.InstanceCreationDate = datetime.date.today().strftime("%Y%m%d")
+    ds.InstanceCreationTime = datetime.datetime.now().strftime("%H%M%S")
+    ds.DerivationDescription = "AI Predicted Dose using Deep Learning Model"
     
     # Pixel Data - convert to required format
     # DICOM dose is typically stored as scaled integers
@@ -422,6 +512,14 @@ def create_rtdose_dicom(predicted_dose, ct_image, reference_dicom_dir, output_pa
     
     # Set pixel data (DICOM expects bytes)
     ds.PixelData = dose_scaled.tobytes()
+    
+    # Apply RLE lossless compression to reduce file size (124 MB -> ~5-10 MB)
+    try:
+        ds.compress(RLELossless)
+        print(f"      Applied RLE lossless compression")
+    except Exception as e:
+        print(f"      Warning: Could not compress file: {e}")
+        print(f"      Saving uncompressed (file will be larger)")
     
     # Save
     ds.save_as(output_path)
@@ -507,6 +605,21 @@ def run_dicom_inference(dicom_dir, output_dose_path, model_path=None):
     print(f"  Cropped to: {predicted_dose_cropped.shape}")
     print(f"  Cropped range: [{predicted_dose_cropped.min():.2f}, {predicted_dose_cropped.max():.2f}] Gy")
     
+    # Save NIfTI file for debugging/verification (before DICOM creation)
+    nifti_output_path = output_dose_path.replace('.dcm', '_dose.nii.gz')
+    print(f"\n[Saving NIfTI dose file...]")
+    try:
+        # Create SimpleITK image from numpy array with proper metadata
+        dose_sitk = sitk.GetImageFromArray(predicted_dose_cropped.astype(np.float32))
+        dose_sitk.SetSpacing(ct_image.GetSpacing())
+        dose_sitk.SetOrigin(ct_image.GetOrigin())
+        dose_sitk.SetDirection(ct_image.GetDirection())
+        
+        sitk.WriteImage(dose_sitk, nifti_output_path)
+        print(f"      Saved NIfTI: {nifti_output_path}")
+    except Exception as e:
+        print(f"      Warning: Could not save NIfTI: {e}")
+    
     # Create RTDOSE DICOM with cropped dose
     output_path = create_rtdose_dicom(
         predicted_dose_cropped, 
@@ -538,8 +651,8 @@ def main():
     )
     parser.add_argument(
         "--output-dose", "-o",
-        required=True,
-        help="Output path for RTDOSE DICOM file (e.g., predicted_dose.dcm)"
+        default=None,
+        help="Output path for RTDOSE DICOM file (default: data/output/{patient_name}_dose.dcm)"
     )
     parser.add_argument(
         "--model", "-m",
@@ -549,9 +662,22 @@ def main():
     
     args = parser.parse_args()
     
+    # Setup output directory
+    output_dir = os.path.join(project_root, "data", "output")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Auto-generate output filename if not provided
+    if args.output_dose is None:
+        patient_name = os.path.basename(os.path.normpath(args.input_dir))
+        args.output_dose = os.path.join(output_dir, f"{patient_name}_dose.dcm")
+    elif not os.path.isabs(args.output_dose):
+        # If relative path provided, put it in data/output
+        args.output_dose = os.path.join(output_dir, args.output_dose)
+    
     print("=" * 60)
     print("DICOM Dose Prediction Inference")
     print("=" * 60)
+    print(f"Output directory: {output_dir}")
     
     try:
         output_path, metadata = run_dicom_inference(
