@@ -22,7 +22,9 @@ from pathlib import Path
 import numpy as np
 # pyrefly: ignore [missing-import]
 import pydicom
+# pyrefly: ignore [missing-import]
 from pydicom.dataset import FileDataset
+# pyrefly: ignore [missing-import]
 from pydicom.uid import ExplicitVRLittleEndian, RTDoseStorage, generate_uid
 # pyrefly: ignore [missing-import]
 import SimpleITK as sitk
@@ -485,7 +487,7 @@ def run_dicom_inference(dicom_dir, output_dose_path, model_path=None):
             )
     
     # Extract predicted dose
-    predicted_dose = outputs[0, 0].cpu().numpy()  # [D, H, W]
+    predicted_dose = outputs[0, 0].cpu().numpy() * 60.0  # [D, H, W]
     
     # Crop back to original shape after inference
     # predicted_dose from model is [D, H, W] after MONAI transforms
