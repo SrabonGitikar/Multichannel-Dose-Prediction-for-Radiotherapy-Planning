@@ -18,6 +18,7 @@ import os
 import re
 import json
 import glob
+from dotenv import load_dotenv
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
@@ -31,23 +32,63 @@ from skimage.draw import polygon
 
 # CONFIGURATION
 
-# DATA_DIR = os.path.join(os.getcwd(), "Prostate prime d11 CT RT RP and RD")
-DATA_DIR = os.path.join(os.getcwd(), "data/d12")
-OUTPUT_DIR = os.path.join(os.getcwd(), "nnUNet_raw/Dataset001_ProstateDose")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+    
+def load_config(project_root):
+    """
+    Load configuration from .env file.
+    Returns DATA_DIR path or None if not configured properly.
+    """
+    env_path = os.path.join(project_root, ".env")
+    
+    if not os.path.exists(env_path):
+        print(f"ERROR: Config file not found at {env_path}")
+        print("Please create a .env file with DATA_DIR variable")
+        return None
+    
+    load_dotenv(env_path)
+    print(f"Loaded configuration from: {env_path}")
+    
+    data_dir = os.getenv("DATA_DIR")
+    
+    if not data_dir:
+        print("ERROR: DATA_DIR not set in .env file")
+        print("Add to .env: DATA_DIR=/full/path/to/patient/data")
+        return None
+    
+    return data_dir
+
+
+# Load configuration
+DATA_DIR = load_config(project_root)
+if DATA_DIR is None:
+    exit(1)
+
+
+# Output directory (relative to project root)
+OUTPUT_DIR = os.path.join(project_root, "nnUNet_raw", "Dataset001_ProstateDose")
 DATASET_NAME = "Dataset001_ProstateDose"
+
+print(f"DATA_DIR: {DATA_DIR}")
+print(f"OUTPUT_DIR: {OUTPUT_DIR}")
 
 # Structure name matching patterns (case-insensitive, priority order)
 # Updated based on ROI audit from 12 patients
 # We try each pattern in order and use the FIRST match found.
 STRUCTURE_PATTERNS = {
-    "PTV": [
-        r"^CTV_62/20$",         # Only match exact CTV_62/20
+    "CTV": [
+        r"^CTV_62/20$", 
+        r"^CTV62$",
+        r"^CTV 62$",
     ],
     "Bladder": [
-        r"^Bladder$",           # Standard (most common)
+        r"^Bladder$", 
+        r"^BLADDER",
     ],
     "Anorectum": [
-        r"^Anorectum$",         # Standard (most common)
+        r"^Anorectum$",
+        r"^ANORECTUM$",
     ],
 }
 
@@ -326,32 +367,32 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
     print(f"         Total ROIs: {len(roi_names)}")
 
-    # Match structure names
-    ptv_name = match_structure_name(roi_names, "PTV")
+    # Match structure names (priority order: first pattern match wins)
+    ctv_name = match_structure_name(roi_names, "CTV")
     bladder_name = match_structure_name(roi_names, "Bladder")
     anorectum_name = match_structure_name(roi_names, "Anorectum")
 
-    print(f"         PTV matched:       '{ptv_name}'")
+    print(f"         CTV matched:       '{ctv_name}'")
     print(f"         Bladder matched:   '{bladder_name}'")
     print(f"         Anorectum matched: '{anorectum_name}'")
 
-    if not all([ptv_name, bladder_name, anorectum_name]):
+    if not all([ctv_name, bladder_name, anorectum_name]):
         print(f"  *** SKIPPING: Could not match all required structures ***")
         print(f"      Available: {roi_names}")
         return False
 
     # Step 3: Rasterize contours into binary masks 
     print("  [3/6] Rasterizing contour masks...")
-    ptv_mask = rtstruct_contour_to_mask(rs_ds, ptv_name, ct_image)
+    ctv_mask = rtstruct_contour_to_mask(rs_ds, ctv_name, ct_image)
     bladder_mask = rtstruct_contour_to_mask(rs_ds, bladder_name, ct_image)
     anorectum_mask = rtstruct_contour_to_mask(rs_ds, anorectum_name, ct_image)
 
-    print(f"         PTV voxels:       {ptv_mask.sum():,}")
+    print(f"         CTV voxels:       {ctv_mask.sum():,}")
     print(f"         Bladder voxels:   {bladder_mask.sum():,}")
     print(f"         Anorectum voxels: {anorectum_mask.sum():,}")
 
-    if ptv_mask.sum() == 0:
-        print(f"  *** SKIPPING: PTV mask is empty ***")
+    if ctv_mask.sum() == 0:
+        print(f"  *** SKIPPING: CTV mask is empty ***")
         return False
 
     # Step 4: Compute signed distance maps for OARs
@@ -384,9 +425,9 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         os.path.join(images_dir, f"{case_name}_0000.nii.gz")
     )
 
-    # Channel 1: PTV binary mask (float32, 0/1)
+    # Channel 1: CTV binary mask (float32, 0/1)
     sitk.WriteImage(
-        numpy_to_sitk(ptv_mask.astype(np.float32), ct_image),
+        numpy_to_sitk(ctv_mask.astype(np.float32), ct_image),
         os.path.join(images_dir, f"{case_name}_0001.nii.gz")
     )
 

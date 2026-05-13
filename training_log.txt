@@ -1,1421 +1,998 @@
-Finding data...
-Found 11 patients.
-Building datasets (caching to disk to save memory)...
-Building 3D U-Net...
-Model and dataloaders ready on cuda!
-\nEpoch 1/300
-  Step 1/1 - Train Loss: 17.3534
-Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
-Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
-  --> Epoch 1 Summary: Train MSE: 17.3534 | Val MSE: 17943.0469
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.16 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 2/300
-  Step 1/1 - Train Loss: 11.6179
-  --> Epoch 2 Summary: Train MSE: 11.6179 | Val MSE: 17943.0469
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.16 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 3/300
-  Step 1/1 - Train Loss: 33.8570
-  --> Epoch 3 Summary: Train MSE: 33.8570 | Val MSE: 17943.0469
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.16 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 4/300
-  Step 1/1 - Train Loss: 11.0436
-  --> Epoch 4 Summary: Train MSE: 11.0436 | Val MSE: 17943.0469
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.16 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 5/300
-  Step 1/1 - Train Loss: 35.7429
-  --> Epoch 5 Summary: Train MSE: 35.7429 | Val MSE: 17943.0469
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.16 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 6/300
-  Step 1/1 - Train Loss: 22.5140
-  --> Epoch 6 Summary: Train MSE: 22.5140 | Val MSE: 17942.1455
-      Validation Clinical Metrics: PTV D95: -0.00 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 7/300
-  Step 1/1 - Train Loss: 4.9557
-  --> Epoch 7 Summary: Train MSE: 4.9557 | Val MSE: 17941.4414
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 8/300
-  Step 1/1 - Train Loss: 4.8225
-  --> Epoch 8 Summary: Train MSE: 4.8225 | Val MSE: 17940.6543
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 9/300
-  Step 1/1 - Train Loss: 17950.0859
-  --> Epoch 9 Summary: Train MSE: 17950.0859 | Val MSE: 17940.6543
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 10/300
-  Step 1/1 - Train Loss: 42.3275
-  --> Epoch 10 Summary: Train MSE: 42.3275 | Val MSE: 17939.7568
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 11/300
-  Step 1/1 - Train Loss: 18.2194
-  --> Epoch 11 Summary: Train MSE: 18.2194 | Val MSE: 17938.6855
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 12/300
-  Step 1/1 - Train Loss: 17984.5332
-  --> Epoch 12 Summary: Train MSE: 17984.5332 | Val MSE: 17938.6855
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 13/300
-  Step 1/1 - Train Loss: 17965.2305
-  --> Epoch 13 Summary: Train MSE: 17965.2305 | Val MSE: 17938.6855
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 14/300
-  Step 1/1 - Train Loss: 21.2979
-  --> Epoch 14 Summary: Train MSE: 21.2979 | Val MSE: 17937.6309
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 15/300
-  Step 1/1 - Train Loss: 17965.8633
-  --> Epoch 15 Summary: Train MSE: 17965.8633 | Val MSE: 17937.6309
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 16/300
-  Step 1/1 - Train Loss: 34.3741
-  --> Epoch 16 Summary: Train MSE: 34.3741 | Val MSE: 17936.4795
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 17/300
-  Step 1/1 - Train Loss: 17956.8340
-  --> Epoch 17 Summary: Train MSE: 17956.8340 | Val MSE: 17936.4795
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.17 Gy | Rectum Mean: 0.16 Gy
-\nEpoch 18/300
-  Step 1/1 - Train Loss: 17971.6016
-  --> Epoch 18 Summary: Train MSE: 17971.6016 | Val MSE: 17935.0098
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.18 Gy | Rectum Mean: 0.16 Gy
-  --> Saved new best model!
-\nEpoch 19/300
-  Step 1/1 - Train Loss: 17981.6523
-  --> Epoch 19 Summary: Train MSE: 17981.6523 | Val MSE: 17933.0293
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.18 Gy | Rectum Mean: 0.17 Gy
-  --> Saved new best model!
-\nEpoch 20/300
-  Step 1/1 - Train Loss: 13.3910
-  --> Epoch 20 Summary: Train MSE: 13.3910 | Val MSE: 17931.2012
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.18 Gy | Rectum Mean: 0.17 Gy
-  --> Saved new best model!
-\nEpoch 21/300
-  Step 1/1 - Train Loss: 17973.4590
-  --> Epoch 21 Summary: Train MSE: 17973.4590 | Val MSE: 17929.1426
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.19 Gy | Rectum Mean: 0.17 Gy
-  --> Saved new best model!
-\nEpoch 22/300
-  Step 1/1 - Train Loss: 17971.8086
-  --> Epoch 22 Summary: Train MSE: 17971.8086 | Val MSE: 17929.1426
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.19 Gy | Rectum Mean: 0.17 Gy
-\nEpoch 23/300
-  Step 1/1 - Train Loss: 18009.0098
-  --> Epoch 23 Summary: Train MSE: 18009.0098 | Val MSE: 17926.6172
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.19 Gy | Rectum Mean: 0.18 Gy
-  --> Saved new best model!
-\nEpoch 24/300
-  Step 1/1 - Train Loss: 23.1056
-  --> Epoch 24 Summary: Train MSE: 23.1056 | Val MSE: 17924.3389
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.19 Gy | Rectum Mean: 0.18 Gy
-  --> Saved new best model!
-\nEpoch 25/300
-  Step 1/1 - Train Loss: 20.6859
-  --> Epoch 25 Summary: Train MSE: 20.6859 | Val MSE: 17922.1523
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.19 Gy | Rectum Mean: 0.19 Gy
-  --> Saved new best model!
-\nEpoch 26/300
-  Step 1/1 - Train Loss: 86.0779
-  --> Epoch 26 Summary: Train MSE: 86.0779 | Val MSE: 17920.2227
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.20 Gy | Rectum Mean: 0.19 Gy
-  --> Saved new best model!
-\nEpoch 27/300
-  Step 1/1 - Train Loss: 18046.2793
-  --> Epoch 27 Summary: Train MSE: 18046.2793 | Val MSE: 17917.6689
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.20 Gy | Rectum Mean: 0.19 Gy
-  --> Saved new best model!
-\nEpoch 28/300
-  Step 1/1 - Train Loss: 17934.1426
-  --> Epoch 28 Summary: Train MSE: 17934.1426 | Val MSE: 17914.7188
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.20 Gy | Rectum Mean: 0.20 Gy
-  --> Saved new best model!
-\nEpoch 29/300
-  Step 1/1 - Train Loss: 17954.4199
-  --> Epoch 29 Summary: Train MSE: 17954.4199 | Val MSE: 17911.6240
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.21 Gy | Rectum Mean: 0.20 Gy
-  --> Saved new best model!
-\nEpoch 30/300
-  Step 1/1 - Train Loss: 17950.4766
-  --> Epoch 30 Summary: Train MSE: 17950.4766 | Val MSE: 17908.1221
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.21 Gy | Rectum Mean: 0.21 Gy
-  --> Saved new best model!
-\nEpoch 31/300
-  Step 1/1 - Train Loss: 15.4967
-  --> Epoch 31 Summary: Train MSE: 15.4967 | Val MSE: 17904.8643
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.22 Gy | Rectum Mean: 0.21 Gy
-  --> Saved new best model!
-\nEpoch 32/300
-  Step 1/1 - Train Loss: 17934.1074
-  --> Epoch 32 Summary: Train MSE: 17934.1074 | Val MSE: 17901.3604
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.22 Gy | Rectum Mean: 0.22 Gy
-  --> Saved new best model!
-\nEpoch 33/300
-  Step 1/1 - Train Loss: 5.4863
-  --> Epoch 33 Summary: Train MSE: 5.4863 | Val MSE: 17898.0039
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.23 Gy | Rectum Mean: 0.22 Gy
-  --> Saved new best model!
-\nEpoch 34/300
-  Step 1/1 - Train Loss: 35.5572
-  --> Epoch 34 Summary: Train MSE: 35.5572 | Val MSE: 17894.8369
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.23 Gy | Rectum Mean: 0.23 Gy
-  --> Saved new best model!
-\nEpoch 35/300
-  Step 1/1 - Train Loss: 17971.5820
-  --> Epoch 35 Summary: Train MSE: 17971.5820 | Val MSE: 17891.1738
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.23 Gy | Rectum Mean: 0.24 Gy
-  --> Saved new best model!
-\nEpoch 36/300
-  Step 1/1 - Train Loss: 6.1524
-  --> Epoch 36 Summary: Train MSE: 6.1524 | Val MSE: 17887.6836
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.24 Gy | Rectum Mean: 0.24 Gy
-  --> Saved new best model!
-\nEpoch 37/300
-  Step 1/1 - Train Loss: 17961.6875
-  --> Epoch 37 Summary: Train MSE: 17961.6875 | Val MSE: 17883.4727
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.24 Gy | Rectum Mean: 0.25 Gy
-  --> Saved new best model!
-\nEpoch 38/300
-  Step 1/1 - Train Loss: 18034.2871
-  --> Epoch 38 Summary: Train MSE: 18034.2871 | Val MSE: 17878.8037
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.25 Gy | Rectum Mean: 0.25 Gy
-  --> Saved new best model!
-\nEpoch 39/300
-  Step 1/1 - Train Loss: 34.7657
-  --> Epoch 39 Summary: Train MSE: 34.7657 | Val MSE: 17874.4033
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.25 Gy | Rectum Mean: 0.26 Gy
-  --> Saved new best model!
-\nEpoch 40/300
-  Step 1/1 - Train Loss: 17995.3887
-  --> Epoch 40 Summary: Train MSE: 17995.3887 | Val MSE: 17869.3203
-      Validation Clinical Metrics: PTV D95: -0.02 Gy | Bladder Mean: 0.26 Gy | Rectum Mean: 0.27 Gy
-  --> Saved new best model!
-\nEpoch 41/300
-  Step 1/1 - Train Loss: 16.8869
-  --> Epoch 41 Summary: Train MSE: 16.8869 | Val MSE: 17864.7930
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.27 Gy | Rectum Mean: 0.27 Gy
-  --> Saved new best model!
-\nEpoch 42/300
-  Step 1/1 - Train Loss: 1.7455
-  --> Epoch 42 Summary: Train MSE: 1.7455 | Val MSE: 17860.4658
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.27 Gy | Rectum Mean: 0.28 Gy
-  --> Saved new best model!
-\nEpoch 43/300
-  Step 1/1 - Train Loss: 8.2222
-  --> Epoch 43 Summary: Train MSE: 8.2222 | Val MSE: 17856.5234
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.28 Gy | Rectum Mean: 0.29 Gy
-  --> Saved new best model!
-\nEpoch 44/300
-  Step 1/1 - Train Loss: 2.9646
-  --> Epoch 44 Summary: Train MSE: 2.9646 | Val MSE: 17852.9463
-      Validation Clinical Metrics: PTV D95: -0.01 Gy | Bladder Mean: 0.29 Gy | Rectum Mean: 0.30 Gy
-  --> Saved new best model!
-\nEpoch 45/300
-  Step 1/1 - Train Loss: 41.2973
-  --> Epoch 45 Summary: Train MSE: 41.2973 | Val MSE: 17849.6084
-      Validation Clinical Metrics: PTV D95: -0.00 Gy | Bladder Mean: 0.29 Gy | Rectum Mean: 0.30 Gy
-  --> Saved new best model!
-\nEpoch 46/300
-  Step 1/1 - Train Loss: 17924.2754
-  --> Epoch 46 Summary: Train MSE: 17924.2754 | Val MSE: 17846.3408
-      Validation Clinical Metrics: PTV D95: -0.00 Gy | Bladder Mean: 0.30 Gy | Rectum Mean: 0.31 Gy
-  --> Saved new best model!
-\nEpoch 47/300
-  Step 1/1 - Train Loss: 20.3267
-  --> Epoch 47 Summary: Train MSE: 20.3267 | Val MSE: 17843.1396
-      Validation Clinical Metrics: PTV D95: -0.00 Gy | Bladder Mean: 0.31 Gy | Rectum Mean: 0.32 Gy
-  --> Saved new best model!
-\nEpoch 48/300
-  Step 1/1 - Train Loss: 17892.6680
-  --> Epoch 48 Summary: Train MSE: 17892.6680 | Val MSE: 17838.6953
-      Validation Clinical Metrics: PTV D95: -0.00 Gy | Bladder Mean: 0.32 Gy | Rectum Mean: 0.33 Gy
-  --> Saved new best model!
-\nEpoch 49/300
-  Step 1/1 - Train Loss: 17887.8164
-  --> Epoch 49 Summary: Train MSE: 17887.8164 | Val MSE: 17832.9375
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.33 Gy | Rectum Mean: 0.34 Gy
-  --> Saved new best model!
-\nEpoch 50/300
-  Step 1/1 - Train Loss: 18.5440
-  --> Epoch 50 Summary: Train MSE: 18.5440 | Val MSE: 17827.4922
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.34 Gy | Rectum Mean: 0.36 Gy
-  --> Saved new best model!
-\nEpoch 51/300
-  Step 1/1 - Train Loss: 17895.2070
-  --> Epoch 51 Summary: Train MSE: 17895.2070 | Val MSE: 17821.1230
-      Validation Clinical Metrics: PTV D95: 0.00 Gy | Bladder Mean: 0.36 Gy | Rectum Mean: 0.37 Gy
-  --> Saved new best model!
-\nEpoch 52/300
-  Step 1/1 - Train Loss: 18.8964
-  --> Epoch 52 Summary: Train MSE: 18.8964 | Val MSE: 17815.2529
-      Validation Clinical Metrics: PTV D95: 0.01 Gy | Bladder Mean: 0.37 Gy | Rectum Mean: 0.38 Gy
-  --> Saved new best model!
-\nEpoch 53/300
-  Step 1/1 - Train Loss: 17837.5195
-  --> Epoch 53 Summary: Train MSE: 17837.5195 | Val MSE: 17808.3594
-      Validation Clinical Metrics: PTV D95: 0.01 Gy | Bladder Mean: 0.38 Gy | Rectum Mean: 0.40 Gy
-  --> Saved new best model!
-\nEpoch 54/300
-  Step 1/1 - Train Loss: 22.7281
-  --> Epoch 54 Summary: Train MSE: 22.7281 | Val MSE: 17801.9414
-      Validation Clinical Metrics: PTV D95: 0.01 Gy | Bladder Mean: 0.40 Gy | Rectum Mean: 0.41 Gy
-  --> Saved new best model!
-\nEpoch 55/300
-  Step 1/1 - Train Loss: 10.7034
-  --> Epoch 55 Summary: Train MSE: 10.7034 | Val MSE: 17796.2617
-      Validation Clinical Metrics: PTV D95: 0.01 Gy | Bladder Mean: 0.41 Gy | Rectum Mean: 0.43 Gy
-  --> Saved new best model!
-\nEpoch 56/300
-  Step 1/1 - Train Loss: 17842.3203
-  --> Epoch 56 Summary: Train MSE: 17842.3203 | Val MSE: 17789.1719
-      Validation Clinical Metrics: PTV D95: 0.02 Gy | Bladder Mean: 0.42 Gy | Rectum Mean: 0.44 Gy
-  --> Saved new best model!
-\nEpoch 57/300
-  Step 1/1 - Train Loss: 22.7315
-  --> Epoch 57 Summary: Train MSE: 22.7315 | Val MSE: 17782.6406
-      Validation Clinical Metrics: PTV D95: 0.02 Gy | Bladder Mean: 0.44 Gy | Rectum Mean: 0.46 Gy
-  --> Saved new best model!
-\nEpoch 58/300
-  Step 1/1 - Train Loss: 17829.7168
-  --> Epoch 58 Summary: Train MSE: 17829.7168 | Val MSE: 17774.7461
-      Validation Clinical Metrics: PTV D95: 0.02 Gy | Bladder Mean: 0.45 Gy | Rectum Mean: 0.47 Gy
-  --> Saved new best model!
-\nEpoch 59/300
-  Step 1/1 - Train Loss: 3.8192
-  --> Epoch 59 Summary: Train MSE: 3.8192 | Val MSE: 17767.5156
-      Validation Clinical Metrics: PTV D95: 0.03 Gy | Bladder Mean: 0.47 Gy | Rectum Mean: 0.49 Gy
-  --> Saved new best model!
-\nEpoch 60/300
-  Step 1/1 - Train Loss: 17812.3359
-  --> Epoch 60 Summary: Train MSE: 17812.3359 | Val MSE: 17758.7197
-      Validation Clinical Metrics: PTV D95: 0.03 Gy | Bladder Mean: 0.49 Gy | Rectum Mean: 0.51 Gy
-  --> Saved new best model!
-\nEpoch 61/300
-  Step 1/1 - Train Loss: 17832.6074
-  --> Epoch 61 Summary: Train MSE: 17832.6074 | Val MSE: 17748.9414
-      Validation Clinical Metrics: PTV D95: 0.04 Gy | Bladder Mean: 0.51 Gy | Rectum Mean: 0.53 Gy
-  --> Saved new best model!
-\nEpoch 62/300
-  Step 1/1 - Train Loss: 60.7699
-  --> Epoch 62 Summary: Train MSE: 60.7699 | Val MSE: 17739.8018
-      Validation Clinical Metrics: PTV D95: 0.04 Gy | Bladder Mean: 0.53 Gy | Rectum Mean: 0.56 Gy
-  --> Saved new best model!
-\nEpoch 63/300
-  Step 1/1 - Train Loss: 10.7478
-  --> Epoch 63 Summary: Train MSE: 10.7478 | Val MSE: 17731.5439
-      Validation Clinical Metrics: PTV D95: 0.05 Gy | Bladder Mean: 0.54 Gy | Rectum Mean: 0.57 Gy
-  --> Saved new best model!
-\nEpoch 64/300
-  Step 1/1 - Train Loss: 4.3800
-  --> Epoch 64 Summary: Train MSE: 4.3800 | Val MSE: 17723.8574
-      Validation Clinical Metrics: PTV D95: 0.06 Gy | Bladder Mean: 0.56 Gy | Rectum Mean: 0.59 Gy
-  --> Saved new best model!
-\nEpoch 65/300
-  Step 1/1 - Train Loss: 17689.9277
-  --> Epoch 65 Summary: Train MSE: 17689.9277 | Val MSE: 17723.8574
-      Validation Clinical Metrics: PTV D95: 0.06 Gy | Bladder Mean: 0.56 Gy | Rectum Mean: 0.59 Gy
-\nEpoch 66/300
-  Step 1/1 - Train Loss: 14.2851
-  --> Epoch 66 Summary: Train MSE: 14.2851 | Val MSE: 17716.9307
-      Validation Clinical Metrics: PTV D95: 0.06 Gy | Bladder Mean: 0.57 Gy | Rectum Mean: 0.61 Gy
-  --> Saved new best model!
-\nEpoch 67/300
-  Step 1/1 - Train Loss: 19.8463
-  --> Epoch 67 Summary: Train MSE: 19.8463 | Val MSE: 17710.5879
-      Validation Clinical Metrics: PTV D95: 0.07 Gy | Bladder Mean: 0.59 Gy | Rectum Mean: 0.62 Gy
-  --> Saved new best model!
-\nEpoch 68/300
-  Step 1/1 - Train Loss: 17771.0098
-  --> Epoch 68 Summary: Train MSE: 17771.0098 | Val MSE: 17703.0254
-      Validation Clinical Metrics: PTV D95: 0.08 Gy | Bladder Mean: 0.60 Gy | Rectum Mean: 0.64 Gy
-  --> Saved new best model!
-\nEpoch 69/300
-  Step 1/1 - Train Loss: 17674.7871
-  --> Epoch 69 Summary: Train MSE: 17674.7871 | Val MSE: 17693.1846
-      Validation Clinical Metrics: PTV D95: 0.09 Gy | Bladder Mean: 0.62 Gy | Rectum Mean: 0.67 Gy
-  --> Saved new best model!
-\nEpoch 70/300
-  Step 1/1 - Train Loss: 12.3682
-  --> Epoch 70 Summary: Train MSE: 12.3682 | Val MSE: 17684.1133
-      Validation Clinical Metrics: PTV D95: 0.09 Gy | Bladder Mean: 0.64 Gy | Rectum Mean: 0.69 Gy
-  --> Saved new best model!
-\nEpoch 71/300
-  Step 1/1 - Train Loss: 2.4616
-  --> Epoch 71 Summary: Train MSE: 2.4616 | Val MSE: 17675.7363
-      Validation Clinical Metrics: PTV D95: 0.10 Gy | Bladder Mean: 0.66 Gy | Rectum Mean: 0.71 Gy
-  --> Saved new best model!
-\nEpoch 72/300
-  Step 1/1 - Train Loss: 8.0314
-  --> Epoch 72 Summary: Train MSE: 8.0314 | Val MSE: 17668.0625
-      Validation Clinical Metrics: PTV D95: 0.11 Gy | Bladder Mean: 0.68 Gy | Rectum Mean: 0.73 Gy
-  --> Saved new best model!
-\nEpoch 73/300
-  Step 1/1 - Train Loss: 11.7760
-  --> Epoch 73 Summary: Train MSE: 11.7760 | Val MSE: 17660.8330
-      Validation Clinical Metrics: PTV D95: 0.12 Gy | Bladder Mean: 0.69 Gy | Rectum Mean: 0.75 Gy
-  --> Saved new best model!
-\nEpoch 74/300
-  Step 1/1 - Train Loss: 17581.2988
-  --> Epoch 74 Summary: Train MSE: 17581.2988 | Val MSE: 17651.0635
-      Validation Clinical Metrics: PTV D95: 0.13 Gy | Bladder Mean: 0.71 Gy | Rectum Mean: 0.77 Gy
-  --> Saved new best model!
-\nEpoch 75/300
-  Step 1/1 - Train Loss: 21.7239
-  --> Epoch 75 Summary: Train MSE: 21.7239 | Val MSE: 17641.9863
-      Validation Clinical Metrics: PTV D95: 0.15 Gy | Bladder Mean: 0.73 Gy | Rectum Mean: 0.79 Gy
-  --> Saved new best model!
-\nEpoch 76/300
-  Step 1/1 - Train Loss: 17640.8359
-  --> Epoch 76 Summary: Train MSE: 17640.8359 | Val MSE: 17628.8721
-      Validation Clinical Metrics: PTV D95: 0.16 Gy | Bladder Mean: 0.75 Gy | Rectum Mean: 0.82 Gy
-  --> Saved new best model!
-\nEpoch 77/300
-  Step 1/1 - Train Loss: 10.3808
-  --> Epoch 77 Summary: Train MSE: 10.3808 | Val MSE: 17617.0459
-      Validation Clinical Metrics: PTV D95: 0.18 Gy | Bladder Mean: 0.77 Gy | Rectum Mean: 0.84 Gy
-  --> Saved new best model!
-\nEpoch 78/300
-  Step 1/1 - Train Loss: 25.7528
-  --> Epoch 78 Summary: Train MSE: 25.7528 | Val MSE: 17606.3096
-      Validation Clinical Metrics: PTV D95: 0.20 Gy | Bladder Mean: 0.79 Gy | Rectum Mean: 0.86 Gy
-  --> Saved new best model!
-\nEpoch 79/300
-  Step 1/1 - Train Loss: 17581.1133
-  --> Epoch 79 Summary: Train MSE: 17581.1133 | Val MSE: 17593.9209
-      Validation Clinical Metrics: PTV D95: 0.21 Gy | Bladder Mean: 0.81 Gy | Rectum Mean: 0.89 Gy
-  --> Saved new best model!
-\nEpoch 80/300
-  Step 1/1 - Train Loss: 17655.6934
-  --> Epoch 80 Summary: Train MSE: 17655.6934 | Val MSE: 17580.0498
-      Validation Clinical Metrics: PTV D95: 0.23 Gy | Bladder Mean: 0.84 Gy | Rectum Mean: 0.92 Gy
-  --> Saved new best model!
-\nEpoch 81/300
-  Step 1/1 - Train Loss: 4.4495
-  --> Epoch 81 Summary: Train MSE: 4.4495 | Val MSE: 17567.6230
-      Validation Clinical Metrics: PTV D95: 0.25 Gy | Bladder Mean: 0.86 Gy | Rectum Mean: 0.94 Gy
-  --> Saved new best model!
-\nEpoch 82/300
-  Step 1/1 - Train Loss: 28.0230
-  --> Epoch 82 Summary: Train MSE: 28.0230 | Val MSE: 17556.3125
-      Validation Clinical Metrics: PTV D95: 0.27 Gy | Bladder Mean: 0.88 Gy | Rectum Mean: 0.97 Gy
-  --> Saved new best model!
-\nEpoch 83/300
-  Step 1/1 - Train Loss: 17456.7383
-  --> Epoch 83 Summary: Train MSE: 17456.7383 | Val MSE: 17543.1270
-      Validation Clinical Metrics: PTV D95: 0.29 Gy | Bladder Mean: 0.91 Gy | Rectum Mean: 1.00 Gy
-  --> Saved new best model!
-\nEpoch 84/300
-  Step 1/1 - Train Loss: 17451.8008
-  --> Epoch 84 Summary: Train MSE: 17451.8008 | Val MSE: 17543.1270
-      Validation Clinical Metrics: PTV D95: 0.29 Gy | Bladder Mean: 0.91 Gy | Rectum Mean: 1.00 Gy
-\nEpoch 85/300
-  Step 1/1 - Train Loss: 17542.0801
-  --> Epoch 85 Summary: Train MSE: 17542.0801 | Val MSE: 17529.4268
-      Validation Clinical Metrics: PTV D95: 0.31 Gy | Bladder Mean: 0.94 Gy | Rectum Mean: 1.03 Gy
-  --> Saved new best model!
-\nEpoch 86/300
-  Step 1/1 - Train Loss: 17364.8906
-  --> Epoch 86 Summary: Train MSE: 17364.8906 | Val MSE: 17514.6279
-      Validation Clinical Metrics: PTV D95: 0.33 Gy | Bladder Mean: 0.97 Gy | Rectum Mean: 1.07 Gy
-  --> Saved new best model!
-\nEpoch 87/300
-  Step 1/1 - Train Loss: 33.4008
-  --> Epoch 87 Summary: Train MSE: 33.4008 | Val MSE: 17501.5439
-      Validation Clinical Metrics: PTV D95: 0.35 Gy | Bladder Mean: 1.00 Gy | Rectum Mean: 1.11 Gy
-  --> Saved new best model!
-\nEpoch 88/300
-  Step 1/1 - Train Loss: 15.6154
-  --> Epoch 88 Summary: Train MSE: 15.6154 | Val MSE: 17489.9717
-      Validation Clinical Metrics: PTV D95: 0.37 Gy | Bladder Mean: 1.02 Gy | Rectum Mean: 1.14 Gy
-  --> Saved new best model!
-\nEpoch 89/300
-  Step 1/1 - Train Loss: 53.0270
-  --> Epoch 89 Summary: Train MSE: 53.0270 | Val MSE: 17479.7441
-      Validation Clinical Metrics: PTV D95: 0.39 Gy | Bladder Mean: 1.05 Gy | Rectum Mean: 1.16 Gy
-  --> Saved new best model!
-\nEpoch 90/300
-  Step 1/1 - Train Loss: 17365.7539
-  --> Epoch 90 Summary: Train MSE: 17365.7539 | Val MSE: 17466.1494
-      Validation Clinical Metrics: PTV D95: 0.41 Gy | Bladder Mean: 1.08 Gy | Rectum Mean: 1.20 Gy
-  --> Saved new best model!
-\nEpoch 91/300
-  Step 1/1 - Train Loss: 17372.0801
-  --> Epoch 91 Summary: Train MSE: 17372.0801 | Val MSE: 17452.1465
-      Validation Clinical Metrics: PTV D95: 0.43 Gy | Bladder Mean: 1.11 Gy | Rectum Mean: 1.24 Gy
-  --> Saved new best model!
-\nEpoch 92/300
-  Step 1/1 - Train Loss: 5.5320
-  --> Epoch 92 Summary: Train MSE: 5.5320 | Val MSE: 17440.0361
-      Validation Clinical Metrics: PTV D95: 0.45 Gy | Bladder Mean: 1.15 Gy | Rectum Mean: 1.27 Gy
-  --> Saved new best model!
-\nEpoch 93/300
-  Step 1/1 - Train Loss: 17162.2031
-  --> Epoch 93 Summary: Train MSE: 17162.2031 | Val MSE: 17426.7812
-      Validation Clinical Metrics: PTV D95: 0.47 Gy | Bladder Mean: 1.18 Gy | Rectum Mean: 1.31 Gy
-  --> Saved new best model!
-\nEpoch 94/300
-  Step 1/1 - Train Loss: 16.7476
-  --> Epoch 94 Summary: Train MSE: 16.7476 | Val MSE: 17415.1104
-      Validation Clinical Metrics: PTV D95: 0.49 Gy | Bladder Mean: 1.21 Gy | Rectum Mean: 1.34 Gy
-  --> Saved new best model!
-\nEpoch 95/300
-  Step 1/1 - Train Loss: 17438.2422
-  --> Epoch 95 Summary: Train MSE: 17438.2422 | Val MSE: 17413.8604
-      Validation Clinical Metrics: PTV D95: 0.51 Gy | Bladder Mean: 1.25 Gy | Rectum Mean: 1.38 Gy
-  --> Saved new best model!
-\nEpoch 96/300
-  Step 1/1 - Train Loss: 10.5012
-  --> Epoch 96 Summary: Train MSE: 10.5012 | Val MSE: 17405.7314
-      Validation Clinical Metrics: PTV D95: 0.53 Gy | Bladder Mean: 1.29 Gy | Rectum Mean: 1.41 Gy
-  --> Saved new best model!
-\nEpoch 97/300
-  Step 1/1 - Train Loss: 17277.5586
-  --> Epoch 97 Summary: Train MSE: 17277.5586 | Val MSE: 17392.7715
-      Validation Clinical Metrics: PTV D95: 0.55 Gy | Bladder Mean: 1.32 Gy | Rectum Mean: 1.45 Gy
-  --> Saved new best model!
-\nEpoch 98/300
-  Step 1/1 - Train Loss: 8.9158
-  --> Epoch 98 Summary: Train MSE: 8.9158 | Val MSE: 17380.2285
-      Validation Clinical Metrics: PTV D95: 0.57 Gy | Bladder Mean: 1.35 Gy | Rectum Mean: 1.49 Gy
-  --> Saved new best model!
-\nEpoch 99/300
-  Step 1/1 - Train Loss: 17253.8398
-  --> Epoch 99 Summary: Train MSE: 17253.8398 | Val MSE: 17370.8203
-      Validation Clinical Metrics: PTV D95: 0.59 Gy | Bladder Mean: 1.38 Gy | Rectum Mean: 1.53 Gy
-  --> Saved new best model!
-\nEpoch 100/300
-  Step 1/1 - Train Loss: 4.9401
-  --> Epoch 100 Summary: Train MSE: 4.9401 | Val MSE: 17362.1982
-      Validation Clinical Metrics: PTV D95: 0.60 Gy | Bladder Mean: 1.41 Gy | Rectum Mean: 1.56 Gy
-  --> Saved new best model!
-\nEpoch 101/300
-  Step 1/1 - Train Loss: 22.9046
-  --> Epoch 101 Summary: Train MSE: 22.9046 | Val MSE: 17355.0361
-      Validation Clinical Metrics: PTV D95: 0.61 Gy | Bladder Mean: 1.43 Gy | Rectum Mean: 1.59 Gy
-  --> Saved new best model!
-\nEpoch 102/300
-  Step 1/1 - Train Loss: 46.9408
-  --> Epoch 102 Summary: Train MSE: 46.9408 | Val MSE: 17348.5693
-      Validation Clinical Metrics: PTV D95: 0.62 Gy | Bladder Mean: 1.45 Gy | Rectum Mean: 1.61 Gy
-  --> Saved new best model!
-\nEpoch 103/300
-  Step 1/1 - Train Loss: 17167.3516
-  --> Epoch 103 Summary: Train MSE: 17167.3516 | Val MSE: 17349.5049
-      Validation Clinical Metrics: PTV D95: 0.62 Gy | Bladder Mean: 1.47 Gy | Rectum Mean: 1.63 Gy
-\nEpoch 104/300
-  Step 1/1 - Train Loss: 3.1646
-  --> Epoch 104 Summary: Train MSE: 3.1646 | Val MSE: 17348.6611
-      Validation Clinical Metrics: PTV D95: 0.63 Gy | Bladder Mean: 1.48 Gy | Rectum Mean: 1.65 Gy
-\nEpoch 105/300
-  Step 1/1 - Train Loss: 17277.2305
-  --> Epoch 105 Summary: Train MSE: 17277.2305 | Val MSE: 17331.8965
-      Validation Clinical Metrics: PTV D95: 0.64 Gy | Bladder Mean: 1.50 Gy | Rectum Mean: 1.69 Gy
-  --> Saved new best model!
-\nEpoch 106/300
-  Step 1/1 - Train Loss: 5.4033
-  --> Epoch 106 Summary: Train MSE: 5.4033 | Val MSE: 17315.0254
-      Validation Clinical Metrics: PTV D95: 0.65 Gy | Bladder Mean: 1.51 Gy | Rectum Mean: 1.72 Gy
-  --> Saved new best model!
-\nEpoch 107/300
-  Step 1/1 - Train Loss: 30.2080
-  --> Epoch 107 Summary: Train MSE: 30.2080 | Val MSE: 17299.6328
-      Validation Clinical Metrics: PTV D95: 0.67 Gy | Bladder Mean: 1.52 Gy | Rectum Mean: 1.74 Gy
-  --> Saved new best model!
-\nEpoch 108/300
-  Step 1/1 - Train Loss: 17320.1270
-  --> Epoch 108 Summary: Train MSE: 17320.1270 | Val MSE: 17290.4648
-      Validation Clinical Metrics: PTV D95: 0.67 Gy | Bladder Mean: 1.52 Gy | Rectum Mean: 1.76 Gy
-  --> Saved new best model!
-\nEpoch 109/300
-  Step 1/1 - Train Loss: 3.0990
-  --> Epoch 109 Summary: Train MSE: 3.0990 | Val MSE: 17282.8496
-      Validation Clinical Metrics: PTV D95: 0.68 Gy | Bladder Mean: 1.53 Gy | Rectum Mean: 1.77 Gy
-  --> Saved new best model!
-\nEpoch 110/300
-  Step 1/1 - Train Loss: 33.6176
-  --> Epoch 110 Summary: Train MSE: 33.6176 | Val MSE: 17277.0684
-      Validation Clinical Metrics: PTV D95: 0.68 Gy | Bladder Mean: 1.53 Gy | Rectum Mean: 1.79 Gy
-  --> Saved new best model!
-\nEpoch 111/300
-  Step 1/1 - Train Loss: 17156.0664
-  --> Epoch 111 Summary: Train MSE: 17156.0664 | Val MSE: 17271.3311
-      Validation Clinical Metrics: PTV D95: 0.68 Gy | Bladder Mean: 1.54 Gy | Rectum Mean: 1.81 Gy
-  --> Saved new best model!
-\nEpoch 112/300
-  Step 1/1 - Train Loss: 19.3163
-  --> Epoch 112 Summary: Train MSE: 19.3163 | Val MSE: 17266.7002
-      Validation Clinical Metrics: PTV D95: 0.69 Gy | Bladder Mean: 1.56 Gy | Rectum Mean: 1.83 Gy
-  --> Saved new best model!
-\nEpoch 113/300
-  Step 1/1 - Train Loss: 47.7985
-  --> Epoch 113 Summary: Train MSE: 47.7985 | Val MSE: 17263.7227
-      Validation Clinical Metrics: PTV D95: 0.69 Gy | Bladder Mean: 1.56 Gy | Rectum Mean: 1.85 Gy
-  --> Saved new best model!
-\nEpoch 114/300
-  Step 1/1 - Train Loss: 17129.9258
-  --> Epoch 114 Summary: Train MSE: 17129.9258 | Val MSE: 17261.3076
-      Validation Clinical Metrics: PTV D95: 0.69 Gy | Bladder Mean: 1.58 Gy | Rectum Mean: 1.87 Gy
-  --> Saved new best model!
-\nEpoch 115/300
-  Step 1/1 - Train Loss: 12.2111
-  --> Epoch 115 Summary: Train MSE: 12.2111 | Val MSE: 17259.9580
-      Validation Clinical Metrics: PTV D95: 0.70 Gy | Bladder Mean: 1.59 Gy | Rectum Mean: 1.89 Gy
-  --> Saved new best model!
-\nEpoch 116/300
-  Step 1/1 - Train Loss: 17406.3359
-  --> Epoch 116 Summary: Train MSE: 17406.3359 | Val MSE: 17258.3848
-      Validation Clinical Metrics: PTV D95: 0.70 Gy | Bladder Mean: 1.60 Gy | Rectum Mean: 1.91 Gy
-  --> Saved new best model!
-\nEpoch 117/300
-  Step 1/1 - Train Loss: 17218.2051
-  --> Epoch 117 Summary: Train MSE: 17218.2051 | Val MSE: 17245.6641
-      Validation Clinical Metrics: PTV D95: 0.72 Gy | Bladder Mean: 1.62 Gy | Rectum Mean: 1.92 Gy
-  --> Saved new best model!
-\nEpoch 118/300
-  Step 1/1 - Train Loss: 17073.7305
-  --> Epoch 118 Summary: Train MSE: 17073.7305 | Val MSE: 17235.2871
-      Validation Clinical Metrics: PTV D95: 0.74 Gy | Bladder Mean: 1.65 Gy | Rectum Mean: 1.94 Gy
-  --> Saved new best model!
-\nEpoch 119/300
-  Step 1/1 - Train Loss: 17207.4043
-  --> Epoch 119 Summary: Train MSE: 17207.4043 | Val MSE: 17222.5527
-      Validation Clinical Metrics: PTV D95: 0.76 Gy | Bladder Mean: 1.67 Gy | Rectum Mean: 1.95 Gy
-  --> Saved new best model!
-\nEpoch 120/300
-  Step 1/1 - Train Loss: 1.5879
-  --> Epoch 120 Summary: Train MSE: 1.5879 | Val MSE: 17211.8223
-      Validation Clinical Metrics: PTV D95: 0.79 Gy | Bladder Mean: 1.70 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 121/300
-  Step 1/1 - Train Loss: 17363.7617
-  --> Epoch 121 Summary: Train MSE: 17363.7617 | Val MSE: 17188.9902
-      Validation Clinical Metrics: PTV D95: 0.83 Gy | Bladder Mean: 1.73 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 122/300
-  Step 1/1 - Train Loss: 2.9094
-  --> Epoch 122 Summary: Train MSE: 2.9094 | Val MSE: 17172.1855
-      Validation Clinical Metrics: PTV D95: 0.87 Gy | Bladder Mean: 1.75 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 123/300
-  Step 1/1 - Train Loss: 9.1696
-  --> Epoch 123 Summary: Train MSE: 9.1696 | Val MSE: 17160.4268
-      Validation Clinical Metrics: PTV D95: 0.90 Gy | Bladder Mean: 1.77 Gy | Rectum Mean: 1.95 Gy
-  --> Saved new best model!
-\nEpoch 124/300
-  Step 1/1 - Train Loss: 7.3125
-  --> Epoch 124 Summary: Train MSE: 7.3125 | Val MSE: 17151.8516
-      Validation Clinical Metrics: PTV D95: 0.92 Gy | Bladder Mean: 1.78 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 125/300
-  Step 1/1 - Train Loss: 6.5597
-  --> Epoch 125 Summary: Train MSE: 6.5597 | Val MSE: 17146.0039
-      Validation Clinical Metrics: PTV D95: 0.94 Gy | Bladder Mean: 1.80 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 126/300
-  Step 1/1 - Train Loss: 3.7259
-  --> Epoch 126 Summary: Train MSE: 3.7259 | Val MSE: 17141.9727
-      Validation Clinical Metrics: PTV D95: 0.95 Gy | Bladder Mean: 1.81 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 127/300
-  Step 1/1 - Train Loss: 46.9435
-  --> Epoch 127 Summary: Train MSE: 46.9435 | Val MSE: 17138.8555
-      Validation Clinical Metrics: PTV D95: 0.96 Gy | Bladder Mean: 1.82 Gy | Rectum Mean: 1.96 Gy
-  --> Saved new best model!
-\nEpoch 128/300
-  Step 1/1 - Train Loss: 16983.3652
-  --> Epoch 128 Summary: Train MSE: 16983.3652 | Val MSE: 17133.0703
-      Validation Clinical Metrics: PTV D95: 0.98 Gy | Bladder Mean: 1.83 Gy | Rectum Mean: 1.97 Gy
-  --> Saved new best model!
-\nEpoch 129/300
-  Step 1/1 - Train Loss: 17162.1777
-  --> Epoch 129 Summary: Train MSE: 17162.1777 | Val MSE: 17127.7021
-      Validation Clinical Metrics: PTV D95: 0.99 Gy | Bladder Mean: 1.84 Gy | Rectum Mean: 1.97 Gy
-  --> Saved new best model!
-\nEpoch 130/300
-  Step 1/1 - Train Loss: 17106.5156
-  --> Epoch 130 Summary: Train MSE: 17106.5156 | Val MSE: 17118.6357
-      Validation Clinical Metrics: PTV D95: 1.00 Gy | Bladder Mean: 1.84 Gy | Rectum Mean: 1.99 Gy
-  --> Saved new best model!
-\nEpoch 131/300
-  Step 1/1 - Train Loss: 5.4420
-  --> Epoch 131 Summary: Train MSE: 5.4420 | Val MSE: 17110.8975
-      Validation Clinical Metrics: PTV D95: 1.01 Gy | Bladder Mean: 1.85 Gy | Rectum Mean: 2.00 Gy
-  --> Saved new best model!
-\nEpoch 132/300
-  Step 1/1 - Train Loss: 16066.2139
-  --> Epoch 132 Summary: Train MSE: 16066.2139 | Val MSE: 17110.8975
-      Validation Clinical Metrics: PTV D95: 1.01 Gy | Bladder Mean: 1.85 Gy | Rectum Mean: 2.00 Gy
-\nEpoch 133/300
-  Step 1/1 - Train Loss: 17117.7070
-  --> Epoch 133 Summary: Train MSE: 17117.7070 | Val MSE: 17101.3467
-      Validation Clinical Metrics: PTV D95: 1.02 Gy | Bladder Mean: 1.86 Gy | Rectum Mean: 2.02 Gy
-  --> Saved new best model!
-\nEpoch 134/300
-  Step 1/1 - Train Loss: 17177.4844
-  --> Epoch 134 Summary: Train MSE: 17177.4844 | Val MSE: 17092.5654
-      Validation Clinical Metrics: PTV D95: 1.03 Gy | Bladder Mean: 1.86 Gy | Rectum Mean: 2.04 Gy
-  --> Saved new best model!
-\nEpoch 135/300
-  Step 1/1 - Train Loss: 27.8782
-  --> Epoch 135 Summary: Train MSE: 27.8782 | Val MSE: 17084.8916
-      Validation Clinical Metrics: PTV D95: 1.03 Gy | Bladder Mean: 1.87 Gy | Rectum Mean: 2.06 Gy
-  --> Saved new best model!
-\nEpoch 136/300
-  Step 1/1 - Train Loss: 16899.8906
-  --> Epoch 136 Summary: Train MSE: 16899.8906 | Val MSE: 17077.3320
-      Validation Clinical Metrics: PTV D95: 1.04 Gy | Bladder Mean: 1.87 Gy | Rectum Mean: 2.08 Gy
-  --> Saved new best model!
-\nEpoch 137/300
-  Step 1/1 - Train Loss: 9.4741
-  --> Epoch 137 Summary: Train MSE: 9.4741 | Val MSE: 17070.8457
-      Validation Clinical Metrics: PTV D95: 1.05 Gy | Bladder Mean: 1.88 Gy | Rectum Mean: 2.10 Gy
-  --> Saved new best model!
-\nEpoch 138/300
-  Step 1/1 - Train Loss: 16.9447
-  --> Epoch 138 Summary: Train MSE: 16.9447 | Val MSE: 17065.5264
-      Validation Clinical Metrics: PTV D95: 1.05 Gy | Bladder Mean: 1.88 Gy | Rectum Mean: 2.11 Gy
-  --> Saved new best model!
-\nEpoch 139/300
-  Step 1/1 - Train Loss: 16810.0020
-  --> Epoch 139 Summary: Train MSE: 16810.0020 | Val MSE: 17059.6377
-      Validation Clinical Metrics: PTV D95: 1.06 Gy | Bladder Mean: 1.89 Gy | Rectum Mean: 2.13 Gy
-  --> Saved new best model!
-\nEpoch 140/300
-  Step 1/1 - Train Loss: 46.8276
-  --> Epoch 140 Summary: Train MSE: 46.8276 | Val MSE: 17054.8320
-      Validation Clinical Metrics: PTV D95: 1.06 Gy | Bladder Mean: 1.89 Gy | Rectum Mean: 2.14 Gy
-  --> Saved new best model!
-\nEpoch 141/300
-  Step 1/1 - Train Loss: 11.5047
-  --> Epoch 141 Summary: Train MSE: 11.5047 | Val MSE: 17050.8350
-      Validation Clinical Metrics: PTV D95: 1.06 Gy | Bladder Mean: 1.90 Gy | Rectum Mean: 2.16 Gy
-  --> Saved new best model!
-\nEpoch 142/300
-  Step 1/1 - Train Loss: 2.0189
-  --> Epoch 142 Summary: Train MSE: 2.0189 | Val MSE: 17048.2061
-      Validation Clinical Metrics: PTV D95: 1.06 Gy | Bladder Mean: 1.90 Gy | Rectum Mean: 2.17 Gy
-  --> Saved new best model!
-\nEpoch 143/300
-  Step 1/1 - Train Loss: 4.1175
-  --> Epoch 143 Summary: Train MSE: 4.1175 | Val MSE: 17045.9746
-      Validation Clinical Metrics: PTV D95: 1.07 Gy | Bladder Mean: 1.90 Gy | Rectum Mean: 2.18 Gy
-  --> Saved new best model!
-\nEpoch 144/300
-  Step 1/1 - Train Loss: 17015.6445
-  --> Epoch 144 Summary: Train MSE: 17015.6445 | Val MSE: 17044.6553
-      Validation Clinical Metrics: PTV D95: 1.07 Gy | Bladder Mean: 1.90 Gy | Rectum Mean: 2.20 Gy
-  --> Saved new best model!
-\nEpoch 145/300
-  Step 1/1 - Train Loss: 3.6851
-  --> Epoch 145 Summary: Train MSE: 3.6851 | Val MSE: 17044.3555
-      Validation Clinical Metrics: PTV D95: 1.07 Gy | Bladder Mean: 1.91 Gy | Rectum Mean: 2.21 Gy
-  --> Saved new best model!
-\nEpoch 146/300
-  Step 1/1 - Train Loss: 16765.2051
-  --> Epoch 146 Summary: Train MSE: 16765.2051 | Val MSE: 17043.2637
-      Validation Clinical Metrics: PTV D95: 1.07 Gy | Bladder Mean: 1.92 Gy | Rectum Mean: 2.22 Gy
-  --> Saved new best model!
-\nEpoch 147/300
-  Step 1/1 - Train Loss: 47.7258
-  --> Epoch 147 Summary: Train MSE: 47.7258 | Val MSE: 17043.8369
-      Validation Clinical Metrics: PTV D95: 1.08 Gy | Bladder Mean: 1.92 Gy | Rectum Mean: 2.23 Gy
-\nEpoch 148/300
-  Step 1/1 - Train Loss: 2.6928
-  --> Epoch 148 Summary: Train MSE: 2.6928 | Val MSE: 17045.3389
-      Validation Clinical Metrics: PTV D95: 1.08 Gy | Bladder Mean: 1.93 Gy | Rectum Mean: 2.24 Gy
-\nEpoch 149/300
-  Step 1/1 - Train Loss: 16796.9336
-  --> Epoch 149 Summary: Train MSE: 16796.9336 | Val MSE: 17047.9678
-      Validation Clinical Metrics: PTV D95: 1.08 Gy | Bladder Mean: 1.93 Gy | Rectum Mean: 2.24 Gy
-\nEpoch 150/300
-  Step 1/1 - Train Loss: 16967.0371
-  --> Epoch 150 Summary: Train MSE: 16967.0371 | Val MSE: 17034.8926
-      Validation Clinical Metrics: PTV D95: 1.10 Gy | Bladder Mean: 1.94 Gy | Rectum Mean: 2.25 Gy
-  --> Saved new best model!
-\nEpoch 151/300
-  Step 1/1 - Train Loss: 16.8578
-  --> Epoch 151 Summary: Train MSE: 16.8578 | Val MSE: 17024.8730
-      Validation Clinical Metrics: PTV D95: 1.11 Gy | Bladder Mean: 1.95 Gy | Rectum Mean: 2.25 Gy
-  --> Saved new best model!
-\nEpoch 152/300
-  Step 1/1 - Train Loss: 19.6280
-  --> Epoch 152 Summary: Train MSE: 19.6280 | Val MSE: 17016.9561
-      Validation Clinical Metrics: PTV D95: 1.12 Gy | Bladder Mean: 1.96 Gy | Rectum Mean: 2.25 Gy
-  --> Saved new best model!
-\nEpoch 153/300
-  Step 1/1 - Train Loss: 16923.6445
-  --> Epoch 153 Summary: Train MSE: 16923.6445 | Val MSE: 17007.4688
-      Validation Clinical Metrics: PTV D95: 1.13 Gy | Bladder Mean: 1.97 Gy | Rectum Mean: 2.26 Gy
-  --> Saved new best model!
-\nEpoch 154/300
-  Step 1/1 - Train Loss: 22.2353
-  --> Epoch 154 Summary: Train MSE: 22.2353 | Val MSE: 16999.7793
-      Validation Clinical Metrics: PTV D95: 1.15 Gy | Bladder Mean: 1.98 Gy | Rectum Mean: 2.26 Gy
-  --> Saved new best model!
-\nEpoch 155/300
-  Step 1/1 - Train Loss: 16962.2598
-  --> Epoch 155 Summary: Train MSE: 16962.2598 | Val MSE: 16995.5537
-      Validation Clinical Metrics: PTV D95: 1.15 Gy | Bladder Mean: 1.99 Gy | Rectum Mean: 2.27 Gy
-  --> Saved new best model!
-\nEpoch 156/300
-  Step 1/1 - Train Loss: 54.2777
-  --> Epoch 156 Summary: Train MSE: 54.2777 | Val MSE: 16992.2871
-      Validation Clinical Metrics: PTV D95: 1.15 Gy | Bladder Mean: 1.99 Gy | Rectum Mean: 2.28 Gy
-  --> Saved new best model!
-\nEpoch 157/300
-  Step 1/1 - Train Loss: 16846.7539
-  --> Epoch 157 Summary: Train MSE: 16846.7539 | Val MSE: 16986.0742
-      Validation Clinical Metrics: PTV D95: 1.16 Gy | Bladder Mean: 2.00 Gy | Rectum Mean: 2.29 Gy
-  --> Saved new best model!
-\nEpoch 158/300
-  Step 1/1 - Train Loss: 11.8842
-  --> Epoch 158 Summary: Train MSE: 11.8842 | Val MSE: 16980.9355
-      Validation Clinical Metrics: PTV D95: 1.17 Gy | Bladder Mean: 2.00 Gy | Rectum Mean: 2.30 Gy
-  --> Saved new best model!
-\nEpoch 159/300
-  Step 1/1 - Train Loss: 16848.2324
-  --> Epoch 159 Summary: Train MSE: 16848.2324 | Val MSE: 16973.6738
-      Validation Clinical Metrics: PTV D95: 1.19 Gy | Bladder Mean: 2.02 Gy | Rectum Mean: 2.32 Gy
-  --> Saved new best model!
-\nEpoch 160/300
-  Step 1/1 - Train Loss: 16930.2578
-  --> Epoch 160 Summary: Train MSE: 16930.2578 | Val MSE: 16966.9658
-      Validation Clinical Metrics: PTV D95: 1.20 Gy | Bladder Mean: 2.03 Gy | Rectum Mean: 2.33 Gy
-  --> Saved new best model!
-\nEpoch 161/300
-  Step 1/1 - Train Loss: 18.4807
-  --> Epoch 161 Summary: Train MSE: 18.4807 | Val MSE: 16961.9385
-      Validation Clinical Metrics: PTV D95: 1.21 Gy | Bladder Mean: 2.03 Gy | Rectum Mean: 2.34 Gy
-  --> Saved new best model!
-\nEpoch 162/300
-  Step 1/1 - Train Loss: 4.5824
-  --> Epoch 162 Summary: Train MSE: 4.5824 | Val MSE: 16958.4180
-      Validation Clinical Metrics: PTV D95: 1.22 Gy | Bladder Mean: 2.04 Gy | Rectum Mean: 2.34 Gy
-  --> Saved new best model!
-\nEpoch 163/300
-  Step 1/1 - Train Loss: 15.0907
-  --> Epoch 163 Summary: Train MSE: 15.0907 | Val MSE: 16956.3770
-      Validation Clinical Metrics: PTV D95: 1.23 Gy | Bladder Mean: 2.04 Gy | Rectum Mean: 2.35 Gy
-  --> Saved new best model!
-\nEpoch 164/300
-  Step 1/1 - Train Loss: 16926.5098
-  --> Epoch 164 Summary: Train MSE: 16926.5098 | Val MSE: 16949.6396
-      Validation Clinical Metrics: PTV D95: 1.24 Gy | Bladder Mean: 2.05 Gy | Rectum Mean: 2.36 Gy
-  --> Saved new best model!
-\nEpoch 165/300
-  Step 1/1 - Train Loss: 16526.4922
-  --> Epoch 165 Summary: Train MSE: 16526.4922 | Val MSE: 16943.7998
-      Validation Clinical Metrics: PTV D95: 1.25 Gy | Bladder Mean: 2.06 Gy | Rectum Mean: 2.36 Gy
-  --> Saved new best model!
-\nEpoch 166/300
-  Step 1/1 - Train Loss: 16890.7598
-  --> Epoch 166 Summary: Train MSE: 16890.7598 | Val MSE: 16939.5498
-      Validation Clinical Metrics: PTV D95: 1.26 Gy | Bladder Mean: 2.08 Gy | Rectum Mean: 2.36 Gy
-  --> Saved new best model!
-\nEpoch 167/300
-  Step 1/1 - Train Loss: 55.3343
-  --> Epoch 167 Summary: Train MSE: 55.3343 | Val MSE: 16938.3965
-      Validation Clinical Metrics: PTV D95: 1.26 Gy | Bladder Mean: 2.09 Gy | Rectum Mean: 2.36 Gy
-  --> Saved new best model!
-\nEpoch 168/300
-  Step 1/1 - Train Loss: 5.2674
-  --> Epoch 168 Summary: Train MSE: 5.2674 | Val MSE: 16939.7529
-      Validation Clinical Metrics: PTV D95: 1.27 Gy | Bladder Mean: 2.09 Gy | Rectum Mean: 2.36 Gy
-\nEpoch 169/300
-  Step 1/1 - Train Loss: 10.1167
-  --> Epoch 169 Summary: Train MSE: 10.1167 | Val MSE: 16942.2363
-      Validation Clinical Metrics: PTV D95: 1.27 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.35 Gy
-\nEpoch 170/300
-  Step 1/1 - Train Loss: 24.8885
-  --> Epoch 170 Summary: Train MSE: 24.8885 | Val MSE: 16946.2002
-      Validation Clinical Metrics: PTV D95: 1.27 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.34 Gy
-\nEpoch 171/300
-  Step 1/1 - Train Loss: 17.3937
-  --> Epoch 171 Summary: Train MSE: 17.3937 | Val MSE: 16950.8408
-      Validation Clinical Metrics: PTV D95: 1.27 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.34 Gy
-\nEpoch 172/300
-  Step 1/1 - Train Loss: 16761.0898
-  --> Epoch 172 Summary: Train MSE: 16761.0898 | Val MSE: 16939.3076
-      Validation Clinical Metrics: PTV D95: 1.26 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.35 Gy
-\nEpoch 173/300
-  Step 1/1 - Train Loss: 16751.8125
-  --> Epoch 173 Summary: Train MSE: 16751.8125 | Val MSE: 16926.5498
-      Validation Clinical Metrics: PTV D95: 1.26 Gy | Bladder Mean: 2.11 Gy | Rectum Mean: 2.38 Gy
-  --> Saved new best model!
-\nEpoch 174/300
-  Step 1/1 - Train Loss: 16951.5957
-  --> Epoch 174 Summary: Train MSE: 16951.5957 | Val MSE: 16920.4463
-      Validation Clinical Metrics: PTV D95: 1.25 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.41 Gy
-  --> Saved new best model!
-\nEpoch 175/300
-  Step 1/1 - Train Loss: 17044.0078
-  --> Epoch 175 Summary: Train MSE: 17044.0078 | Val MSE: 16903.1973
-      Validation Clinical Metrics: PTV D95: 1.25 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.45 Gy
-  --> Saved new best model!
-\nEpoch 176/300
-  Step 1/1 - Train Loss: 16636.8379
-  --> Epoch 176 Summary: Train MSE: 16636.8379 | Val MSE: 16893.7354
-      Validation Clinical Metrics: PTV D95: 1.24 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.50 Gy
-  --> Saved new best model!
-\nEpoch 177/300
-  Step 1/1 - Train Loss: 17039.9180
-  --> Epoch 177 Summary: Train MSE: 17039.9180 | Val MSE: 16867.3711
-      Validation Clinical Metrics: PTV D95: 1.26 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.53 Gy
-  --> Saved new best model!
-\nEpoch 178/300
-  Step 1/1 - Train Loss: 16482.1758
-  --> Epoch 178 Summary: Train MSE: 16482.1758 | Val MSE: 16846.7217
-      Validation Clinical Metrics: PTV D95: 1.27 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.56 Gy
-  --> Saved new best model!
-\nEpoch 179/300
-  Step 1/1 - Train Loss: 10.6570
-  --> Epoch 179 Summary: Train MSE: 10.6570 | Val MSE: 16832.5039
-      Validation Clinical Metrics: PTV D95: 1.29 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 180/300
-  Step 1/1 - Train Loss: 19.3911
-  --> Epoch 180 Summary: Train MSE: 19.3911 | Val MSE: 16823.6064
-      Validation Clinical Metrics: PTV D95: 1.30 Gy | Bladder Mean: 2.10 Gy | Rectum Mean: 2.59 Gy
-  --> Saved new best model!
-\nEpoch 181/300
-  Step 1/1 - Train Loss: 16599.5996
-  --> Epoch 181 Summary: Train MSE: 16599.5996 | Val MSE: 16810.5068
-      Validation Clinical Metrics: PTV D95: 1.32 Gy | Bladder Mean: 2.11 Gy | Rectum Mean: 2.59 Gy
-  --> Saved new best model!
-\nEpoch 182/300
-  Step 1/1 - Train Loss: 8.9703
-  --> Epoch 182 Summary: Train MSE: 8.9703 | Val MSE: 16805.3828
-      Validation Clinical Metrics: PTV D95: 1.34 Gy | Bladder Mean: 2.12 Gy | Rectum Mean: 2.57 Gy
-  --> Saved new best model!
-\nEpoch 183/300
-  Step 1/1 - Train Loss: 25.8195
-  --> Epoch 183 Summary: Train MSE: 25.8195 | Val MSE: 16807.6992
-      Validation Clinical Metrics: PTV D95: 1.36 Gy | Bladder Mean: 2.12 Gy | Rectum Mean: 2.55 Gy
-\nEpoch 184/300
-  Step 1/1 - Train Loss: 9.1115
-  --> Epoch 184 Summary: Train MSE: 9.1115 | Val MSE: 16815.1123
-      Validation Clinical Metrics: PTV D95: 1.38 Gy | Bladder Mean: 2.13 Gy | Rectum Mean: 2.53 Gy
-\nEpoch 185/300
-  Step 1/1 - Train Loss: 13.0347
-  --> Epoch 185 Summary: Train MSE: 13.0347 | Val MSE: 16824.7773
-      Validation Clinical Metrics: PTV D95: 1.38 Gy | Bladder Mean: 2.13 Gy | Rectum Mean: 2.51 Gy
-\nEpoch 186/300
-  Step 1/1 - Train Loss: 16759.5293
-  --> Epoch 186 Summary: Train MSE: 16759.5293 | Val MSE: 16719.3418
-      Validation Clinical Metrics: PTV D95: 1.44 Gy | Bladder Mean: 2.15 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 187/300
-  Step 1/1 - Train Loss: 14.5846
-  --> Epoch 187 Summary: Train MSE: 14.5846 | Val MSE: 16671.7900
-      Validation Clinical Metrics: PTV D95: 1.47 Gy | Bladder Mean: 2.17 Gy | Rectum Mean: 2.60 Gy
-  --> Saved new best model!
-\nEpoch 188/300
-  Step 1/1 - Train Loss: 16902.5449
-  --> Epoch 188 Summary: Train MSE: 16902.5449 | Val MSE: 16660.1416
-      Validation Clinical Metrics: PTV D95: 1.49 Gy | Bladder Mean: 2.18 Gy | Rectum Mean: 2.59 Gy
-  --> Saved new best model!
-\nEpoch 189/300
-  Step 1/1 - Train Loss: 14.4871
-  --> Epoch 189 Summary: Train MSE: 14.4871 | Val MSE: 16658.5576
-      Validation Clinical Metrics: PTV D95: 1.49 Gy | Bladder Mean: 2.19 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 190/300
-  Step 1/1 - Train Loss: 16518.8301
-  --> Epoch 190 Summary: Train MSE: 16518.8301 | Val MSE: 16646.9736
-      Validation Clinical Metrics: PTV D95: 1.51 Gy | Bladder Mean: 2.20 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 191/300
-  Step 1/1 - Train Loss: 17009.5625
-  --> Epoch 191 Summary: Train MSE: 17009.5625 | Val MSE: 16638.3184
-      Validation Clinical Metrics: PTV D95: 1.53 Gy | Bladder Mean: 2.20 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 192/300
-  Step 1/1 - Train Loss: 16387.9629
-  --> Epoch 192 Summary: Train MSE: 16387.9629 | Val MSE: 16612.9805
-      Validation Clinical Metrics: PTV D95: 1.56 Gy | Bladder Mean: 2.21 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 193/300
-  Step 1/1 - Train Loss: 7.1930
-  --> Epoch 193 Summary: Train MSE: 7.1930 | Val MSE: 16597.1484
-      Validation Clinical Metrics: PTV D95: 1.58 Gy | Bladder Mean: 2.21 Gy | Rectum Mean: 2.57 Gy
-  --> Saved new best model!
-\nEpoch 194/300
-  Step 1/1 - Train Loss: 24.2367
-  --> Epoch 194 Summary: Train MSE: 24.2367 | Val MSE: 16589.5391
-      Validation Clinical Metrics: PTV D95: 1.60 Gy | Bladder Mean: 2.21 Gy | Rectum Mean: 2.56 Gy
-  --> Saved new best model!
-\nEpoch 195/300
-  Step 1/1 - Train Loss: 27.3216
-  --> Epoch 195 Summary: Train MSE: 27.3216 | Val MSE: 16590.3926
-      Validation Clinical Metrics: PTV D95: 1.62 Gy | Bladder Mean: 2.21 Gy | Rectum Mean: 2.55 Gy
-\nEpoch 196/300
-  Step 1/1 - Train Loss: 16469.5195
-  --> Epoch 196 Summary: Train MSE: 16469.5195 | Val MSE: 16594.6641
-      Validation Clinical Metrics: PTV D95: 1.62 Gy | Bladder Mean: 2.20 Gy | Rectum Mean: 2.54 Gy
-\nEpoch 197/300
-  Step 1/1 - Train Loss: 2.3791
-  --> Epoch 197 Summary: Train MSE: 2.3791 | Val MSE: 16615.0547
-      Validation Clinical Metrics: PTV D95: 1.62 Gy | Bladder Mean: 2.20 Gy | Rectum Mean: 2.53 Gy
-\nEpoch 198/300
-  Step 1/1 - Train Loss: 3.7348
-  --> Epoch 198 Summary: Train MSE: 3.7348 | Val MSE: 16646.6289
-      Validation Clinical Metrics: PTV D95: 1.60 Gy | Bladder Mean: 2.19 Gy | Rectum Mean: 2.52 Gy
-\nEpoch 199/300
-  Step 1/1 - Train Loss: 16212.4590
-  --> Epoch 199 Summary: Train MSE: 16212.4590 | Val MSE: 16562.9619
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.21 Gy | Rectum Mean: 2.57 Gy
-  --> Saved new best model!
-\nEpoch 200/300
-  Step 1/1 - Train Loss: 17112.5391
-  --> Epoch 200 Summary: Train MSE: 17112.5391 | Val MSE: 16537.0557
-      Validation Clinical Metrics: PTV D95: 1.62 Gy | Bladder Mean: 2.22 Gy | Rectum Mean: 2.60 Gy
-  --> Saved new best model!
-\nEpoch 201/300
-  Step 1/1 - Train Loss: 16362.7295
-  --> Epoch 201 Summary: Train MSE: 16362.7295 | Val MSE: 16539.4873
-      Validation Clinical Metrics: PTV D95: 1.62 Gy | Bladder Mean: 2.24 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 202/300
-  Step 1/1 - Train Loss: 16729.4102
-  --> Epoch 202 Summary: Train MSE: 16729.4102 | Val MSE: 16539.6250
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.26 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 203/300
-  Step 1/1 - Train Loss: 2.8311
-  --> Epoch 203 Summary: Train MSE: 2.8311 | Val MSE: 16542.8008
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.27 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 204/300
-  Step 1/1 - Train Loss: 10.7643
-  --> Epoch 204 Summary: Train MSE: 10.7643 | Val MSE: 16547.4834
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.28 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 205/300
-  Step 1/1 - Train Loss: 23.4683
-  --> Epoch 205 Summary: Train MSE: 23.4683 | Val MSE: 16552.7520
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.29 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 206/300
-  Step 1/1 - Train Loss: 9.8256
-  --> Epoch 206 Summary: Train MSE: 9.8256 | Val MSE: 16559.0596
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.30 Gy | Rectum Mean: 2.61 Gy
-\nEpoch 207/300
-  Step 1/1 - Train Loss: 16410.8066
-  --> Epoch 207 Summary: Train MSE: 16410.8066 | Val MSE: 16549.8115
-      Validation Clinical Metrics: PTV D95: 1.63 Gy | Bladder Mean: 2.30 Gy | Rectum Mean: 2.62 Gy
-\nEpoch 208/300
-  Step 1/1 - Train Loss: 8.0537
-  --> Epoch 208 Summary: Train MSE: 8.0537 | Val MSE: 16542.6289
-      Validation Clinical Metrics: PTV D95: 1.64 Gy | Bladder Mean: 2.30 Gy | Rectum Mean: 2.63 Gy
-\nEpoch 209/300
-  Step 1/1 - Train Loss: 16602.6953
-  --> Epoch 209 Summary: Train MSE: 16602.6953 | Val MSE: 16527.3613
-      Validation Clinical Metrics: PTV D95: 1.65 Gy | Bladder Mean: 2.31 Gy | Rectum Mean: 2.63 Gy
-  --> Saved new best model!
-\nEpoch 210/300
-  Step 1/1 - Train Loss: 29.7418
-  --> Epoch 210 Summary: Train MSE: 29.7418 | Val MSE: 16515.3799
-      Validation Clinical Metrics: PTV D95: 1.66 Gy | Bladder Mean: 2.31 Gy | Rectum Mean: 2.62 Gy
-  --> Saved new best model!
-\nEpoch 211/300
-  Step 1/1 - Train Loss: 15635.5342
-  --> Epoch 211 Summary: Train MSE: 15635.5342 | Val MSE: 16496.9805
-      Validation Clinical Metrics: PTV D95: 1.70 Gy | Bladder Mean: 2.31 Gy | Rectum Mean: 2.60 Gy
-  --> Saved new best model!
-\nEpoch 212/300
-  Step 1/1 - Train Loss: 16756.7305
-  --> Epoch 212 Summary: Train MSE: 16756.7305 | Val MSE: 16473.9062
-      Validation Clinical Metrics: PTV D95: 1.73 Gy | Bladder Mean: 2.30 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 213/300
-  Step 1/1 - Train Loss: 16768.6484
-  --> Epoch 213 Summary: Train MSE: 16768.6484 | Val MSE: 16436.5352
-      Validation Clinical Metrics: PTV D95: 1.76 Gy | Bladder Mean: 2.31 Gy | Rectum Mean: 2.58 Gy
-  --> Saved new best model!
-\nEpoch 214/300
-  Step 1/1 - Train Loss: 16430.7988
-  --> Epoch 214 Summary: Train MSE: 16430.7988 | Val MSE: 16386.6777
-      Validation Clinical Metrics: PTV D95: 1.77 Gy | Bladder Mean: 2.34 Gy | Rectum Mean: 2.61 Gy
-  --> Saved new best model!
-\nEpoch 215/300
-  Step 1/1 - Train Loss: 16475.0195
-  --> Epoch 215 Summary: Train MSE: 16475.0195 | Val MSE: 16340.9360
-      Validation Clinical Metrics: PTV D95: 1.79 Gy | Bladder Mean: 2.33 Gy | Rectum Mean: 2.64 Gy
-  --> Saved new best model!
-\nEpoch 216/300
-  Step 1/1 - Train Loss: 65.6177
-  --> Epoch 216 Summary: Train MSE: 65.6177 | Val MSE: 16320.1514
-      Validation Clinical Metrics: PTV D95: 1.80 Gy | Bladder Mean: 2.32 Gy | Rectum Mean: 2.66 Gy
-  --> Saved new best model!
-\nEpoch 217/300
-  Step 1/1 - Train Loss: 2.4257
-  --> Epoch 217 Summary: Train MSE: 2.4257 | Val MSE: 16320.9629
-      Validation Clinical Metrics: PTV D95: 1.80 Gy | Bladder Mean: 2.32 Gy | Rectum Mean: 2.68 Gy
-\nEpoch 218/300
-  Step 1/1 - Train Loss: 15788.9951
-  --> Epoch 218 Summary: Train MSE: 15788.9951 | Val MSE: 16281.1885
-      Validation Clinical Metrics: PTV D95: 1.85 Gy | Bladder Mean: 2.33 Gy | Rectum Mean: 2.65 Gy
-  --> Saved new best model!
-\nEpoch 219/300
-  Step 1/1 - Train Loss: 16451.4570
-  --> Epoch 219 Summary: Train MSE: 16451.4570 | Val MSE: 16255.6670
-      Validation Clinical Metrics: PTV D95: 1.88 Gy | Bladder Mean: 2.35 Gy | Rectum Mean: 2.64 Gy
-  --> Saved new best model!
-\nEpoch 220/300
-  Step 1/1 - Train Loss: 16136.9932
-  --> Epoch 220 Summary: Train MSE: 16136.9932 | Val MSE: 16239.1372
-      Validation Clinical Metrics: PTV D95: 1.89 Gy | Bladder Mean: 2.36 Gy | Rectum Mean: 2.65 Gy
-  --> Saved new best model!
-\nEpoch 221/300
-  Step 1/1 - Train Loss: 16625.8594
-  --> Epoch 221 Summary: Train MSE: 16625.8594 | Val MSE: 16211.7158
-      Validation Clinical Metrics: PTV D95: 1.93 Gy | Bladder Mean: 2.37 Gy | Rectum Mean: 2.63 Gy
-  --> Saved new best model!
-\nEpoch 222/300
-  Step 1/1 - Train Loss: 16845.8496
-  --> Epoch 222 Summary: Train MSE: 16845.8496 | Val MSE: 16217.8506
-      Validation Clinical Metrics: PTV D95: 1.95 Gy | Bladder Mean: 2.39 Gy | Rectum Mean: 2.60 Gy
-\nEpoch 223/300
-  Step 1/1 - Train Loss: 28.0864
-  --> Epoch 223 Summary: Train MSE: 28.0864 | Val MSE: 16261.9531
-      Validation Clinical Metrics: PTV D95: 1.94 Gy | Bladder Mean: 2.40 Gy | Rectum Mean: 2.58 Gy
-\nEpoch 224/300
-  Step 1/1 - Train Loss: 37.7122
-  --> Epoch 224 Summary: Train MSE: 37.7122 | Val MSE: 16327.5283
-      Validation Clinical Metrics: PTV D95: 1.91 Gy | Bladder Mean: 2.41 Gy | Rectum Mean: 2.57 Gy
-\nEpoch 225/300
-  Step 1/1 - Train Loss: 16651.8945
-  --> Epoch 225 Summary: Train MSE: 16651.8945 | Val MSE: 16282.6191
-      Validation Clinical Metrics: PTV D95: 1.93 Gy | Bladder Mean: 2.42 Gy | Rectum Mean: 2.58 Gy
-\nEpoch 226/300
-  Step 1/1 - Train Loss: 5.6828
-  --> Epoch 226 Summary: Train MSE: 5.6828 | Val MSE: 16245.4424
-      Validation Clinical Metrics: PTV D95: 1.95 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 2.60 Gy
-\nEpoch 227/300
-  Step 1/1 - Train Loss: 16775.4492
-  --> Epoch 227 Summary: Train MSE: 16775.4492 | Val MSE: 16216.4521
-      Validation Clinical Metrics: PTV D95: 1.96 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.63 Gy
-\nEpoch 228/300
-  Step 1/1 - Train Loss: 12.0877
-  --> Epoch 228 Summary: Train MSE: 12.0877 | Val MSE: 16253.4072
-      Validation Clinical Metrics: PTV D95: 1.92 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 2.67 Gy
-\nEpoch 229/300
-  Step 1/1 - Train Loss: 27.1066
-  --> Epoch 229 Summary: Train MSE: 27.1066 | Val MSE: 16303.0513
-      Validation Clinical Metrics: PTV D95: 1.88 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.72 Gy
-\nEpoch 230/300
-  Step 1/1 - Train Loss: 17.2658
-  --> Epoch 230 Summary: Train MSE: 17.2658 | Val MSE: 16349.0488
-      Validation Clinical Metrics: PTV D95: 1.84 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.75 Gy
-\nEpoch 231/300
-  Step 1/1 - Train Loss: 11.0944
-  --> Epoch 231 Summary: Train MSE: 11.0944 | Val MSE: 16389.7944
-      Validation Clinical Metrics: PTV D95: 1.81 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.77 Gy
-\nEpoch 232/300
-  Step 1/1 - Train Loss: 5.2128
-  --> Epoch 232 Summary: Train MSE: 5.2128 | Val MSE: 16422.8916
-      Validation Clinical Metrics: PTV D95: 1.79 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.79 Gy
-\nEpoch 233/300
-  Step 1/1 - Train Loss: 16749.9219
-  --> Epoch 233 Summary: Train MSE: 16749.9219 | Val MSE: 16437.4463
-      Validation Clinical Metrics: PTV D95: 1.78 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.81 Gy
-\nEpoch 234/300
-  Step 1/1 - Train Loss: 14.3606
-  --> Epoch 234 Summary: Train MSE: 14.3606 | Val MSE: 16449.3613
-      Validation Clinical Metrics: PTV D95: 1.77 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 2.82 Gy
-\nEpoch 235/300
-  Step 1/1 - Train Loss: 56.7093
-  --> Epoch 235 Summary: Train MSE: 56.7093 | Val MSE: 16459.9160
-      Validation Clinical Metrics: PTV D95: 1.75 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 2.83 Gy
-\nEpoch 236/300
-  Step 1/1 - Train Loss: 6.2922
-  --> Epoch 236 Summary: Train MSE: 6.2922 | Val MSE: 16468.9854
-      Validation Clinical Metrics: PTV D95: 1.74 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 2.85 Gy
-\nEpoch 237/300
-  Step 1/1 - Train Loss: 16493.6387
-  --> Epoch 237 Summary: Train MSE: 16493.6387 | Val MSE: 16464.5811
-      Validation Clinical Metrics: PTV D95: 1.74 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.86 Gy
-\nEpoch 238/300
-  Step 1/1 - Train Loss: 3.1346
-  --> Epoch 238 Summary: Train MSE: 3.1346 | Val MSE: 16461.6221
-      Validation Clinical Metrics: PTV D95: 1.74 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.88 Gy
-\nEpoch 239/300
-  Step 1/1 - Train Loss: 16429.8691
-  --> Epoch 239 Summary: Train MSE: 16429.8691 | Val MSE: 16454.7500
-      Validation Clinical Metrics: PTV D95: 1.74 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 2.90 Gy
-\nEpoch 240/300
-  Step 1/1 - Train Loss: 11.2514
-  --> Epoch 240 Summary: Train MSE: 11.2514 | Val MSE: 16451.1465
-      Validation Clinical Metrics: PTV D95: 1.73 Gy | Bladder Mean: 2.47 Gy | Rectum Mean: 2.92 Gy
-\nEpoch 241/300
-  Step 1/1 - Train Loss: 14.1813
-  --> Epoch 241 Summary: Train MSE: 14.1813 | Val MSE: 16449.2490
-      Validation Clinical Metrics: PTV D95: 1.72 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.94 Gy
-\nEpoch 242/300
-  Step 1/1 - Train Loss: 16496.3672
-  --> Epoch 242 Summary: Train MSE: 16496.3672 | Val MSE: 16441.4932
-      Validation Clinical Metrics: PTV D95: 1.72 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.96 Gy
-\nEpoch 243/300
-  Step 1/1 - Train Loss: 16566.9941
-  --> Epoch 243 Summary: Train MSE: 16566.9941 | Val MSE: 16434.1270
-      Validation Clinical Metrics: PTV D95: 1.72 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 2.97 Gy
-\nEpoch 244/300
-  Step 1/1 - Train Loss: 16526.4531
-  --> Epoch 244 Summary: Train MSE: 16526.4531 | Val MSE: 16415.1777
-      Validation Clinical Metrics: PTV D95: 1.74 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 2.99 Gy
-\nEpoch 245/300
-  Step 1/1 - Train Loss: 16373.6104
-  --> Epoch 245 Summary: Train MSE: 16373.6104 | Val MSE: 16394.3672
-      Validation Clinical Metrics: PTV D95: 1.76 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 3.01 Gy
-\nEpoch 246/300
-  Step 1/1 - Train Loss: 16411.4453
-  --> Epoch 246 Summary: Train MSE: 16411.4453 | Val MSE: 16366.7456
-      Validation Clinical Metrics: PTV D95: 1.78 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 3.03 Gy
-\nEpoch 247/300
-  Step 1/1 - Train Loss: 16663.2480
-  --> Epoch 247 Summary: Train MSE: 16663.2480 | Val MSE: 16328.0981
-      Validation Clinical Metrics: PTV D95: 1.83 Gy | Bladder Mean: 2.44 Gy | Rectum Mean: 3.04 Gy
-\nEpoch 248/300
-  Step 1/1 - Train Loss: 15844.8359
-  --> Epoch 248 Summary: Train MSE: 15844.8359 | Val MSE: 16273.2568
-      Validation Clinical Metrics: PTV D95: 1.90 Gy | Bladder Mean: 2.44 Gy | Rectum Mean: 3.03 Gy
-\nEpoch 249/300
-  Step 1/1 - Train Loss: 16680.2344
-  --> Epoch 249 Summary: Train MSE: 16680.2344 | Val MSE: 16231.3330
-      Validation Clinical Metrics: PTV D95: 1.95 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 3.02 Gy
-\nEpoch 250/300
-  Step 1/1 - Train Loss: 13.0095
-  --> Epoch 250 Summary: Train MSE: 13.0095 | Val MSE: 16203.8389
-      Validation Clinical Metrics: PTV D95: 2.00 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 3.01 Gy
-  --> Saved new best model!
-\nEpoch 251/300
-  Step 1/1 - Train Loss: 10.9578
-  --> Epoch 251 Summary: Train MSE: 10.9578 | Val MSE: 16190.1284
-      Validation Clinical Metrics: PTV D95: 2.03 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 2.98 Gy
-  --> Saved new best model!
-\nEpoch 252/300
-  Step 1/1 - Train Loss: 16682.2168
-  --> Epoch 252 Summary: Train MSE: 16682.2168 | Val MSE: 16167.2524
-      Validation Clinical Metrics: PTV D95: 2.07 Gy | Bladder Mean: 2.44 Gy | Rectum Mean: 2.97 Gy
-  --> Saved new best model!
-\nEpoch 253/300
-  Step 1/1 - Train Loss: 37.2374
-  --> Epoch 253 Summary: Train MSE: 37.2374 | Val MSE: 16153.5220
-      Validation Clinical Metrics: PTV D95: 2.10 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 2.95 Gy
-  --> Saved new best model!
-\nEpoch 254/300
-  Step 1/1 - Train Loss: 15.2612
-  --> Epoch 254 Summary: Train MSE: 15.2612 | Val MSE: 16146.5181
-      Validation Clinical Metrics: PTV D95: 2.13 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.93 Gy
-  --> Saved new best model!
-\nEpoch 255/300
-  Step 1/1 - Train Loss: 16482.4355
-  --> Epoch 255 Summary: Train MSE: 16482.4355 | Val MSE: 16159.9434
-      Validation Clinical Metrics: PTV D95: 2.10 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 2.96 Gy
-\nEpoch 256/300
-  Step 1/1 - Train Loss: 16188.8965
-  --> Epoch 256 Summary: Train MSE: 16188.8965 | Val MSE: 16193.2515
-      Validation Clinical Metrics: PTV D95: 2.06 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.99 Gy
-\nEpoch 257/300
-  Step 1/1 - Train Loss: 13.2100
-  --> Epoch 257 Summary: Train MSE: 13.2100 | Val MSE: 16247.5806
-      Validation Clinical Metrics: PTV D95: 1.98 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 3.01 Gy
-\nEpoch 258/300
-  Step 1/1 - Train Loss: 62.5230
-  --> Epoch 258 Summary: Train MSE: 62.5230 | Val MSE: 16310.9512
-      Validation Clinical Metrics: PTV D95: 1.89 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 3.03 Gy
-\nEpoch 259/300
-  Step 1/1 - Train Loss: 16829.8828
-  --> Epoch 259 Summary: Train MSE: 16829.8828 | Val MSE: 16391.7500
-      Validation Clinical Metrics: PTV D95: 1.78 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 3.03 Gy
-\nEpoch 260/300
-  Step 1/1 - Train Loss: 15522.6934
-  --> Epoch 260 Summary: Train MSE: 15522.6934 | Val MSE: 16358.7700
-      Validation Clinical Metrics: PTV D95: 1.76 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 3.07 Gy
-\nEpoch 261/300
-  Step 1/1 - Train Loss: 16550.6035
-  --> Epoch 261 Summary: Train MSE: 16550.6035 | Val MSE: 16233.8647
-      Validation Clinical Metrics: PTV D95: 1.84 Gy | Bladder Mean: 2.47 Gy | Rectum Mean: 3.12 Gy
-\nEpoch 262/300
-  Step 1/1 - Train Loss: 16122.6406
-  --> Epoch 262 Summary: Train MSE: 16122.6406 | Val MSE: 16100.5718
-      Validation Clinical Metrics: PTV D95: 2.01 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 3.14 Gy
-  --> Saved new best model!
-\nEpoch 263/300
-  Step 1/1 - Train Loss: 4.5372
-  --> Epoch 263 Summary: Train MSE: 4.5372 | Val MSE: 16056.5708
-      Validation Clinical Metrics: PTV D95: 2.07 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 3.14 Gy
-  --> Saved new best model!
-\nEpoch 264/300
-  Step 1/1 - Train Loss: 15304.4727
-  --> Epoch 264 Summary: Train MSE: 15304.4727 | Val MSE: 16005.0059
-      Validation Clinical Metrics: PTV D95: 2.11 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 3.15 Gy
-  --> Saved new best model!
-\nEpoch 265/300
-  Step 1/1 - Train Loss: 6.6101
-  --> Epoch 265 Summary: Train MSE: 6.6101 | Val MSE: 15962.6802
-      Validation Clinical Metrics: PTV D95: 2.14 Gy | Bladder Mean: 2.47 Gy | Rectum Mean: 3.15 Gy
-  --> Saved new best model!
-\nEpoch 266/300
-  Step 1/1 - Train Loss: 12.4940
-  --> Epoch 266 Summary: Train MSE: 12.4940 | Val MSE: 15930.1182
-      Validation Clinical Metrics: PTV D95: 2.16 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 3.14 Gy
-  --> Saved new best model!
-\nEpoch 267/300
-  Step 1/1 - Train Loss: 15463.8291
-  --> Epoch 267 Summary: Train MSE: 15463.8291 | Val MSE: 15916.9751
-      Validation Clinical Metrics: PTV D95: 2.15 Gy | Bladder Mean: 2.44 Gy | Rectum Mean: 3.15 Gy
-  --> Saved new best model!
-\nEpoch 268/300
-  Step 1/1 - Train Loss: 16255.6387
-  --> Epoch 268 Summary: Train MSE: 16255.6387 | Val MSE: 15929.4111
-      Validation Clinical Metrics: PTV D95: 2.12 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 3.12 Gy
-\nEpoch 269/300
-  Step 1/1 - Train Loss: 15753.1309
-  --> Epoch 269 Summary: Train MSE: 15753.1309 | Val MSE: 16024.4980
-      Validation Clinical Metrics: PTV D95: 1.95 Gy | Bladder Mean: 2.41 Gy | Rectum Mean: 3.08 Gy
-\nEpoch 270/300
-  Step 1/1 - Train Loss: 16568.0527
-  --> Epoch 270 Summary: Train MSE: 16568.0527 | Val MSE: 16049.2490
-      Validation Clinical Metrics: PTV D95: 1.87 Gy | Bladder Mean: 2.41 Gy | Rectum Mean: 3.11 Gy
-\nEpoch 271/300
-  Step 1/1 - Train Loss: 16180.2617
-  --> Epoch 271 Summary: Train MSE: 16180.2617 | Val MSE: 16103.5718
-      Validation Clinical Metrics: PTV D95: 1.77 Gy | Bladder Mean: 2.41 Gy | Rectum Mean: 3.12 Gy
-\nEpoch 272/300
-  Step 1/1 - Train Loss: 14.2892
-  --> Epoch 272 Summary: Train MSE: 14.2892 | Val MSE: 16165.1807
-      Validation Clinical Metrics: PTV D95: 1.69 Gy | Bladder Mean: 2.40 Gy | Rectum Mean: 3.11 Gy
-\nEpoch 273/300
-  Step 1/1 - Train Loss: 16188.4287
-  --> Epoch 273 Summary: Train MSE: 16188.4287 | Val MSE: 15943.6890
-      Validation Clinical Metrics: PTV D95: 1.90 Gy | Bladder Mean: 2.41 Gy | Rectum Mean: 3.12 Gy
-\nEpoch 274/300
-  Step 1/1 - Train Loss: 16118.7510
-  --> Epoch 274 Summary: Train MSE: 16118.7510 | Val MSE: 15759.2515
-      Validation Clinical Metrics: PTV D95: 2.24 Gy | Bladder Mean: 2.44 Gy | Rectum Mean: 3.08 Gy
-  --> Saved new best model!
-\nEpoch 275/300
-  Step 1/1 - Train Loss: 14.4179
-  --> Epoch 275 Summary: Train MSE: 14.4179 | Val MSE: 15744.2046
-      Validation Clinical Metrics: PTV D95: 2.35 Gy | Bladder Mean: 2.47 Gy | Rectum Mean: 3.04 Gy
-  --> Saved new best model!
-\nEpoch 276/300
-  Step 1/1 - Train Loss: 4.6881
-  --> Epoch 276 Summary: Train MSE: 4.6881 | Val MSE: 15795.9937
-      Validation Clinical Metrics: PTV D95: 2.35 Gy | Bladder Mean: 2.52 Gy | Rectum Mean: 3.01 Gy
-\nEpoch 277/300
-  Step 1/1 - Train Loss: 36.4476
-  --> Epoch 277 Summary: Train MSE: 36.4476 | Val MSE: 15864.6318
-      Validation Clinical Metrics: PTV D95: 2.32 Gy | Bladder Mean: 2.56 Gy | Rectum Mean: 2.99 Gy
-\nEpoch 278/300
-  Step 1/1 - Train Loss: 15631.4912
-  --> Epoch 278 Summary: Train MSE: 15631.4912 | Val MSE: 15845.3564
-      Validation Clinical Metrics: PTV D95: 2.33 Gy | Bladder Mean: 2.57 Gy | Rectum Mean: 2.98 Gy
-\nEpoch 279/300
-  Step 1/1 - Train Loss: 62.0364
-  --> Epoch 279 Summary: Train MSE: 62.0364 | Val MSE: 15832.1587
-      Validation Clinical Metrics: PTV D95: 2.34 Gy | Bladder Mean: 2.58 Gy | Rectum Mean: 2.96 Gy
-\nEpoch 280/300
-  Step 1/1 - Train Loss: 15747.5557
-  --> Epoch 280 Summary: Train MSE: 15747.5557 | Val MSE: 15765.8667
-      Validation Clinical Metrics: PTV D95: 2.37 Gy | Bladder Mean: 2.57 Gy | Rectum Mean: 2.96 Gy
-\nEpoch 281/300
-  Step 1/1 - Train Loss: 16190.7041
-  --> Epoch 281 Summary: Train MSE: 16190.7041 | Val MSE: 15685.6372
-      Validation Clinical Metrics: PTV D95: 2.42 Gy | Bladder Mean: 2.54 Gy | Rectum Mean: 2.94 Gy
-  --> Saved new best model!
-\nEpoch 282/300
-  Step 1/1 - Train Loss: 8.4312
-  --> Epoch 282 Summary: Train MSE: 8.4312 | Val MSE: 15631.0552
-      Validation Clinical Metrics: PTV D95: 2.45 Gy | Bladder Mean: 2.52 Gy | Rectum Mean: 2.91 Gy
-  --> Saved new best model!
-\nEpoch 283/300
-  Step 1/1 - Train Loss: 53.1933
-  --> Epoch 283 Summary: Train MSE: 53.1933 | Val MSE: 15599.0688
-      Validation Clinical Metrics: PTV D95: 2.46 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.89 Gy
-  --> Saved new best model!
-\nEpoch 284/300
-  Step 1/1 - Train Loss: 49.4065
-  --> Epoch 284 Summary: Train MSE: 49.4065 | Val MSE: 15585.4136
-      Validation Clinical Metrics: PTV D95: 2.46 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.86 Gy
-  --> Saved new best model!
-\nEpoch 285/300
-  Step 1/1 - Train Loss: 11.8771
-  --> Epoch 285 Summary: Train MSE: 11.8771 | Val MSE: 15584.6040
-      Validation Clinical Metrics: PTV D95: 2.46 Gy | Bladder Mean: 2.43 Gy | Rectum Mean: 2.83 Gy
-  --> Saved new best model!
-\nEpoch 286/300
-  Step 1/1 - Train Loss: 16348.5078
-  --> Epoch 286 Summary: Train MSE: 16348.5078 | Val MSE: 15566.4268
-      Validation Clinical Metrics: PTV D95: 2.48 Gy | Bladder Mean: 2.45 Gy | Rectum Mean: 2.84 Gy
-  --> Saved new best model!
-\nEpoch 287/300
-  Step 1/1 - Train Loss: 3.2873
-  --> Epoch 287 Summary: Train MSE: 3.2873 | Val MSE: 15559.5923
-      Validation Clinical Metrics: PTV D95: 2.49 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 2.85 Gy
-  --> Saved new best model!
-\nEpoch 288/300
-  Step 1/1 - Train Loss: 15525.8789
-  --> Epoch 288 Summary: Train MSE: 15525.8789 | Val MSE: 15511.6675
-      Validation Clinical Metrics: PTV D95: 2.52 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.88 Gy
-  --> Saved new best model!
-\nEpoch 289/300
-  Step 1/1 - Train Loss: 16011.5234
-  --> Epoch 289 Summary: Train MSE: 16011.5234 | Val MSE: 15464.4722
-      Validation Clinical Metrics: PTV D95: 2.56 Gy | Bladder Mean: 2.51 Gy | Rectum Mean: 2.90 Gy
-  --> Saved new best model!
-\nEpoch 290/300
-  Step 1/1 - Train Loss: 2.1690
-  --> Epoch 290 Summary: Train MSE: 2.1690 | Val MSE: 15458.6562
-      Validation Clinical Metrics: PTV D95: 2.56 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 2.90 Gy
-  --> Saved new best model!
-\nEpoch 291/300
-  Step 1/1 - Train Loss: 15764.9424
-  --> Epoch 291 Summary: Train MSE: 15764.9424 | Val MSE: 15457.9185
-      Validation Clinical Metrics: PTV D95: 2.55 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 2.92 Gy
-  --> Saved new best model!
-\nEpoch 292/300
-  Step 1/1 - Train Loss: 15773.4365
-  --> Epoch 292 Summary: Train MSE: 15773.4365 | Val MSE: 15424.7148
-      Validation Clinical Metrics: PTV D95: 2.59 Gy | Bladder Mean: 2.49 Gy | Rectum Mean: 2.96 Gy
-  --> Saved new best model!
-\nEpoch 293/300
-  Step 1/1 - Train Loss: 12.8650
-  --> Epoch 293 Summary: Train MSE: 12.8650 | Val MSE: 15417.7139
-      Validation Clinical Metrics: PTV D95: 2.59 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 3.00 Gy
-  --> Saved new best model!
-\nEpoch 294/300
-  Step 1/1 - Train Loss: 16236.8242
-  --> Epoch 294 Summary: Train MSE: 16236.8242 | Val MSE: 15382.1270
-      Validation Clinical Metrics: PTV D95: 2.61 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 3.04 Gy
-  --> Saved new best model!
-\nEpoch 295/300
-  Step 1/1 - Train Loss: 14.0492
-  --> Epoch 295 Summary: Train MSE: 14.0492 | Val MSE: 15379.5513
-      Validation Clinical Metrics: PTV D95: 2.58 Gy | Bladder Mean: 2.51 Gy | Rectum Mean: 3.07 Gy
-  --> Saved new best model!
-\nEpoch 296/300
-  Step 1/1 - Train Loss: 15861.6914
-  --> Epoch 296 Summary: Train MSE: 15861.6914 | Val MSE: 15360.4624
-      Validation Clinical Metrics: PTV D95: 2.55 Gy | Bladder Mean: 2.51 Gy | Rectum Mean: 3.13 Gy
-  --> Saved new best model!
-\nEpoch 297/300
-  Step 1/1 - Train Loss: 15751.1689
-  --> Epoch 297 Summary: Train MSE: 15751.1689 | Val MSE: 15325.3198
-      Validation Clinical Metrics: PTV D95: 2.55 Gy | Bladder Mean: 2.50 Gy | Rectum Mean: 3.18 Gy
-  --> Saved new best model!
-\nEpoch 298/300
-  Step 1/1 - Train Loss: 15548.0850
-  --> Epoch 298 Summary: Train MSE: 15548.0850 | Val MSE: 15307.6406
-      Validation Clinical Metrics: PTV D95: 2.52 Gy | Bladder Mean: 2.47 Gy | Rectum Mean: 3.21 Gy
-  --> Saved new best model!
-\nEpoch 299/300
-  Step 1/1 - Train Loss: 15685.6162
-  --> Epoch 299 Summary: Train MSE: 15685.6162 | Val MSE: 15266.0649
-      Validation Clinical Metrics: PTV D95: 2.53 Gy | Bladder Mean: 2.48 Gy | Rectum Mean: 3.26 Gy
-  --> Saved new best model!
-\nEpoch 300/300
-  Step 1/1 - Train Loss: 15446.5332
-  --> Epoch 300 Summary: Train MSE: 15446.5332 | Val MSE: 15309.4517
-      Validation Clinical Metrics: PTV D95: 2.44 Gy | Bladder Mean: 2.46 Gy | Rectum Mean: 3.25 Gy
+Step 7/9 - Train Loss: 0.1288
+  Step 8/9 - Train Loss: 0.1327
+  Step 9/9 - Train Loss: 0.1557
+  --> Epoch 23 Summary: Train MSE: 0.1327 | Val MSE: 0.1504
+      Validation Clinical Metrics: PTV D95: 17.15 Gy | Bladder Mean: 32.40 Gy | Rectum Mean: 32.61 Gy
+  --> Saved new best model!
+\nEpoch 24/100
+  Step 1/9 - Train Loss: 0.1539
+  Step 2/9 - Train Loss: 0.1266
+  Step 3/9 - Train Loss: 0.1139
+  Step 4/9 - Train Loss: 0.1407
+  Step 5/9 - Train Loss: 0.1317
+  Step 6/9 - Train Loss: 0.1131
+  Step 7/9 - Train Loss: 0.1541
+  Step 8/9 - Train Loss: 0.1068
+  Step 9/9 - Train Loss: 0.0938
+  --> Epoch 24 Summary: Train MSE: 0.1261 | Val MSE: 0.1488
+      Validation Clinical Metrics: PTV D95: 17.61 Gy | Bladder Mean: 33.43 Gy | Rectum Mean: 32.09 Gy
+  --> Saved new best model!
+\nEpoch 25/100
+  Step 1/9 - Train Loss: 0.1561
+  Step 2/9 - Train Loss: 0.1261
+  Step 3/9 - Train Loss: 0.1535
+  Step 4/9 - Train Loss: 0.1271
+  Step 5/9 - Train Loss: 0.1282
+  Step 6/9 - Train Loss: 0.1139
+  Step 7/9 - Train Loss: 0.1309
+  Step 8/9 - Train Loss: 0.1247
+  Step 9/9 - Train Loss: 0.1294
+  --> Epoch 25 Summary: Train MSE: 0.1322 | Val MSE: 0.1471
+      Validation Clinical Metrics: PTV D95: 17.94 Gy | Bladder Mean: 32.73 Gy | Rectum Mean: 32.39 Gy
+  --> Saved new best model!
+\nEpoch 26/100
+  Step 1/9 - Train Loss: 0.1258
+  Step 2/9 - Train Loss: 0.1286
+  Step 3/9 - Train Loss: 0.1403
+  Step 4/9 - Train Loss: 0.0840
+  Step 5/9 - Train Loss: 0.1170
+  Step 6/9 - Train Loss: 0.1215
+  Step 7/9 - Train Loss: 0.1368
+  Step 8/9 - Train Loss: 0.1450
+  Step 9/9 - Train Loss: 0.1261
+  --> Epoch 26 Summary: Train MSE: 0.1250 | Val MSE: 0.1464
+      Validation Clinical Metrics: PTV D95: 17.84 Gy | Bladder Mean: 31.28 Gy | Rectum Mean: 31.93 Gy
+  --> Saved new best model!
+\nEpoch 27/100
+  Step 1/9 - Train Loss: 0.1167
+  Step 2/9 - Train Loss: 0.1060
+  Step 3/9 - Train Loss: 0.1096
+  Step 4/9 - Train Loss: 0.1021
+  Step 5/9 - Train Loss: 0.1300
+  Step 6/9 - Train Loss: 0.1293
+  Step 7/9 - Train Loss: 0.0897
+  Step 8/9 - Train Loss: 0.1278
+  Step 9/9 - Train Loss: 0.1245
+  --> Epoch 27 Summary: Train MSE: 0.1151 | Val MSE: 0.1446
+      Validation Clinical Metrics: PTV D95: 19.66 Gy | Bladder Mean: 31.15 Gy | Rectum Mean: 32.26 Gy
+  --> Saved new best model!
+\nEpoch 28/100
+  Step 1/9 - Train Loss: 0.1553
+  Step 2/9 - Train Loss: 0.1389
+  Step 3/9 - Train Loss: 0.1036
+  Step 4/9 - Train Loss: 0.1033
+  Step 5/9 - Train Loss: 0.1256
+  Step 6/9 - Train Loss: 0.1039
+  Step 7/9 - Train Loss: 0.1353
+  Step 8/9 - Train Loss: 0.1144
+  Step 9/9 - Train Loss: 0.1608
+  --> Epoch 28 Summary: Train MSE: 0.1268 | Val MSE: 0.1440
+      Validation Clinical Metrics: PTV D95: 18.71 Gy | Bladder Mean: 32.51 Gy | Rectum Mean: 31.94 Gy
+  --> Saved new best model!
+\nEpoch 29/100
+  Step 1/9 - Train Loss: 0.1210
+  Step 2/9 - Train Loss: 0.1614
+  Step 3/9 - Train Loss: 0.1211
+  Step 4/9 - Train Loss: 0.1356
+  Step 5/9 - Train Loss: 0.1203
+  Step 6/9 - Train Loss: 0.1028
+  Step 7/9 - Train Loss: 0.1487
+  Step 8/9 - Train Loss: 0.0994
+  Step 9/9 - Train Loss: 0.1385
+  --> Epoch 29 Summary: Train MSE: 0.1276 | Val MSE: 0.1423
+      Validation Clinical Metrics: PTV D95: 19.83 Gy | Bladder Mean: 32.22 Gy | Rectum Mean: 32.76 Gy
+  --> Saved new best model!
+\nEpoch 30/100
+  Step 1/9 - Train Loss: 0.1229
+  Step 2/9 - Train Loss: 0.1400
+  Step 3/9 - Train Loss: 0.0997
+  Step 4/9 - Train Loss: 0.1425
+  Step 5/9 - Train Loss: 0.1007
+  Step 6/9 - Train Loss: 0.1174
+  Step 7/9 - Train Loss: 0.1280
+  Step 8/9 - Train Loss: 0.1221
+  Step 9/9 - Train Loss: 0.1321
+  --> Epoch 30 Summary: Train MSE: 0.1228 | Val MSE: 0.1426
+      Validation Clinical Metrics: PTV D95: 15.93 Gy | Bladder Mean: 30.68 Gy | Rectum Mean: 27.64 Gy
+\nEpoch 31/100
+  Step 1/9 - Train Loss: 0.1332
+  Step 2/9 - Train Loss: 0.1293
+  Step 3/9 - Train Loss: 0.0953
+  Step 4/9 - Train Loss: 0.1005
+  Step 5/9 - Train Loss: 0.1084
+  Step 6/9 - Train Loss: 0.0973
+  Step 7/9 - Train Loss: 0.1212
+  Step 8/9 - Train Loss: 0.1414
+  Step 9/9 - Train Loss: 0.1181
+  --> Epoch 31 Summary: Train MSE: 0.1161 | Val MSE: 0.1401
+      Validation Clinical Metrics: PTV D95: 20.95 Gy | Bladder Mean: 31.48 Gy | Rectum Mean: 32.90 Gy
+  --> Saved new best model!
+\nEpoch 32/100
+  Step 1/9 - Train Loss: 0.1246
+  Step 2/9 - Train Loss: 0.1042
+  Step 3/9 - Train Loss: 0.1236
+  Step 4/9 - Train Loss: 0.0967
+  Step 5/9 - Train Loss: 0.1387
+  Step 6/9 - Train Loss: 0.1479
+  Step 7/9 - Train Loss: 0.1408
+  Step 8/9 - Train Loss: 0.1370
+  Step 9/9 - Train Loss: 0.0805
+  --> Epoch 32 Summary: Train MSE: 0.1216 | Val MSE: 0.1395
+      Validation Clinical Metrics: PTV D95: 19.80 Gy | Bladder Mean: 29.15 Gy | Rectum Mean: 31.09 Gy
+  --> Saved new best model!
+\nEpoch 33/100
+  Step 1/9 - Train Loss: 0.1182
+  Step 2/9 - Train Loss: 0.1298
+  Step 3/9 - Train Loss: 0.1190
+  Step 4/9 - Train Loss: 0.1133
+  Step 5/9 - Train Loss: 0.1159
+  Step 6/9 - Train Loss: 0.0821
+  Step 7/9 - Train Loss: 0.1363
+  Step 8/9 - Train Loss: 0.1122
+  Step 9/9 - Train Loss: 0.1117
+  --> Epoch 33 Summary: Train MSE: 0.1154 | Val MSE: 0.1385
+      Validation Clinical Metrics: PTV D95: 21.47 Gy | Bladder Mean: 31.43 Gy | Rectum Mean: 31.18 Gy
+  --> Saved new best model!
+\nEpoch 34/100
+  Step 1/9 - Train Loss: 0.1241
+  Step 2/9 - Train Loss: 0.1353
+  Step 3/9 - Train Loss: 0.0981
+  Step 4/9 - Train Loss: 0.1374
+  Step 5/9 - Train Loss: 0.1156
+  Step 6/9 - Train Loss: 0.1058
+  Step 7/9 - Train Loss: 0.1312
+  Step 8/9 - Train Loss: 0.0961
+  Step 9/9 - Train Loss: 0.1134
+  --> Epoch 34 Summary: Train MSE: 0.1174 | Val MSE: 0.1366
+      Validation Clinical Metrics: PTV D95: 21.55 Gy | Bladder Mean: 30.28 Gy | Rectum Mean: 30.58 Gy
+  --> Saved new best model!
+\nEpoch 35/100
+  Step 1/9 - Train Loss: 0.1050
+  Step 2/9 - Train Loss: 0.1204
+  Step 3/9 - Train Loss: 0.0980
+  Step 4/9 - Train Loss: 0.1313
+  Step 5/9 - Train Loss: 0.1090
+  Step 6/9 - Train Loss: 0.1160
+  Step 7/9 - Train Loss: 0.1317
+  Step 8/9 - Train Loss: 0.1349
+  Step 9/9 - Train Loss: 0.1124
+  --> Epoch 35 Summary: Train MSE: 0.1176 | Val MSE: 0.1365
+      Validation Clinical Metrics: PTV D95: 21.62 Gy | Bladder Mean: 29.17 Gy | Rectum Mean: 29.70 Gy
+  --> Saved new best model!
+\nEpoch 36/100
+  Step 1/9 - Train Loss: 0.1340
+  Step 2/9 - Train Loss: 0.1299
+  Step 3/9 - Train Loss: 0.0876
+  Step 4/9 - Train Loss: 0.1181
+  Step 5/9 - Train Loss: 0.0894
+  Step 6/9 - Train Loss: 0.0898
+  Step 7/9 - Train Loss: 0.1315
+  Step 8/9 - Train Loss: 0.0945
+  Step 9/9 - Train Loss: 0.1133
+  --> Epoch 36 Summary: Train MSE: 0.1098 | Val MSE: 0.1342
+      Validation Clinical Metrics: PTV D95: 21.03 Gy | Bladder Mean: 31.99 Gy | Rectum Mean: 30.61 Gy
+  --> Saved new best model!
+\nEpoch 37/100
+  Step 1/9 - Train Loss: 0.1431
+  Step 2/9 - Train Loss: 0.1510
+  Step 3/9 - Train Loss: 0.1082
+  Step 4/9 - Train Loss: 0.1107
+  Step 5/9 - Train Loss: 0.1171
+  Step 6/9 - Train Loss: 0.1316
+  Step 7/9 - Train Loss: 0.1102
+  Step 8/9 - Train Loss: 0.1071
+  Step 9/9 - Train Loss: 0.1137
+  --> Epoch 37 Summary: Train MSE: 0.1214 | Val MSE: 0.1341
+      Validation Clinical Metrics: PTV D95: 19.40 Gy | Bladder Mean: 30.70 Gy | Rectum Mean: 28.57 Gy
+  --> Saved new best model!
+\nEpoch 38/100
+  Step 1/9 - Train Loss: 0.0923
+  Step 2/9 - Train Loss: 0.1352
+  Step 3/9 - Train Loss: 0.0722
+  Step 4/9 - Train Loss: 0.1048
+  Step 5/9 - Train Loss: 0.1223
+  Step 6/9 - Train Loss: 0.1424
+  Step 7/9 - Train Loss: 0.1182
+  Step 8/9 - Train Loss: 0.1112
+  Step 9/9 - Train Loss: 0.1054
+  --> Epoch 38 Summary: Train MSE: 0.1116 | Val MSE: 0.1327
+      Validation Clinical Metrics: PTV D95: 21.04 Gy | Bladder Mean: 29.67 Gy | Rectum Mean: 31.76 Gy
+  --> Saved new best model!
+\nEpoch 39/100
+  Step 1/9 - Train Loss: 0.1017
+  Step 2/9 - Train Loss: 0.1045
+  Step 3/9 - Train Loss: 0.0880
+  Step 4/9 - Train Loss: 0.0872
+  Step 5/9 - Train Loss: 0.1136
+  Step 6/9 - Train Loss: 0.0843
+  Step 7/9 - Train Loss: 0.1280
+  Step 8/9 - Train Loss: 0.1351
+  Step 9/9 - Train Loss: 0.1034
+  --> Epoch 39 Summary: Train MSE: 0.1051 | Val MSE: 0.1317
+      Validation Clinical Metrics: PTV D95: 19.92 Gy | Bladder Mean: 29.84 Gy | Rectum Mean: 27.67 Gy
+  --> Saved new best model!
+\nEpoch 40/100
+  Step 1/9 - Train Loss: 0.1075
+  Step 2/9 - Train Loss: 0.1089
+  Step 3/9 - Train Loss: 0.1268
+  Step 4/9 - Train Loss: 0.0835
+  Step 5/9 - Train Loss: 0.1077
+  Step 6/9 - Train Loss: 0.1351
+  Step 7/9 - Train Loss: 0.0953
+  Step 8/9 - Train Loss: 0.1277
+  Step 9/9 - Train Loss: 0.0865
+  --> Epoch 40 Summary: Train MSE: 0.1088 | Val MSE: 0.1295
+      Validation Clinical Metrics: PTV D95: 25.58 Gy | Bladder Mean: 31.07 Gy | Rectum Mean: 30.90 Gy
+  --> Saved new best model!
+\nEpoch 41/100
+  Step 1/9 - Train Loss: 0.1132
+  Step 2/9 - Train Loss: 0.0926
+  Step 3/9 - Train Loss: 0.1374
+  Step 4/9 - Train Loss: 0.0877
+  Step 5/9 - Train Loss: 0.1187
+  Step 6/9 - Train Loss: 0.0735
+  Step 7/9 - Train Loss: 0.1246
+  Step 8/9 - Train Loss: 0.1257
+  Step 9/9 - Train Loss: 0.1229
+  --> Epoch 41 Summary: Train MSE: 0.1107 | Val MSE: 0.1294
+      Validation Clinical Metrics: PTV D95: 20.46 Gy | Bladder Mean: 28.44 Gy | Rectum Mean: 28.20 Gy
+  --> Saved new best model!
+\nEpoch 42/100
+  Step 1/9 - Train Loss: 0.1022
+  Step 2/9 - Train Loss: 0.1080
+  Step 3/9 - Train Loss: 0.1261
+  Step 4/9 - Train Loss: 0.1129
+  Step 5/9 - Train Loss: 0.1180
+  Step 6/9 - Train Loss: 0.1021
+  Step 7/9 - Train Loss: 0.0995
+  Step 8/9 - Train Loss: 0.0830
+  Step 9/9 - Train Loss: 0.1315
+  --> Epoch 42 Summary: Train MSE: 0.1093 | Val MSE: 0.1278
+      Validation Clinical Metrics: PTV D95: 23.48 Gy | Bladder Mean: 30.99 Gy | Rectum Mean: 29.86 Gy
+  --> Saved new best model!
+\nEpoch 43/100
+  Step 1/9 - Train Loss: 0.1282
+  Step 2/9 - Train Loss: 0.1301
+  Step 3/9 - Train Loss: 0.0707
+  Step 4/9 - Train Loss: 0.0864
+  Step 5/9 - Train Loss: 0.1042
+  Step 6/9 - Train Loss: 0.0881
+  Step 7/9 - Train Loss: 0.1243
+  Step 8/9 - Train Loss: 0.1236
+  Step 9/9 - Train Loss: 0.1056
+  --> Epoch 43 Summary: Train MSE: 0.1068 | Val MSE: 0.1260
+      Validation Clinical Metrics: PTV D95: 23.44 Gy | Bladder Mean: 28.63 Gy | Rectum Mean: 30.32 Gy
+  --> Saved new best model!
+\nEpoch 44/100
+  Step 1/9 - Train Loss: 0.0972
+  Step 2/9 - Train Loss: 0.1014
+  Step 3/9 - Train Loss: 0.1264
+  Step 4/9 - Train Loss: 0.1364
+  Step 5/9 - Train Loss: 0.1170
+  Step 6/9 - Train Loss: 0.1003
+  Step 7/9 - Train Loss: 0.1227
+  Step 8/9 - Train Loss: 0.1136
+  Step 9/9 - Train Loss: 0.0980
+  --> Epoch 44 Summary: Train MSE: 0.1126 | Val MSE: 0.1252
+      Validation Clinical Metrics: PTV D95: 24.41 Gy | Bladder Mean: 30.12 Gy | Rectum Mean: 29.78 Gy
+  --> Saved new best model!
+\nEpoch 45/100
+  Step 1/9 - Train Loss: 0.1275
+  Step 2/9 - Train Loss: 0.1109
+  Step 3/9 - Train Loss: 0.1408
+  Step 4/9 - Train Loss: 0.0939
+  Step 5/9 - Train Loss: 0.1073
+  Step 6/9 - Train Loss: 0.1311
+  Step 7/9 - Train Loss: 0.0823
+  Step 8/9 - Train Loss: 0.0628
+  Step 9/9 - Train Loss: 0.1057
+  --> Epoch 45 Summary: Train MSE: 0.1069 | Val MSE: 0.1242
+      Validation Clinical Metrics: PTV D95: 20.06 Gy | Bladder Mean: 29.04 Gy | Rectum Mean: 27.06 Gy
+  --> Saved new best model!
+\nEpoch 46/100
+  Step 1/9 - Train Loss: 0.1226
+  Step 2/9 - Train Loss: 0.1027
+  Step 3/9 - Train Loss: 0.0931
+  Step 4/9 - Train Loss: 0.1070
+  Step 5/9 - Train Loss: 0.1196
+  Step 6/9 - Train Loss: 0.1018
+  Step 7/9 - Train Loss: 0.0832
+  Step 8/9 - Train Loss: 0.1031
+  Step 9/9 - Train Loss: 0.1002
+  --> Epoch 46 Summary: Train MSE: 0.1037 | Val MSE: 0.1220
+      Validation Clinical Metrics: PTV D95: 25.17 Gy | Bladder Mean: 29.63 Gy | Rectum Mean: 32.05 Gy
+  --> Saved new best model!
+\nEpoch 47/100
+  Step 1/9 - Train Loss: 0.0785
+  Step 2/9 - Train Loss: 0.0797
+  Step 3/9 - Train Loss: 0.0997
+  Step 4/9 - Train Loss: 0.1317
+  Step 5/9 - Train Loss: 0.0933
+  Step 6/9 - Train Loss: 0.0592
+  Step 7/9 - Train Loss: 0.0729
+  Step 8/9 - Train Loss: 0.0608
+  Step 9/9 - Train Loss: 0.0815
+  --> Epoch 47 Summary: Train MSE: 0.0842 | Val MSE: 0.1221
+      Validation Clinical Metrics: PTV D95: 24.60 Gy | Bladder Mean: 29.95 Gy | Rectum Mean: 28.42 Gy
+\nEpoch 48/100
+  Step 1/9 - Train Loss: 0.1021
+  Step 2/9 - Train Loss: 0.1362
+  Step 3/9 - Train Loss: 0.0985
+  Step 4/9 - Train Loss: 0.1087
+  Step 5/9 - Train Loss: 0.0787
+  Step 6/9 - Train Loss: 0.1375
+  Step 7/9 - Train Loss: 0.1015
+  Step 8/9 - Train Loss: 0.0928
+  Step 9/9 - Train Loss: 0.0941
+  --> Epoch 48 Summary: Train MSE: 0.1056 | Val MSE: 0.1212
+      Validation Clinical Metrics: PTV D95: 22.33 Gy | Bladder Mean: 27.80 Gy | Rectum Mean: 30.10 Gy
+  --> Saved new best model!
+\nEpoch 49/100
+  Step 1/9 - Train Loss: 0.0976
+  Step 2/9 - Train Loss: 0.0625
+  Step 3/9 - Train Loss: 0.0853
+  Step 4/9 - Train Loss: 0.1044
+  Step 5/9 - Train Loss: 0.1269
+  Step 6/9 - Train Loss: 0.0795
+  Step 7/9 - Train Loss: 0.1141
+  Step 8/9 - Train Loss: 0.1024
+  Step 9/9 - Train Loss: 0.0963
+  --> Epoch 49 Summary: Train MSE: 0.0965 | Val MSE: 0.1200
+      Validation Clinical Metrics: PTV D95: 26.12 Gy | Bladder Mean: 30.85 Gy | Rectum Mean: 29.82 Gy
+  --> Saved new best model!
+\nEpoch 50/100
+  Step 1/9 - Train Loss: 0.0930
+  Step 2/9 - Train Loss: 0.1230
+  Step 3/9 - Train Loss: 0.0813
+  Step 4/9 - Train Loss: 0.0897
+  Step 5/9 - Train Loss: 0.0760
+  Step 6/9 - Train Loss: 0.0787
+  Step 7/9 - Train Loss: 0.0800
+  Step 8/9 - Train Loss: 0.1186
+  Step 9/9 - Train Loss: 0.1126
+  --> Epoch 50 Summary: Train MSE: 0.0948 | Val MSE: 0.1189
+      Validation Clinical Metrics: PTV D95: 23.89 Gy | Bladder Mean: 27.94 Gy | Rectum Mean: 28.97 Gy
+  --> Saved new best model!
+\nEpoch 51/100
+  Step 1/9 - Train Loss: 0.0816
+  Step 2/9 - Train Loss: 0.0897
+  Step 3/9 - Train Loss: 0.0905
+  Step 4/9 - Train Loss: 0.0785
+  Step 5/9 - Train Loss: 0.0906
+  Step 6/9 - Train Loss: 0.1129
+  Step 7/9 - Train Loss: 0.0976
+  Step 8/9 - Train Loss: 0.1260
+  Step 9/9 - Train Loss: 0.1032
+  --> Epoch 51 Summary: Train MSE: 0.0967 | Val MSE: 0.1178
+      Validation Clinical Metrics: PTV D95: 28.17 Gy | Bladder Mean: 29.60 Gy | Rectum Mean: 29.64 Gy
+  --> Saved new best model!
+\nEpoch 52/100
+  Step 1/9 - Train Loss: 0.0933
+  Step 2/9 - Train Loss: 0.0545
+  Step 3/9 - Train Loss: 0.0692
+  Step 4/9 - Train Loss: 0.0977
+  Step 5/9 - Train Loss: 0.0807
+  Step 6/9 - Train Loss: 0.1182
+  Step 7/9 - Train Loss: 0.0982
+  Step 8/9 - Train Loss: 0.0940
+  Step 9/9 - Train Loss: 0.1322
+  --> Epoch 52 Summary: Train MSE: 0.0931 | Val MSE: 0.1176
+      Validation Clinical Metrics: PTV D95: 26.34 Gy | Bladder Mean: 28.93 Gy | Rectum Mean: 27.40 Gy
+  --> Saved new best model!
+\nEpoch 53/100
+  Step 1/9 - Train Loss: 0.1013
+  Step 2/9 - Train Loss: 0.0666
+  Step 3/9 - Train Loss: 0.1323
+  Step 4/9 - Train Loss: 0.0933
+  Step 5/9 - Train Loss: 0.0962
+  Step 6/9 - Train Loss: 0.0881
+  Step 7/9 - Train Loss: 0.1298
+  Step 8/9 - Train Loss: 0.0587
+  Step 9/9 - Train Loss: 0.0734
+  --> Epoch 53 Summary: Train MSE: 0.0933 | Val MSE: 0.1157
+      Validation Clinical Metrics: PTV D95: 25.49 Gy | Bladder Mean: 28.73 Gy | Rectum Mean: 29.37 Gy
+  --> Saved new best model!
+\nEpoch 54/100
+  Step 1/9 - Train Loss: 0.1075
+  Step 2/9 - Train Loss: 0.0911
+  Step 3/9 - Train Loss: 0.1240
+  Step 4/9 - Train Loss: 0.0944
+  Step 5/9 - Train Loss: 0.0544
+  Step 6/9 - Train Loss: 0.0789
+  Step 7/9 - Train Loss: 0.0918
+  Step 8/9 - Train Loss: 0.0911
+  Step 9/9 - Train Loss: 0.0915
+  --> Epoch 54 Summary: Train MSE: 0.0916 | Val MSE: 0.1144
+      Validation Clinical Metrics: PTV D95: 28.96 Gy | Bladder Mean: 29.44 Gy | Rectum Mean: 29.07 Gy
+  --> Saved new best model!
+\nEpoch 55/100
+  Step 1/9 - Train Loss: 0.0874
+  Step 2/9 - Train Loss: 0.1243
+  Step 3/9 - Train Loss: 0.0919
+  Step 4/9 - Train Loss: 0.1256
+  Step 5/9 - Train Loss: 0.0673
+  Step 6/9 - Train Loss: 0.0656
+  Step 7/9 - Train Loss: 0.0922
+  Step 8/9 - Train Loss: 0.0857
+  Step 9/9 - Train Loss: 0.1092
+  --> Epoch 55 Summary: Train MSE: 0.0944 | Val MSE: 0.1135
+      Validation Clinical Metrics: PTV D95: 28.40 Gy | Bladder Mean: 28.80 Gy | Rectum Mean: 28.26 Gy
+  --> Saved new best model!
+\nEpoch 56/100
+  Step 1/9 - Train Loss: 0.1225
+  Step 2/9 - Train Loss: 0.0705
+  Step 3/9 - Train Loss: 0.0712
+  Step 4/9 - Train Loss: 0.0924
+  Step 5/9 - Train Loss: 0.1077
+  Step 6/9 - Train Loss: 0.0742
+  Step 7/9 - Train Loss: 0.0998
+  Step 8/9 - Train Loss: 0.0746
+  Step 9/9 - Train Loss: 0.0786
+  --> Epoch 56 Summary: Train MSE: 0.0879 | Val MSE: 0.1130
+      Validation Clinical Metrics: PTV D95: 26.03 Gy | Bladder Mean: 28.52 Gy | Rectum Mean: 27.96 Gy
+  --> Saved new best model!
+\nEpoch 57/100
+  Step 1/9 - Train Loss: 0.0662
+  Step 2/9 - Train Loss: 0.1108
+  Step 3/9 - Train Loss: 0.0678
+  Step 4/9 - Train Loss: 0.0705
+  Step 5/9 - Train Loss: 0.0723
+  Step 6/9 - Train Loss: 0.0918
+  Step 7/9 - Train Loss: 0.1079
+  Step 8/9 - Train Loss: 0.0935
+  Step 9/9 - Train Loss: 0.0788
+  --> Epoch 57 Summary: Train MSE: 0.0844 | Val MSE: 0.1121
+      Validation Clinical Metrics: PTV D95: 28.48 Gy | Bladder Mean: 29.42 Gy | Rectum Mean: 27.94 Gy
+  --> Saved new best model!
+\nEpoch 58/100
+  Step 1/9 - Train Loss: 0.1083
+  Step 2/9 - Train Loss: 0.1044
+  Step 3/9 - Train Loss: 0.0688
+  Step 4/9 - Train Loss: 0.0834
+  Step 5/9 - Train Loss: 0.0668
+  Step 6/9 - Train Loss: 0.1106
+  Step 7/9 - Train Loss: 0.1210
+  Step 8/9 - Train Loss: 0.0502
+  Step 9/9 - Train Loss: 0.0938
+  --> Epoch 58 Summary: Train MSE: 0.0897 | Val MSE: 0.1117
+      Validation Clinical Metrics: PTV D95: 26.56 Gy | Bladder Mean: 27.46 Gy | Rectum Mean: 27.84 Gy
+  --> Saved new best model!
+\nEpoch 59/100
+  Step 1/9 - Train Loss: 0.1066
+  Step 2/9 - Train Loss: 0.1078
+  Step 3/9 - Train Loss: 0.0958
+  Step 4/9 - Train Loss: 0.0745
+  Step 5/9 - Train Loss: 0.1072
+  Step 6/9 - Train Loss: 0.0862
+  Step 7/9 - Train Loss: 0.1121
+  Step 8/9 - Train Loss: 0.0672
+  Step 9/9 - Train Loss: 0.0893
+  --> Epoch 59 Summary: Train MSE: 0.0941 | Val MSE: 0.1098
+      Validation Clinical Metrics: PTV D95: 31.62 Gy | Bladder Mean: 26.96 Gy | Rectum Mean: 30.22 Gy
+  --> Saved new best model!
+\nEpoch 60/100
+  Step 1/9 - Train Loss: 0.0680
+  Step 2/9 - Train Loss: 0.0848
+  Step 3/9 - Train Loss: 0.0476
+  Step 4/9 - Train Loss: 0.0599
+  Step 5/9 - Train Loss: 0.0668
+  Step 6/9 - Train Loss: 0.1154
+  Step 7/9 - Train Loss: 0.0698
+  Step 8/9 - Train Loss: 0.1036
+  Step 9/9 - Train Loss: 0.1070
+  --> Epoch 60 Summary: Train MSE: 0.0803 | Val MSE: 0.1091
+      Validation Clinical Metrics: PTV D95: 33.06 Gy | Bladder Mean: 27.17 Gy | Rectum Mean: 28.14 Gy
+  --> Saved new best model!
+\nEpoch 61/100
+  Step 1/9 - Train Loss: 0.0849
+  Step 2/9 - Train Loss: 0.0679
+  Step 3/9 - Train Loss: 0.1024
+  Step 4/9 - Train Loss: 0.0795
+  Step 5/9 - Train Loss: 0.1039
+  Step 6/9 - Train Loss: 0.0682
+  Step 7/9 - Train Loss: 0.1061
+  Step 8/9 - Train Loss: 0.0691
+  Step 9/9 - Train Loss: 0.0800
+  --> Epoch 61 Summary: Train MSE: 0.0847 | Val MSE: 0.1092
+      Validation Clinical Metrics: PTV D95: 27.41 Gy | Bladder Mean: 25.22 Gy | Rectum Mean: 23.60 Gy
+\nEpoch 62/100
+  Step 1/9 - Train Loss: 0.1044
+  Step 2/9 - Train Loss: 0.0860
+  Step 3/9 - Train Loss: 0.0836
+  Step 4/9 - Train Loss: 0.0978
+  Step 5/9 - Train Loss: 0.0517
+  Step 6/9 - Train Loss: 0.0916
+  Step 7/9 - Train Loss: 0.0647
+  Step 8/9 - Train Loss: 0.0677
+  Step 9/9 - Train Loss: 0.0637
+  --> Epoch 62 Summary: Train MSE: 0.0790 | Val MSE: 0.1074
+      Validation Clinical Metrics: PTV D95: 27.58 Gy | Bladder Mean: 25.94 Gy | Rectum Mean: 24.68 Gy
+  --> Saved new best model!
+\nEpoch 63/100
+  Step 1/9 - Train Loss: 0.0811
+  Step 2/9 - Train Loss: 0.0975
+  Step 3/9 - Train Loss: 0.0419
+  Step 4/9 - Train Loss: 0.0661
+  Step 5/9 - Train Loss: 0.1022
+  Step 6/9 - Train Loss: 0.1164
+  Step 7/9 - Train Loss: 0.0949
+  Step 8/9 - Train Loss: 0.0744
+  Step 9/9 - Train Loss: 0.1043
+  --> Epoch 63 Summary: Train MSE: 0.0865 | Val MSE: 0.1067
+      Validation Clinical Metrics: PTV D95: 32.88 Gy | Bladder Mean: 25.54 Gy | Rectum Mean: 28.60 Gy
+  --> Saved new best model!
+\nEpoch 64/100
+  Step 1/9 - Train Loss: 0.0820
+  Step 2/9 - Train Loss: 0.1038
+  Step 3/9 - Train Loss: 0.0520
+  Step 4/9 - Train Loss: 0.0796
+  Step 5/9 - Train Loss: 0.0712
+  Step 6/9 - Train Loss: 0.1040
+  Step 7/9 - Train Loss: 0.0835
+  Step 8/9 - Train Loss: 0.0827
+  Step 9/9 - Train Loss: 0.0836
+  --> Epoch 64 Summary: Train MSE: 0.0825 | Val MSE: 0.1043
+      Validation Clinical Metrics: PTV D95: 33.76 Gy | Bladder Mean: 26.46 Gy | Rectum Mean: 29.31 Gy
+  --> Saved new best model!
+\nEpoch 65/100
+  Step 1/9 - Train Loss: 0.0637
+  Step 2/9 - Train Loss: 0.1047
+  Step 3/9 - Train Loss: 0.0627
+  Step 4/9 - Train Loss: 0.0637
+  Step 5/9 - Train Loss: 0.0743
+  Step 6/9 - Train Loss: 0.1181
+  Step 7/9 - Train Loss: 0.0692
+  Step 8/9 - Train Loss: 0.0738
+  Step 9/9 - Train Loss: 0.0833
+  --> Epoch 65 Summary: Train MSE: 0.0793 | Val MSE: 0.1032
+      Validation Clinical Metrics: PTV D95: 33.10 Gy | Bladder Mean: 28.98 Gy | Rectum Mean: 30.29 Gy
+  --> Saved new best model!
+\nEpoch 66/100
+  Step 1/9 - Train Loss: 0.0424
+  Step 2/9 - Train Loss: 0.1014
+  Step 3/9 - Train Loss: 0.1007
+  Step 4/9 - Train Loss: 0.0613
+  Step 5/9 - Train Loss: 0.0940
+  Step 6/9 - Train Loss: 0.1055
+  Step 7/9 - Train Loss: 0.0766
+  Step 8/9 - Train Loss: 0.0836
+  Step 9/9 - Train Loss: 0.1004
+  --> Epoch 66 Summary: Train MSE: 0.0851 | Val MSE: 0.1032
+      Validation Clinical Metrics: PTV D95: 32.80 Gy | Bladder Mean: 23.83 Gy | Rectum Mean: 28.70 Gy
+\nEpoch 67/100
+  Step 1/9 - Train Loss: 0.0739
+  Step 2/9 - Train Loss: 0.0824
+  Step 3/9 - Train Loss: 0.0978
+  Step 4/9 - Train Loss: 0.1025
+  Step 5/9 - Train Loss: 0.0675
+  Step 6/9 - Train Loss: 0.0446
+  Step 7/9 - Train Loss: 0.1083
+  Step 8/9 - Train Loss: 0.0553
+  Step 9/9 - Train Loss: 0.0907
+  --> Epoch 67 Summary: Train MSE: 0.0803 | Val MSE: 0.1022
+      Validation Clinical Metrics: PTV D95: 27.84 Gy | Bladder Mean: 23.68 Gy | Rectum Mean: 25.65 Gy
+  --> Saved new best model!
+\nEpoch 68/100
+  Step 1/9 - Train Loss: 0.1092
+  Step 2/9 - Train Loss: 0.0769
+  Step 3/9 - Train Loss: 0.1134
+  Step 4/9 - Train Loss: 0.0625
+  Step 5/9 - Train Loss: 0.0787
+  Step 6/9 - Train Loss: 0.0721
+  Step 7/9 - Train Loss: 0.0894
+  Step 8/9 - Train Loss: 0.0997
+  Step 9/9 - Train Loss: 0.0598
+  --> Epoch 68 Summary: Train MSE: 0.0846 | Val MSE: 0.0993
+      Validation Clinical Metrics: PTV D95: 33.95 Gy | Bladder Mean: 31.50 Gy | Rectum Mean: 29.61 Gy
+  --> Saved new best model!
+\nEpoch 69/100
+  Step 1/9 - Train Loss: 0.0447
+  Step 2/9 - Train Loss: 0.0711
+  Step 3/9 - Train Loss: 0.0782
+  Step 4/9 - Train Loss: 0.1062
+  Step 5/9 - Train Loss: 0.0784
+  Step 6/9 - Train Loss: 0.0945
+  Step 7/9 - Train Loss: 0.0580
+  Step 8/9 - Train Loss: 0.0945
+  Step 9/9 - Train Loss: 0.1007
+  --> Epoch 69 Summary: Train MSE: 0.0807 | Val MSE: 0.1005
+      Validation Clinical Metrics: PTV D95: 29.75 Gy | Bladder Mean: 25.03 Gy | Rectum Mean: 26.55 Gy
+\nEpoch 70/100
+  Step 1/9 - Train Loss: 0.0747
+  Step 2/9 - Train Loss: 0.0824
+  Step 3/9 - Train Loss: 0.1089
+  Step 4/9 - Train Loss: 0.0870
+  Step 5/9 - Train Loss: 0.0877
+  Step 6/9 - Train Loss: 0.0868
+  Step 7/9 - Train Loss: 0.0611
+  Step 8/9 - Train Loss: 0.0888
+  Step 9/9 - Train Loss: 0.0771
+  --> Epoch 70 Summary: Train MSE: 0.0838 | Val MSE: 0.0980
+      Validation Clinical Metrics: PTV D95: 33.66 Gy | Bladder Mean: 27.35 Gy | Rectum Mean: 27.79 Gy
+  --> Saved new best model!
+\nEpoch 71/100
+  Step 1/9 - Train Loss: 0.1013
+  Step 2/9 - Train Loss: 0.0941
+  Step 3/9 - Train Loss: 0.0801
+  Step 4/9 - Train Loss: 0.0437
+  Step 5/9 - Train Loss: 0.0829
+  Step 6/9 - Train Loss: 0.0643
+  Step 7/9 - Train Loss: 0.0672
+  Step 8/9 - Train Loss: 0.0749
+  Step 9/9 - Train Loss: 0.0709
+  --> Epoch 71 Summary: Train MSE: 0.0755 | Val MSE: 0.0959
+      Validation Clinical Metrics: PTV D95: 33.05 Gy | Bladder Mean: 27.60 Gy | Rectum Mean: 29.45 Gy
+  --> Saved new best model!
+\nEpoch 72/100
+  Step 1/9 - Train Loss: 0.0593
+  Step 2/9 - Train Loss: 0.1068
+  Step 3/9 - Train Loss: 0.0816
+  Step 4/9 - Train Loss: 0.0785
+  Step 5/9 - Train Loss: 0.0778
+  Step 6/9 - Train Loss: 0.0763
+  Step 7/9 - Train Loss: 0.0789
+  Step 8/9 - Train Loss: 0.0923
+  Step 9/9 - Train Loss: 0.0571
+  --> Epoch 72 Summary: Train MSE: 0.0787 | Val MSE: 0.0961
+      Validation Clinical Metrics: PTV D95: 30.91 Gy | Bladder Mean: 26.09 Gy | Rectum Mean: 28.51 Gy
+\nEpoch 73/100
+  Step 1/9 - Train Loss: 0.0757
+  Step 2/9 - Train Loss: 0.0662
+  Step 3/9 - Train Loss: 0.0622
+  Step 4/9 - Train Loss: 0.0910
+  Step 5/9 - Train Loss: 0.0745
+  Step 6/9 - Train Loss: 0.0582
+  Step 7/9 - Train Loss: 0.0598
+  Step 8/9 - Train Loss: 0.0993
+  Step 9/9 - Train Loss: 0.0574
+  --> Epoch 73 Summary: Train MSE: 0.0716 | Val MSE: 0.0957
+      Validation Clinical Metrics: PTV D95: 32.54 Gy | Bladder Mean: 25.72 Gy | Rectum Mean: 26.98 Gy
+  --> Saved new best model!
+\nEpoch 74/100
+  Step 1/9 - Train Loss: 0.0722
+  Step 2/9 - Train Loss: 0.0913
+  Step 3/9 - Train Loss: 0.0702
+  Step 4/9 - Train Loss: 0.0892
+  Step 5/9 - Train Loss: 0.0622
+  Step 6/9 - Train Loss: 0.0768
+  Step 7/9 - Train Loss: 0.0909
+  Step 8/9 - Train Loss: 0.0885
+  Step 9/9 - Train Loss: 0.0447
+  --> Epoch 74 Summary: Train MSE: 0.0762 | Val MSE: 0.0946
+      Validation Clinical Metrics: PTV D95: 32.80 Gy | Bladder Mean: 27.02 Gy | Rectum Mean: 25.41 Gy
+  --> Saved new best model!
+\nEpoch 75/100
+  Step 1/9 - Train Loss: 0.0612
+  Step 2/9 - Train Loss: 0.0933
+  Step 3/9 - Train Loss: 0.0571
+  Step 4/9 - Train Loss: 0.0992
+  Step 5/9 - Train Loss: 0.0643
+  Step 6/9 - Train Loss: 0.0457
+  Step 7/9 - Train Loss: 0.0764
+  Step 8/9 - Train Loss: 0.0813
+  Step 9/9 - Train Loss: 0.0739
+  --> Epoch 75 Summary: Train MSE: 0.0725 | Val MSE: 0.0926
+      Validation Clinical Metrics: PTV D95: 31.29 Gy | Bladder Mean: 27.36 Gy | Rectum Mean: 28.31 Gy
+  --> Saved new best model!
+\nEpoch 76/100
+  Step 1/9 - Train Loss: 0.0597
+  Step 2/9 - Train Loss: 0.0604
+  Step 3/9 - Train Loss: 0.0714
+  Step 4/9 - Train Loss: 0.1011
+  Step 5/9 - Train Loss: 0.0727
+  Step 6/9 - Train Loss: 0.0553
+  Step 7/9 - Train Loss: 0.0468
+  Step 8/9 - Train Loss: 0.0709
+  Step 9/9 - Train Loss: 0.0884
+  --> Epoch 76 Summary: Train MSE: 0.0696 | Val MSE: 0.0930
+      Validation Clinical Metrics: PTV D95: 35.31 Gy | Bladder Mean: 27.21 Gy | Rectum Mean: 27.16 Gy
+\nEpoch 77/100
+  Step 1/9 - Train Loss: 0.0704
+  Step 2/9 - Train Loss: 0.0718
+  Step 3/9 - Train Loss: 0.0900
+  Step 4/9 - Train Loss: 0.0998
+  Step 5/9 - Train Loss: 0.0852
+  Step 6/9 - Train Loss: 0.0678
+  Step 7/9 - Train Loss: 0.0890
+  Step 8/9 - Train Loss: 0.0716
+  Step 9/9 - Train Loss: 0.0756
+  --> Epoch 77 Summary: Train MSE: 0.0801 | Val MSE: 0.0912
+      Validation Clinical Metrics: PTV D95: 33.89 Gy | Bladder Mean: 27.14 Gy | Rectum Mean: 28.88 Gy
+  --> Saved new best model!
+\nEpoch 78/100
+  Step 1/9 - Train Loss: 0.0880
+  Step 2/9 - Train Loss: 0.0716
+  Step 3/9 - Train Loss: 0.0689
+  Step 4/9 - Train Loss: 0.0597
+  Step 5/9 - Train Loss: 0.0851
+  Step 6/9 - Train Loss: 0.0898
+  Step 7/9 - Train Loss: 0.0964
+  Step 8/9 - Train Loss: 0.0717
+  Step 9/9 - Train Loss: 0.0699
+  --> Epoch 78 Summary: Train MSE: 0.0779 | Val MSE: 0.0899
+      Validation Clinical Metrics: PTV D95: 38.78 Gy | Bladder Mean: 26.71 Gy | Rectum Mean: 26.31 Gy
+  --> Saved new best model!
+\nEpoch 79/100
+  Step 1/9 - Train Loss: 0.0860
+  Step 2/9 - Train Loss: 0.0610
+  Step 3/9 - Train Loss: 0.0927
+  Step 4/9 - Train Loss: 0.0662
+  Step 5/9 - Train Loss: 0.0560
+  Step 6/9 - Train Loss: 0.0704
+  Step 7/9 - Train Loss: 0.0827
+  Step 8/9 - Train Loss: 0.0790
+  Step 9/9 - Train Loss: 0.0945
+  --> Epoch 79 Summary: Train MSE: 0.0765 | Val MSE: 0.0889
+      Validation Clinical Metrics: PTV D95: 30.80 Gy | Bladder Mean: 26.27 Gy | Rectum Mean: 26.06 Gy
+  --> Saved new best model!
+\nEpoch 80/100
+  Step 1/9 - Train Loss: 0.0716
+  Step 2/9 - Train Loss: 0.0857
+  Step 3/9 - Train Loss: 0.0958
+  Step 4/9 - Train Loss: 0.0619
+  Step 5/9 - Train Loss: 0.0579
+  Step 6/9 - Train Loss: 0.0579
+  Step 7/9 - Train Loss: 0.0859
+  Step 8/9 - Train Loss: 0.0802
+  Step 9/9 - Train Loss: 0.0679
+  --> Epoch 80 Summary: Train MSE: 0.0739 | Val MSE: 0.0867
+      Validation Clinical Metrics: PTV D95: 34.44 Gy | Bladder Mean: 29.42 Gy | Rectum Mean: 28.31 Gy
+  --> Saved new best model!
+\nEpoch 81/100
+  Step 1/9 - Train Loss: 0.0846
+  Step 2/9 - Train Loss: 0.0668
+  Step 3/9 - Train Loss: 0.0496
+  Step 4/9 - Train Loss: 0.0790
+  Step 5/9 - Train Loss: 0.0688
+  Step 6/9 - Train Loss: 0.0535
+  Step 7/9 - Train Loss: 0.0901
+  Step 8/9 - Train Loss: 0.0494
+  Step 9/9 - Train Loss: 0.0547
+  --> Epoch 81 Summary: Train MSE: 0.0663 | Val MSE: 0.0864
+      Validation Clinical Metrics: PTV D95: 36.70 Gy | Bladder Mean: 29.27 Gy | Rectum Mean: 29.93 Gy
+  --> Saved new best model!
+\nEpoch 82/100
+  Step 1/9 - Train Loss: 0.0838
+  Step 2/9 - Train Loss: 0.0589
+  Step 3/9 - Train Loss: 0.0819
+  Step 4/9 - Train Loss: 0.0710
+  Step 5/9 - Train Loss: 0.0578
+  Step 6/9 - Train Loss: 0.0552
+  Step 7/9 - Train Loss: 0.0549
+  Step 8/9 - Train Loss: 0.0664
+  Step 9/9 - Train Loss: 0.0702
+  --> Epoch 82 Summary: Train MSE: 0.0667 | Val MSE: 0.0864
+      Validation Clinical Metrics: PTV D95: 25.95 Gy | Bladder Mean: 24.15 Gy | Rectum Mean: 25.57 Gy
+  --> Saved new best model!
+\nEpoch 83/100
+  Step 1/9 - Train Loss: 0.0521
+  Step 2/9 - Train Loss: 0.0394
+  Step 3/9 - Train Loss: 0.0675
+  Step 4/9 - Train Loss: 0.0529
+  Step 5/9 - Train Loss: 0.0589
+  Step 6/9 - Train Loss: 0.0518
+  Step 7/9 - Train Loss: 0.0833
+  Step 8/9 - Train Loss: 0.0848
+  Step 9/9 - Train Loss: 0.0473
+  --> Epoch 83 Summary: Train MSE: 0.0598 | Val MSE: 0.0863
+      Validation Clinical Metrics: PTV D95: 34.27 Gy | Bladder Mean: 25.07 Gy | Rectum Mean: 25.53 Gy
+  --> Saved new best model!
+\nEpoch 84/100
+  Step 1/9 - Train Loss: 0.0484
+  Step 2/9 - Train Loss: 0.0532
+  Step 3/9 - Train Loss: 0.0926
+  Step 4/9 - Train Loss: 0.0513
+  Step 5/9 - Train Loss: 0.0857
+  Step 6/9 - Train Loss: 0.0661
+  Step 7/9 - Train Loss: 0.0405
+  Step 8/9 - Train Loss: 0.0640
+  Step 9/9 - Train Loss: 0.0668
+  --> Epoch 84 Summary: Train MSE: 0.0632 | Val MSE: 0.0846
+      Validation Clinical Metrics: PTV D95: 35.47 Gy | Bladder Mean: 31.00 Gy | Rectum Mean: 29.19 Gy
+  --> Saved new best model!
+\nEpoch 85/100
+  Step 1/9 - Train Loss: 0.0817
+  Step 2/9 - Train Loss: 0.0923
+  Step 3/9 - Train Loss: 0.0760
+  Step 4/9 - Train Loss: 0.0505
+  Step 5/9 - Train Loss: 0.0404
+  Step 6/9 - Train Loss: 0.0561
+  Step 7/9 - Train Loss: 0.0691
+  Step 8/9 - Train Loss: 0.0713
+  Step 9/9 - Train Loss: 0.0651
+  --> Epoch 85 Summary: Train MSE: 0.0669 | Val MSE: 0.0846
+      Validation Clinical Metrics: PTV D95: 34.02 Gy | Bladder Mean: 27.66 Gy | Rectum Mean: 25.01 Gy
+  --> Saved new best model!
+\nEpoch 86/100
+  Step 1/9 - Train Loss: 0.0795
+  Step 2/9 - Train Loss: 0.0579
+  Step 3/9 - Train Loss: 0.0525
+  Step 4/9 - Train Loss: 0.0715
+  Step 5/9 - Train Loss: 0.0542
+  Step 6/9 - Train Loss: 0.0341
+  Step 7/9 - Train Loss: 0.0813
+  Step 8/9 - Train Loss: 0.0657
+  Step 9/9 - Train Loss: 0.0388
+  --> Epoch 86 Summary: Train MSE: 0.0595 | Val MSE: 0.0829
+      Validation Clinical Metrics: PTV D95: 32.77 Gy | Bladder Mean: 29.99 Gy | Rectum Mean: 27.71 Gy
+  --> Saved new best model!
+\nEpoch 87/100
+  Step 1/9 - Train Loss: 0.0761
+  Step 2/9 - Train Loss: 0.0652
+  Step 3/9 - Train Loss: 0.0588
+  Step 4/9 - Train Loss: 0.0518
+  Step 5/9 - Train Loss: 0.0819
+  Step 6/9 - Train Loss: 0.0704
+  Step 7/9 - Train Loss: 0.0942
+  Step 8/9 - Train Loss: 0.0664
+  Step 9/9 - Train Loss: 0.0551
+  --> Epoch 87 Summary: Train MSE: 0.0689 | Val MSE: 0.0840
+      Validation Clinical Metrics: PTV D95: 34.24 Gy | Bladder Mean: 22.60 Gy | Rectum Mean: 23.70 Gy
+\nEpoch 88/100
+  Step 1/9 - Train Loss: 0.0483
+  Step 2/9 - Train Loss: 0.0637
+  Step 3/9 - Train Loss: 0.0493
+  Step 4/9 - Train Loss: 0.0444
+  Step 5/9 - Train Loss: 0.0608
+  Step 6/9 - Train Loss: 0.0416
+  Step 7/9 - Train Loss: 0.0879
+  Step 8/9 - Train Loss: 0.0502
+  Step 9/9 - Train Loss: 0.0878
+  --> Epoch 88 Summary: Train MSE: 0.0593 | Val MSE: 0.0831
+      Validation Clinical Metrics: PTV D95: 32.81 Gy | Bladder Mean: 21.65 Gy | Rectum Mean: 26.40 Gy
+\nEpoch 89/100
+  Step 1/9 - Train Loss: 0.0516
+  Step 2/9 - Train Loss: 0.0656
+  Step 3/9 - Train Loss: 0.0520
+  Step 4/9 - Train Loss: 0.0533
+  Step 5/9 - Train Loss: 0.0614
+  Step 6/9 - Train Loss: 0.0941
+  Step 7/9 - Train Loss: 0.0632
+  Step 8/9 - Train Loss: 0.0584
+  Step 9/9 - Train Loss: 0.0522
+  --> Epoch 89 Summary: Train MSE: 0.0613 | Val MSE: 0.0814
+      Validation Clinical Metrics: PTV D95: 38.45 Gy | Bladder Mean: 27.51 Gy | Rectum Mean: 31.04 Gy
+  --> Saved new best model!
+\nEpoch 90/100
+  Step 1/9 - Train Loss: 0.0790
+  Step 2/9 - Train Loss: 0.0922
+  Step 3/9 - Train Loss: 0.0641
+  Step 4/9 - Train Loss: 0.0874
+  Step 5/9 - Train Loss: 0.0791
+  Step 6/9 - Train Loss: 0.0742
+  Step 7/9 - Train Loss: 0.0667
+  Step 8/9 - Train Loss: 0.0527
+  Step 9/9 - Train Loss: 0.0663
+  --> Epoch 90 Summary: Train MSE: 0.0735 | Val MSE: 0.0803
+      Validation Clinical Metrics: PTV D95: 35.99 Gy | Bladder Mean: 25.73 Gy | Rectum Mean: 24.18 Gy
+  --> Saved new best model!
+\nEpoch 91/100
+  Step 1/9 - Train Loss: 0.0786
+  Step 2/9 - Train Loss: 0.0633
+  Step 3/9 - Train Loss: 0.0823
+  Step 4/9 - Train Loss: 0.0509
+  Step 5/9 - Train Loss: 0.0615
+  Step 6/9 - Train Loss: 0.0456
+  Step 7/9 - Train Loss: 0.0652
+  Step 8/9 - Train Loss: 0.0622
+  Step 9/9 - Train Loss: 0.0541
+  --> Epoch 91 Summary: Train MSE: 0.0626 | Val MSE: 0.0797
+      Validation Clinical Metrics: PTV D95: 35.60 Gy | Bladder Mean: 26.41 Gy | Rectum Mean: 28.22 Gy
+  --> Saved new best model!
+\nEpoch 92/100
+  Step 1/9 - Train Loss: 0.0746
+  Step 2/9 - Train Loss: 0.0617
+  Step 3/9 - Train Loss: 0.0779
+  Step 4/9 - Train Loss: 0.0623
+  Step 5/9 - Train Loss: 0.0747
+  Step 6/9 - Train Loss: 0.0796
+  Step 7/9 - Train Loss: 0.0503
+  Step 8/9 - Train Loss: 0.0870
+  Step 9/9 - Train Loss: 0.0751
+  --> Epoch 92 Summary: Train MSE: 0.0715 | Val MSE: 0.0784
+      Validation Clinical Metrics: PTV D95: 32.72 Gy | Bladder Mean: 24.89 Gy | Rectum Mean: 26.14 Gy
+  --> Saved new best model!
+\nEpoch 93/100
+  Step 1/9 - Train Loss: 0.0617
+  Step 2/9 - Train Loss: 0.0757
+  Step 3/9 - Train Loss: 0.0582
+  Step 4/9 - Train Loss: 0.0867
+  Step 5/9 - Train Loss: 0.0633
+  Step 6/9 - Train Loss: 0.0632
+  Step 7/9 - Train Loss: 0.0375
+  Step 8/9 - Train Loss: 0.0775
+  Step 9/9 - Train Loss: 0.0607
+  --> Epoch 93 Summary: Train MSE: 0.0649 | Val MSE: 0.0768
+      Validation Clinical Metrics: PTV D95: 35.43 Gy | Bladder Mean: 25.26 Gy | Rectum Mean: 26.75 Gy
+  --> Saved new best model!
+\nEpoch 94/100
+  Step 1/9 - Train Loss: 0.0732
+  Step 2/9 - Train Loss: 0.0617
+  Step 3/9 - Train Loss: 0.0632
+  Step 4/9 - Train Loss: 0.0765
+  Step 5/9 - Train Loss: 0.0742
+  Step 6/9 - Train Loss: 0.0514
+  Step 7/9 - Train Loss: 0.0508
+  Step 8/9 - Train Loss: 0.0445
+  Step 9/9 - Train Loss: 0.0549
+  --> Epoch 94 Summary: Train MSE: 0.0611 | Val MSE: 0.0762
+      Validation Clinical Metrics: PTV D95: 33.33 Gy | Bladder Mean: 27.63 Gy | Rectum Mean: 25.06 Gy
+  --> Saved new best model!
+\nEpoch 95/100
+  Step 1/9 - Train Loss: 0.0572
+  Step 2/9 - Train Loss: 0.0726
+  Step 3/9 - Train Loss: 0.0754
+  Step 4/9 - Train Loss: 0.0673
+  Step 5/9 - Train Loss: 0.0587
+  Step 6/9 - Train Loss: 0.0682
+  Step 7/9 - Train Loss: 0.0468
+  Step 8/9 - Train Loss: 0.0514
+  Step 9/9 - Train Loss: 0.0713
+  --> Epoch 95 Summary: Train MSE: 0.0632 | Val MSE: 0.0753
+      Validation Clinical Metrics: PTV D95: 36.16 Gy | Bladder Mean: 27.51 Gy | Rectum Mean: 29.85 Gy
+  --> Saved new best model!
+\nEpoch 96/100
+  Step 1/9 - Train Loss: 0.0683
+  Step 2/9 - Train Loss: 0.0606
+  Step 3/9 - Train Loss: 0.0611
+  Step 4/9 - Train Loss: 0.0729
+  Step 5/9 - Train Loss: 0.0659
+  Step 6/9 - Train Loss: 0.0720
+  Step 7/9 - Train Loss: 0.0583
+  Step 8/9 - Train Loss: 0.0497
+  Step 9/9 - Train Loss: 0.0364
+  --> Epoch 96 Summary: Train MSE: 0.0606 | Val MSE: 0.0739
+      Validation Clinical Metrics: PTV D95: 36.50 Gy | Bladder Mean: 28.05 Gy | Rectum Mean: 25.89 Gy
+  --> Saved new best model!
+\nEpoch 97/100
+  Step 1/9 - Train Loss: 0.0346
+  Step 2/9 - Train Loss: 0.0581
+  Step 3/9 - Train Loss: 0.0742
+  Step 4/9 - Train Loss: 0.0766
+  Step 5/9 - Train Loss: 0.0472
+  Step 6/9 - Train Loss: 0.0704
+  Step 7/9 - Train Loss: 0.0699
+  Step 8/9 - Train Loss: 0.0320
+  Step 9/9 - Train Loss: 0.0481
+  --> Epoch 97 Summary: Train MSE: 0.0568 | Val MSE: 0.0738
+      Validation Clinical Metrics: PTV D95: 35.77 Gy | Bladder Mean: 25.50 Gy | Rectum Mean: 28.20 Gy
+  --> Saved new best model!
+\nEpoch 98/100
+  Step 1/9 - Train Loss: 0.0556
+  Step 2/9 - Train Loss: 0.0671
+  Step 3/9 - Train Loss: 0.0822
+  Step 4/9 - Train Loss: 0.0639
+  Step 5/9 - Train Loss: 0.0515
+  Step 6/9 - Train Loss: 0.0724
+  Step 7/9 - Train Loss: 0.0479
+  Step 8/9 - Train Loss: 0.0814
+  Step 9/9 - Train Loss: 0.0482
+  --> Epoch 98 Summary: Train MSE: 0.0633 | Val MSE: 0.0716
+      Validation Clinical Metrics: PTV D95: 38.99 Gy | Bladder Mean: 28.53 Gy | Rectum Mean: 25.80 Gy
+  --> Saved new best model!
+\nEpoch 99/100
+  Step 1/9 - Train Loss: 0.0725
+  Step 2/9 - Train Loss: 0.0604
+  Step 3/9 - Train Loss: 0.0756
+  Step 4/9 - Train Loss: 0.0593
+  Step 5/9 - Train Loss: 0.0642
+  Step 6/9 - Train Loss: 0.0733
+  Step 7/9 - Train Loss: 0.0488
+  Step 8/9 - Train Loss: 0.0722
+  Step 9/9 - Train Loss: 0.0597
+  --> Epoch 99 Summary: Train MSE: 0.0651 | Val MSE: 0.0708
+      Validation Clinical Metrics: PTV D95: 30.37 Gy | Bladder Mean: 24.25 Gy | Rectum Mean: 26.80 Gy
+  --> Saved new best model!
+\nEpoch 100/100
+  Step 1/9 - Train Loss: 0.0610
+  Step 2/9 - Train Loss: 0.0576
+  Step 3/9 - Train Loss: 0.0573
+  Step 4/9 - Train Loss: 0.0654
+  Step 5/9 - Train Loss: 0.0598
+  Step 6/9 - Train Loss: 0.0555
+  Step 7/9 - Train Loss: 0.0589
+  Step 8/9 - Train Loss: 0.0587
+  Step 9/9 - Train Loss: 0.0499
+  --> Epoch 100 Summary: Train MSE: 0.0582 | Val MSE: 0.0695
+      Validation Clinical Metrics: PTV D95: 34.57 Gy | Bladder Mean: 27.99 Gy | Rectum Mean: 28.40 Gy
+  --> Saved new best model!

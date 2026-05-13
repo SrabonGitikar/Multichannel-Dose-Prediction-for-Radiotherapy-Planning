@@ -200,7 +200,7 @@ def main():
     print(f"Model and dataloaders ready on {device}!")
     
     # Simple Training Loop
-    epochs = 300
+    epochs = 10
     best_val_loss = float('inf')
     
     for epoch in range(epochs):
