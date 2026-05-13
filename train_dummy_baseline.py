@@ -13,10 +13,11 @@ from monai.transforms import (
     EnsureChannelFirstd,
     Spacingd,
     NormalizeIntensityd,
-    RandCropByPosNegLabeld,
     RandFlipd,
     ToTensord,
-    ConcatItemsd
+    ConcatItemsd,
+    MapTransform,
+    RandCropByLabelClassesd
 )
 # pyrefly: ignore [missing-import]
 from monai.networks.nets import UNet
@@ -65,6 +66,32 @@ def get_data_dicts():
         
     return data_dicts
 
+class CreateBoundaryMaskd(MapTransform):
+    """
+    Merges separate masks/SDMs into a single 4-class label map for targeted cropping.
+    0 = Background, 1 = PTV, 2 = Bladder, 3 = Rectum
+    """
+    def __init__(self, keys, allow_missing_keys=False):
+        super().__init__(keys, allow_missing_keys)
+
+    def __call__(self, data):
+        d = dict(data)
+        
+        # PTV is binary (1.0). SDMs are <= 0.0 inside the organ.
+        ptv = d["ch_1"] >= 0.5        
+        bladder = d["ch_2"] <= 0.0    
+        rectum = d["ch_3"] <= 0.0     
+
+        crop_mask = torch.zeros_like(d["ch_1"])
+        
+        # Paint classes (PTV overwrites others if overlap occurs)
+        crop_mask[rectum] = 3.0
+        crop_mask[bladder] = 2.0
+        crop_mask[ptv] = 1.0  
+
+        d["crop_mask"] = crop_mask
+        return d
+
 # Transforms Pipeline
 train_transforms = Compose([
     # Load all NIfTI files
@@ -84,13 +111,16 @@ train_transforms = Compose([
     # We leave masks and SDMs as they are physically meaningful
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
     
-    # Targeted cropping: 50% tumor, 50% background to prevent global average local minimum
-    RandCropByPosNegLabeld(
+    # 1. Generate the multi-class map on the fly
+    CreateBoundaryMaskd(keys=["ch_1"]),
+    
+    # 2. Targeted Boundary Cropping: 33% PTV, 33% Bladder, 33% Rectum, 0% Background
+    RandCropByLabelClassesd(
         keys=["ch_0", "ch_1", "ch_2", "ch_3", "dose_label"],
-        label_key="ch_1", # PTV mask acts as the spatial anchor
+        label_key="crop_mask",  
         spatial_size=PATCH_SIZE,
-        pos=1,
-        neg=1,
+        num_classes=4,
+        ratios=[0.0, 1.0, 1.0, 1.0], 
         num_samples=4,
     ),
     
@@ -170,7 +200,7 @@ def main():
     print(f"Model and dataloaders ready on {device}!")
     
     # Simple Training Loop
-    epochs = 10
+    epochs = 300
     best_val_loss = float('inf')
     
     for epoch in range(epochs):
