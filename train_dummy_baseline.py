@@ -161,14 +161,9 @@ def main():
     data_dicts = get_data_dicts()
     print(f"Found {len(data_dicts)} patients.")
     
-    # Dynamic 80/20 train/val split
-    total_patients = len(data_dicts)
-    train_size = int(0.8 * total_patients)
-    
-    train_files = data_dicts[:train_size]
-    val_files = data_dicts[train_size:]
-    
-    print(f"Train: {len(train_files)} ({len(train_files)/total_patients*100:.1f}%), Val: {len(val_files)} ({len(val_files)/total_patients*100:.1f}%)")
+    # Simple split (9 train, 2 val)
+    train_files = data_dicts[:16]
+    val_files = data_dicts[16:]
     
     print("Building datasets (caching to disk to save memory)...")
     cache_dir = os.path.join(DATA_DIR, "persistent_cache")
@@ -205,7 +200,7 @@ def main():
     print(f"Model and dataloaders ready on {device}!")
     
     # Simple Training Loop
-    epochs = 10
+    epochs = 300
     best_val_loss = float('inf')
     
     for epoch in range(epochs):

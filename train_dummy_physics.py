@@ -220,9 +220,8 @@ def main():
     data_dicts = get_data_dicts()
     print(f"Found {len(data_dicts)} patients.")
     
-    # Simple split (9 train, 2 val)
-    train_files = data_dicts[:9]
-    val_files = data_dicts[9:]
+    train_files = data_dicts[:16]
+    val_files = data_dicts[16:]
     
     print("Building datasets (caching to disk to save memory)...")
     cache_dir = os.path.join(DATA_DIR, "persistent_cache")
