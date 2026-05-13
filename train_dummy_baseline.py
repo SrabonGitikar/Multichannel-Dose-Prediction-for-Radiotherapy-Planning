@@ -170,7 +170,7 @@ def main():
     print(f"Model and dataloaders ready on {device}!")
     
     # Simple Training Loop
-    epochs = 100
+    epochs = 10
     best_val_loss = float('inf')
     
     for epoch in range(epochs):
@@ -188,8 +188,10 @@ def main():
             
             # Autocast for mixed precision
             with torch.cuda.amp.autocast(enabled=torch.cuda.is_available(), dtype=torch.float16):
+                # Normalize targets to [0, 1] based on 60 Gy prescription
+                normalized_targets = targets / 60.0
                 outputs = model(inputs)
-                loss = loss_function(outputs, targets, inputs)
+                loss = loss_function(outputs, normalized_targets, inputs)
                 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -222,27 +224,30 @@ def main():
                         overlap=0.25
                     )
                 
-                loss = loss_function(outputs, targets, inputs)
+                # Calculate validation loss on NORMALIZED space
+                normalized_targets = targets / 60.0
+                loss = loss_function(outputs, normalized_targets, inputs)
                 val_loss += loss.item()
                 
-                # Calculate Clinical Metrics
+                # DENORMALIZE outputs back to real Gray for clinical metrics
+                outputs_gy = outputs * 60.0
+                
+                # Calculate Clinical Metrics using outputs_gy
                 ptv_mask = inputs[:, 1:2, ...] == 1.0
                 bladder_mask = inputs[:, 2:3, ...] <= 0.0
                 rectum_mask = inputs[:, 3:4, ...] <= 0.0
                 
-                # PTV D95 (5th percentile of dose inside PTV)
-                ptv_dose = outputs[ptv_mask]
+                ptv_dose = outputs_gy[ptv_mask]
                 if len(ptv_dose) > 0:
                     d95 = torch.quantile(ptv_dose, 0.05).item()
                 else:
                     d95 = 0.0
                 val_d95_sum += d95
                 
-                # Mean OAR Dose
-                bladder_dose = outputs[bladder_mask]
+                bladder_dose = outputs_gy[bladder_mask]
                 val_bladder_mean_sum += bladder_dose.mean().item() if len(bladder_dose) > 0 else 0.0
                 
-                rectum_dose = outputs[rectum_mask]
+                rectum_dose = outputs_gy[rectum_mask]
                 val_rectum_mean_sum += rectum_dose.mean().item() if len(rectum_dose) > 0 else 0.0
                 
         val_loss /= len(val_loader)
