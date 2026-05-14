@@ -1,0 +1,475 @@
+(dose_env) (base) sougata@chavi-dell-precision:/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning$ /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/dose_env/bin/python /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/train_dummy_physics.py
+Loading clinical constraints from ./prostate_prime_constraints.csv ...
+  V-Type constraints:  Bladder=5  Anorectum=5
+  D-Type constraints:  PTV coverage rules=5  PTV max=66.34 Gy
+    Bladder  V60.4Gy  opt=0.03  mand=0.05  norm_thresh=1.0067
+    Bladder  V56.0Gy  opt=0.08  mand=0.10  norm_thresh=0.9333
+    Bladder  V47.0Gy  opt=0.10  mand=0.14  norm_thresh=0.7833
+    Bladder  V38.0Gy  opt=0.20  mand=0.25  norm_thresh=0.6333
+    Bladder  V28.6Gy  opt=0.25  mand=0.35  norm_thresh=0.4767
+    Anorectum  V60.4Gy  opt=0.03  mand=0.05  norm_thresh=1.0067
+    Anorectum  V56.0Gy  opt=0.12  mand=0.15  norm_thresh=0.9333
+    Anorectum  V47.0Gy  opt=0.20  mand=0.25  norm_thresh=0.7833
+    Anorectum  V38.0Gy  opt=0.30  mand=0.40  norm_thresh=0.6333
+    Anorectum  V28.6Gy  opt=0.45  mand=0.55  norm_thresh=0.4767
+
+Finding data...
+Found 20 patients.
+Building 3D U-Net...
+Model and dataloaders ready on cuda!
+Epochs=300  Scheduler=CosineAnnealingLR  AMP=ON
+
+
+Epoch 1/300  (lr=1.00e-04)
+  Step 5/16  Loss=42.8360  [mse=0.6573  v_opt=0.00000  v_mand=0.00000  ptv=3.3078  smooth=3.1854]
+  Step 10/16  Loss=42.6585  [mse=0.6280  v_opt=0.00000  v_mand=0.00000  ptv=3.3324  smooth=3.0546]
+  Step 15/16  Loss=41.4411  [mse=0.5652  v_opt=0.00000  v_mand=0.00000  ptv=3.3047  smooth=2.7421]
+  Step 16/16  Loss=40.0545  [mse=0.5394  v_opt=0.00000  v_mand=0.00000  ptv=3.1999  smooth=2.6615]
+Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
+Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
+  --> Epoch 1 Summary:  Train=44.5061  Val=36.0870
+      Clinical:  PTV D95=-11.60 Gy  Bladder Mean=11.74 Gy  Rectum Mean=17.11 Gy
+  --> Saved new best model!
+
+Epoch 2/300  (lr=1.00e-04)
+  Step 5/16  Loss=35.1414  [mse=0.4616  v_opt=0.00003  v_mand=0.00000  ptv=2.8253  smooth=2.2720]
+  Step 10/16  Loss=31.9432  [mse=0.3567  v_opt=0.00218  v_mand=0.00000  ptv=2.6404  smooth=1.9682]
+  Step 15/16  Loss=26.3659  [mse=0.3650  v_opt=0.00321  v_mand=0.00000  ptv=2.1024  smooth=1.6854]
+  Step 16/16  Loss=27.0040  [mse=0.3457  v_opt=0.00826  v_mand=0.00000  ptv=2.1832  smooth=1.6988]
+  --> Epoch 2 Summary:  Train=31.1794  Val=22.7792
+      Clinical:  PTV D95=-3.95 Gy  Bladder Mean=19.58 Gy  Rectum Mean=27.60 Gy
+  --> Saved new best model!
+
+Epoch 3/300  (lr=1.00e-04)
+  Step 5/16  Loss=23.2613  [mse=0.2929  v_opt=0.02550  v_mand=0.00026  ptv=1.8772  smooth=1.5036]
+  Step 10/16  Loss=16.3701  [mse=0.2245  v_opt=0.11322  v_mand=0.02236  ptv=1.1917  smooth=1.4232]
+  Step 15/16  Loss=15.6093  [mse=0.2526  v_opt=0.23410  v_mand=0.08679  ptv=0.9122  smooth=1.3236]
+  Step 16/16  Loss=19.9172  [mse=0.2392  v_opt=0.14874  v_mand=0.03975  ptv=1.4908  smooth=1.3258]
+  --> Epoch 3 Summary:  Train=19.4662  Val=16.1775
+      Clinical:  PTV D95=15.12 Gy  Bladder Mean=28.09 Gy  Rectum Mean=36.78 Gy
+  --> Saved new best model!
+
+Epoch 4/300  (lr=1.00e-04)
+  Step 5/16  Loss=13.3465  [mse=0.2449  v_opt=0.25202  v_mand=0.09651  ptv=0.6706  smooth=1.2746]
+  Step 10/16  Loss=12.1472  [mse=0.2179  v_opt=0.15206  v_mand=0.05285  ptv=0.7150  smooth=1.1930]
+  Step 15/16  Loss=10.6461  [mse=0.2186  v_opt=0.19912  v_mand=0.06722  ptv=0.5235  smooth=1.1471]
+  Step 16/16  Loss=12.3205  [mse=0.2413  v_opt=0.11630  v_mand=0.02665  ptv=0.7948  smooth=1.0606]
+  --> Epoch 4 Summary:  Train=13.3424  Val=13.5991
+      Clinical:  PTV D95=19.84 Gy  Bladder Mean=30.07 Gy  Rectum Mean=35.85 Gy
+  --> Saved new best model!
+
+Epoch 5/300  (lr=1.00e-04)
+  Step 5/16  Loss=9.9596  [mse=0.1844  v_opt=0.26666  v_mand=0.10426  ptv=0.3957  smooth=1.0182]
+  Step 10/16  Loss=10.3262  [mse=0.2056  v_opt=0.11519  v_mand=0.02694  ptv=0.6392  smooth=0.9739]
+  Step 15/16  Loss=8.4063  [mse=0.1751  v_opt=0.17664  v_mand=0.06220  ptv=0.3766  smooth=0.9818]
+  Step 16/16  Loss=8.3053  [mse=0.2196  v_opt=0.10855  v_mand=0.02227  ptv=0.4315  smooth=1.0208]
+  --> Epoch 5 Summary:  Train=10.1392  Val=12.7463
+      Clinical:  PTV D95=27.52 Gy  Bladder Mean=31.53 Gy  Rectum Mean=39.61 Gy
+  --> Saved new best model!
+
+Epoch 6/300  (lr=9.99e-05)
+  Step 5/16  Loss=8.5617  [mse=0.1825  v_opt=0.08014  v_mand=0.02427  ptv=0.5024  smooth=0.9457]
+  Step 10/16  Loss=7.2993  [mse=0.2444  v_opt=0.08872  v_mand=0.01541  ptv=0.3408  smooth=0.8837]
+  Step 15/16  Loss=5.5644  [mse=0.1791  v_opt=0.14334  v_mand=0.03890  ptv=0.1591  smooth=0.9234]
+  Step 16/16  Loss=10.4905  [mse=0.2399  v_opt=0.07701  v_mand=0.01355  ptv=0.6607  smooth=0.9915]
+  --> Epoch 6 Summary:  Train=7.7205  Val=12.0592
+      Clinical:  PTV D95=31.70 Gy  Bladder Mean=33.68 Gy  Rectum Mean=38.68 Gy
+  --> Saved new best model!
+
+Epoch 7/300  (lr=9.99e-05)
+  Step 5/16  Loss=7.2545  [mse=0.2041  v_opt=0.24690  v_mand=0.09303  ptv=0.1470  smooth=0.9242]
+  Step 10/16  Loss=6.3712  [mse=0.2000  v_opt=0.12466  v_mand=0.02923  ptv=0.2464  smooth=0.9272]
+  Step 15/16  Loss=4.9400  [mse=0.2168  v_opt=0.08968  v_mand=0.02070  ptv=0.1157  smooth=0.9176]
+  Step 16/16  Loss=10.2823  [mse=0.2208  v_opt=0.05585  v_mand=0.01204  ptv=0.6635  smooth=1.0270]
+  --> Epoch 7 Summary:  Train=6.4731  Val=9.3255
+      Clinical:  PTV D95=34.81 Gy  Bladder Mean=32.68 Gy  Rectum Mean=36.02 Gy
+  --> Saved new best model!
+
+Epoch 8/300  (lr=9.99e-05)
+  Step 5/16  Loss=5.6340  [mse=0.2247  v_opt=0.10271  v_mand=0.03981  ptv=0.1220  smooth=0.9662]
+  Step 10/16  Loss=6.1050  [mse=0.2141  v_opt=0.08153  v_mand=0.01984  ptv=0.2416  smooth=0.8890]
+  Step 15/16  Loss=4.1719  [mse=0.1803  v_opt=0.04664  v_mand=0.01153  ptv=0.1062  smooth=0.9251]
+  Step 16/16  Loss=4.0953  [mse=0.1703  v_opt=0.13254  v_mand=0.03786  ptv=0.0293  smooth=0.8874]
+  --> Epoch 8 Summary:  Train=5.5761  Val=9.2857
+      Clinical:  PTV D95=37.76 Gy  Bladder Mean=31.12 Gy  Rectum Mean=39.06 Gy
+  --> Saved new best model!
+
+Epoch 9/300  (lr=9.98e-05)
+  Step 5/16  Loss=3.8644  [mse=0.1751  v_opt=0.03315  v_mand=0.00798  ptv=0.0947  smooth=0.9013]
+  Step 10/16  Loss=9.4596  [mse=0.2020  v_opt=0.04415  v_mand=0.01041  ptv=0.6156  smooth=0.9347]
+  Step 15/16  Loss=3.9221  [mse=0.2118  v_opt=0.02054  v_mand=0.00809  ptv=0.0639  smooth=0.9218]
+  Step 16/16  Loss=4.6185  [mse=0.1695  v_opt=0.16302  v_mand=0.05491  ptv=0.0398  smooth=0.8268]
+  --> Epoch 9 Summary:  Train=4.7281  Val=10.9603
+      Clinical:  PTV D95=43.04 Gy  Bladder Mean=33.36 Gy  Rectum Mean=40.94 Gy
+
+Epoch 10/300  (lr=9.98e-05)
+  Step 5/16  Loss=4.3977  [mse=0.2029  v_opt=0.01708  v_mand=0.00708  ptv=0.1188  smooth=0.9703]
+  Step 10/16  Loss=4.1232  [mse=0.1776  v_opt=0.03748  v_mand=0.00763  ptv=0.1295  smooth=0.7869]
+  Step 15/16  Loss=3.8585  [mse=0.1622  v_opt=0.06886  v_mand=0.01722  ptv=0.0845  smooth=0.8239]
+  Step 16/16  Loss=3.5122  [mse=0.1730  v_opt=0.07329  v_mand=0.01312  ptv=0.0529  smooth=0.7782]
+  --> Epoch 10 Summary:  Train=4.4341  Val=8.2835
+      Clinical:  PTV D95=40.63 Gy  Bladder Mean=29.95 Gy  Rectum Mean=38.58 Gy
+  --> Saved new best model!
+
+Epoch 11/300  (lr=9.97e-05)
+  Step 5/16  Loss=3.4103  [mse=0.1988  v_opt=0.03233  v_mand=0.00775  ptv=0.0250  smooth=0.9133]
+  Step 10/16  Loss=2.9532  [mse=0.1514  v_opt=0.02226  v_mand=0.00608  ptv=0.0396  smooth=0.8467]
+  Step 15/16  Loss=3.8660  [mse=0.2167  v_opt=0.01611  v_mand=0.00906  ptv=0.0554  smooth=0.8870]
+  Step 16/16  Loss=3.3965  [mse=0.1608  v_opt=0.10984  v_mand=0.02810  ptv=0.0147  smooth=0.7189]
+  --> Epoch 11 Summary:  Train=3.7885  Val=9.2206
+      Clinical:  PTV D95=45.20 Gy  Bladder Mean=30.88 Gy  Rectum Mean=40.56 Gy
+
+Epoch 12/300  (lr=9.97e-05)
+  Step 5/16  Loss=2.8800  [mse=0.1563  v_opt=0.01606  v_mand=0.00192  ptv=0.0462  smooth=0.7743]
+  Step 10/16  Loss=3.4621  [mse=0.1544  v_opt=0.06285  v_mand=0.01476  ptv=0.0681  smooth=0.7427]
+  Step 15/16  Loss=3.4688  [mse=0.1703  v_opt=0.09204  v_mand=0.02518  ptv=0.0255  smooth=0.6975]
+  Step 16/16  Loss=3.7325  [mse=0.1590  v_opt=0.02299  v_mand=0.00205  ptv=0.1348  smooth=0.6969]
+  --> Epoch 12 Summary:  Train=3.4478  Val=6.7852
+      Clinical:  PTV D95=43.77 Gy  Bladder Mean=28.66 Gy  Rectum Mean=37.31 Gy
+  --> Saved new best model!
+
+Epoch 13/300  (lr=9.96e-05)
+  Step 5/16  Loss=3.3261  [mse=0.1407  v_opt=0.00365  v_mand=0.00115  ptv=0.1109  smooth=0.7741]
+  Step 10/16  Loss=2.7430  [mse=0.1665  v_opt=0.03189  v_mand=0.00400  ptv=0.0180  smooth=0.7350]
+  Step 15/16  Loss=2.4792  [mse=0.1584  v_opt=0.02794  v_mand=0.00038  ptv=0.0164  smooth=0.6658]
+  Step 16/16  Loss=2.4755  [mse=0.1268  v_opt=0.03908  v_mand=0.00647  ptv=0.0260  smooth=0.7074]
+  --> Epoch 13 Summary:  Train=3.3242  Val=5.7284
+      Clinical:  PTV D95=45.27 Gy  Bladder Mean=29.49 Gy  Rectum Mean=34.84 Gy
+  --> Saved new best model!
+
+Epoch 14/300  (lr=9.95e-05)
+  Step 5/16  Loss=5.1671  [mse=0.1653  v_opt=0.00055  v_mand=0.00001  ptv=0.2828  smooth=0.6857]
+  Step 10/16  Loss=3.2270  [mse=0.1913  v_opt=0.00273  v_mand=0.00101  ptv=0.0524  smooth=0.7593]
+  Step 15/16  Loss=2.6066  [mse=0.1562  v_opt=0.01659  v_mand=0.00043  ptv=0.0361  smooth=0.6403]
+  Step 16/16  Loss=2.4070  [mse=0.1258  v_opt=0.01573  v_mand=0.00045  ptv=0.0442  smooth=0.6639]
+  --> Epoch 14 Summary:  Train=2.8809  Val=5.8731
+      Clinical:  PTV D95=46.68 Gy  Bladder Mean=30.31 Gy  Rectum Mean=34.42 Gy
+
+Epoch 15/300  (lr=9.95e-05)
+  Step 5/16  Loss=2.8315  [mse=0.1376  v_opt=0.05838  v_mand=0.00902  ptv=0.0474  smooth=0.6389]
+  Step 10/16  Loss=2.0954  [mse=0.1243  v_opt=0.00060  v_mand=0.00000  ptv=0.0212  smooth=0.6391]
+  Step 15/16  Loss=2.5346  [mse=0.1218  v_opt=0.01411  v_mand=0.00035  ptv=0.0675  smooth=0.6050]
+  Step 16/16  Loss=2.4016  [mse=0.1443  v_opt=0.00991  v_mand=0.00000  ptv=0.0336  smooth=0.6027]
+  --> Epoch 15 Summary:  Train=2.7336  Val=5.6840
+      Clinical:  PTV D95=46.58 Gy  Bladder Mean=29.13 Gy  Rectum Mean=34.38 Gy
+  --> Saved new best model!
+
+Epoch 16/300  (lr=9.94e-05)
+  Step 5/16  Loss=2.3140  [mse=0.1451  v_opt=0.00288  v_mand=0.00000  ptv=0.0231  smooth=0.6268]
+  Step 10/16  Loss=1.9787  [mse=0.1288  v_opt=0.01538  v_mand=0.00003  ptv=0.0114  smooth=0.5454]
+  Step 15/16  Loss=2.5656  [mse=0.1449  v_opt=0.04164  v_mand=0.00354  ptv=0.0383  smooth=0.5619]
+  Step 16/16  Loss=2.0222  [mse=0.1195  v_opt=0.02642  v_mand=0.00279  ptv=0.0136  smooth=0.5685]
+  --> Epoch 16 Summary:  Train=2.4786  Val=7.8664
+      Clinical:  PTV D95=50.01 Gy  Bladder Mean=31.32 Gy  Rectum Mean=38.18 Gy
+
+Epoch 17/300  (lr=9.93e-05)
+  Step 5/16  Loss=2.5689  [mse=0.1483  v_opt=0.03649  v_mand=0.00491  ptv=0.0327  smooth=0.5632]
+  Step 10/16  Loss=2.2368  [mse=0.1453  v_opt=0.00399  v_mand=0.00000  ptv=0.0167  smooth=0.6091]
+  Step 15/16  Loss=2.1154  [mse=0.1231  v_opt=0.02074  v_mand=0.00020  ptv=0.0217  smooth=0.6213]
+  Step 16/16  Loss=1.9542  [mse=0.1173  v_opt=0.01287  v_mand=0.00002  ptv=0.0152  smooth=0.6028]
+  --> Epoch 17 Summary:  Train=2.6094  Val=8.2188
+      Clinical:  PTV D95=49.60 Gy  Bladder Mean=30.83 Gy  Rectum Mean=39.14 Gy
+
+Epoch 18/300  (lr=9.92e-05)
+  Step 5/16  Loss=2.4814  [mse=0.1567  v_opt=0.00378  v_mand=0.00000  ptv=0.0243  smooth=0.6643]
+  Step 10/16  Loss=2.5065  [mse=0.1574  v_opt=0.00281  v_mand=0.00000  ptv=0.0304  smooth=0.6225]
+  Step 15/16  Loss=2.0132  [mse=0.1223  v_opt=0.00858  v_mand=0.00000  ptv=0.0209  smooth=0.5642]
+  Step 16/16  Loss=2.4770  [mse=0.1327  v_opt=0.03765  v_mand=0.00302  ptv=0.0415  smooth=0.5846]
+  --> Epoch 18 Summary:  Train=2.5629  Val=6.5941
+      Clinical:  PTV D95=49.39 Gy  Bladder Mean=30.33 Gy  Rectum Mean=37.51 Gy
+
+Epoch 19/300  (lr=9.91e-05)
+  Step 5/16  Loss=2.5831  [mse=0.1407  v_opt=0.03804  v_mand=0.00333  ptv=0.0455  smooth=0.5612]
+  Step 10/16  Loss=1.9436  [mse=0.1197  v_opt=0.01423  v_mand=0.00004  ptv=0.0199  smooth=0.5188]
+  Step 15/16  Loss=2.0442  [mse=0.1321  v_opt=0.01354  v_mand=0.00000  ptv=0.0194  smooth=0.5017]
+  Step 16/16  Loss=2.4901  [mse=0.1492  v_opt=0.00006  v_mand=0.00000  ptv=0.0377  smooth=0.6203]
+  --> Epoch 19 Summary:  Train=2.2318  Val=6.0441
+      Clinical:  PTV D95=48.21 Gy  Bladder Mean=28.79 Gy  Rectum Mean=36.44 Gy
+
+Epoch 20/300  (lr=9.90e-05)
+  Step 5/16  Loss=2.0548  [mse=0.1089  v_opt=0.02235  v_mand=0.00190  ptv=0.0359  smooth=0.5148]
+  Step 10/16  Loss=2.5703  [mse=0.1245  v_opt=0.04013  v_mand=0.00690  ptv=0.0543  smooth=0.5302]
+  Step 15/16  Loss=2.3130  [mse=0.1207  v_opt=0.02775  v_mand=0.00196  ptv=0.0486  smooth=0.5162]
+  Step 16/16  Loss=3.1548  [mse=0.1324  v_opt=0.00003  v_mand=0.00000  ptv=0.1254  smooth=0.5764]
+  --> Epoch 20 Summary:  Train=2.3858  Val=6.5252
+      Clinical:  PTV D95=46.20 Gy  Bladder Mean=27.94 Gy  Rectum Mean=37.84 Gy
+
+Epoch 21/300  (lr=9.89e-05)
+  Step 5/16  Loss=1.9689  [mse=0.1255  v_opt=0.02114  v_mand=0.00096  ptv=0.0105  smooth=0.5428]
+  Step 10/16  Loss=3.0572  [mse=0.1197  v_opt=0.00253  v_mand=0.00000  ptv=0.1312  smooth=0.5439]
+  Step 15/16  Loss=1.8073  [mse=0.1073  v_opt=0.01401  v_mand=0.00006  ptv=0.0226  smooth=0.4783]
+  Step 16/16  Loss=1.9188  [mse=0.1157  v_opt=0.05039  v_mand=0.00222  ptv=0.0121  smooth=0.4852]
+  --> Epoch 21 Summary:  Train=2.1125  Val=6.8433
+      Clinical:  PTV D95=50.10 Gy  Bladder Mean=29.46 Gy  Rectum Mean=37.80 Gy
+
+Epoch 22/300  (lr=9.88e-05)
+  Step 5/16  Loss=2.5187  [mse=0.1067  v_opt=0.07851  v_mand=0.02164  ptv=0.0313  smooth=0.4410]
+  Step 10/16  Loss=1.9282  [mse=0.1008  v_opt=0.00687  v_mand=0.00000  ptv=0.0426  smooth=0.4805]
+  Step 15/16  Loss=2.4169  [mse=0.1055  v_opt=0.07141  v_mand=0.02133  ptv=0.0203  smooth=0.4824]
+  Step 16/16  Loss=2.1138  [mse=0.1427  v_opt=0.00105  v_mand=0.00000  ptv=0.0145  smooth=0.5392]
+  --> Epoch 22 Summary:  Train=2.1259  Val=5.3131
+      Clinical:  PTV D95=49.81 Gy  Bladder Mean=29.49 Gy  Rectum Mean=34.53 Gy
+  --> Saved new best model!
+
+Epoch 23/300  (lr=9.87e-05)
+  Step 5/16  Loss=2.1577  [mse=0.1099  v_opt=0.03703  v_mand=0.00232  ptv=0.0463  smooth=0.4639]
+  Step 10/16  Loss=1.8401  [mse=0.1249  v_opt=0.00979  v_mand=0.00000  ptv=0.0106  smooth=0.4656]
+  Step 15/16  Loss=1.7731  [mse=0.1092  v_opt=0.00514  v_mand=0.00000  ptv=0.0184  smooth=0.4870]
+  Step 16/16  Loss=1.8391  [mse=0.1175  v_opt=0.00591  v_mand=0.00000  ptv=0.0237  smooth=0.4160]
+  --> Epoch 23 Summary:  Train=1.9194  Val=4.4021
+      Clinical:  PTV D95=47.14 Gy  Bladder Mean=26.94 Gy  Rectum Mean=33.34 Gy
+  --> Saved new best model!
+
+Epoch 24/300  (lr=9.86e-05)
+  Step 5/16  Loss=1.8152  [mse=0.1176  v_opt=0.01573  v_mand=0.00029  ptv=0.0105  smooth=0.4955]
+  Step 10/16  Loss=2.0172  [mse=0.1483  v_opt=0.00958  v_mand=0.00000  ptv=0.0050  smooth=0.4646]
+  Step 15/16  Loss=2.2538  [mse=0.1158  v_opt=0.00043  v_mand=0.00000  ptv=0.0604  smooth=0.4905]
+  Step 16/16  Loss=1.4653  [mse=0.0987  v_opt=0.00542  v_mand=0.00000  ptv=0.0034  smooth=0.4340]
+  --> Epoch 24 Summary:  Train=1.8047  Val=5.0181
+      Clinical:  PTV D95=47.98 Gy  Bladder Mean=27.05 Gy  Rectum Mean=35.75 Gy
+
+Epoch 25/300  (lr=9.84e-05)
+  Step 5/16  Loss=1.8115  [mse=0.1017  v_opt=0.03458  v_mand=0.00384  ptv=0.0212  smooth=0.4173]
+  Step 10/16  Loss=1.5474  [mse=0.0976  v_opt=0.00005  v_mand=0.00000  ptv=0.0131  smooth=0.4402]
+  Step 15/16  Loss=1.8742  [mse=0.1308  v_opt=0.00006  v_mand=0.00000  ptv=0.0103  smooth=0.4637]
+  Step 16/16  Loss=1.5219  [mse=0.1007  v_opt=0.01061  v_mand=0.00000  ptv=0.0085  smooth=0.4084]
+  --> Epoch 25 Summary:  Train=1.6981  Val=6.4589
+      Clinical:  PTV D95=50.86 Gy  Bladder Mean=29.62 Gy  Rectum Mean=37.87 Gy
+
+Epoch 26/300  (lr=9.83e-05)
+  Step 5/16  Loss=1.9663  [mse=0.1341  v_opt=0.00000  v_mand=0.00000  ptv=0.0167  smooth=0.4587]
+  Step 10/16  Loss=1.6898  [mse=0.1164  v_opt=0.00143  v_mand=0.00000  ptv=0.0085  smooth=0.4376]
+  Step 15/16  Loss=1.6814  [mse=0.1117  v_opt=0.00110  v_mand=0.00000  ptv=0.0108  smooth=0.4543]
+  Step 16/16  Loss=3.0167  [mse=0.1136  v_opt=0.12606  v_mand=0.04143  ptv=0.0173  smooth=0.4204]
+  --> Epoch 26 Summary:  Train=1.7744  Val=4.5429
+      Clinical:  PTV D95=49.01 Gy  Bladder Mean=28.26 Gy  Rectum Mean=32.81 Gy
+
+Epoch 27/300  (lr=9.82e-05)
+  Step 5/16  Loss=2.6890  [mse=0.1262  v_opt=0.00131  v_mand=0.00000  ptv=0.0995  smooth=0.4296]
+  Step 10/16  Loss=2.2031  [mse=0.1290  v_opt=0.00116  v_mand=0.00000  ptv=0.0449  smooth=0.4618]
+  Step 15/16  Loss=2.0007  [mse=0.1056  v_opt=0.01116  v_mand=0.00003  ptv=0.0480  smooth=0.4416]
+  Step 16/16  Loss=1.8910  [mse=0.0929  v_opt=0.01932  v_mand=0.00150  ptv=0.0468  smooth=0.4179]
+  --> Epoch 27 Summary:  Train=2.0325  Val=5.2509
+      Clinical:  PTV D95=48.83 Gy  Bladder Mean=28.75 Gy  Rectum Mean=33.64 Gy
+
+Epoch 28/300  (lr=9.80e-05)
+  Step 5/16  Loss=1.5513  [mse=0.0897  v_opt=0.00687  v_mand=0.00000  ptv=0.0247  smooth=0.3939]
+  Step 10/16  Loss=1.9103  [mse=0.1136  v_opt=0.00492  v_mand=0.00000  ptv=0.0366  smooth=0.3984]
+  Step 15/16  Loss=1.7934  [mse=0.1027  v_opt=0.02462  v_mand=0.00303  ptv=0.0249  smooth=0.3917]
+  Step 16/16  Loss=1.3361  [mse=0.0850  v_opt=0.01250  v_mand=0.00014  ptv=0.0070  smooth=0.3868]
+  --> Epoch 28 Summary:  Train=1.7817  Val=5.8931
+      Clinical:  PTV D95=50.31 Gy  Bladder Mean=30.59 Gy  Rectum Mean=35.10 Gy
+
+Epoch 29/300  (lr=9.79e-05)
+  Step 5/16  Loss=1.2755  [mse=0.0833  v_opt=0.00354  v_mand=0.00000  ptv=0.0076  smooth=0.3599]
+  Step 10/16  Loss=1.6431  [mse=0.1016  v_opt=0.00191  v_mand=0.00000  ptv=0.0226  smooth=0.3974]
+  Step 15/16  Loss=1.5692  [mse=0.1105  v_opt=0.01530  v_mand=0.00000  ptv=0.0085  smooth=0.3491]
+  Step 16/16  Loss=1.3828  [mse=0.0965  v_opt=0.00145  v_mand=0.00000  ptv=0.0050  smooth=0.3641]
+  --> Epoch 29 Summary:  Train=1.5731  Val=5.3513
+      Clinical:  PTV D95=48.77 Gy  Bladder Mean=26.02 Gy  Rectum Mean=36.85 Gy
+
+Epoch 30/300  (lr=9.77e-05)
+  Step 5/16  Loss=1.3536  [mse=0.0909  v_opt=0.00540  v_mand=0.00000  ptv=0.0076  smooth=0.3576]
+  Step 10/16  Loss=1.3537  [mse=0.0823  v_opt=0.02302  v_mand=0.00212  ptv=0.0117  smooth=0.3146]
+  Step 15/16  Loss=2.9594  [mse=0.1267  v_opt=0.00000  v_mand=0.00000  ptv=0.1317  smooth=0.3752]
+  Step 16/16  Loss=1.6242  [mse=0.1063  v_opt=0.00457  v_mand=0.00000  ptv=0.0204  smooth=0.3483]
+  --> Epoch 30 Summary:  Train=1.6387  Val=4.0311
+      Clinical:  PTV D95=47.11 Gy  Bladder Mean=29.05 Gy  Rectum Mean=27.94 Gy
+  --> Saved new best model!
+
+Epoch 31/300  (lr=9.76e-05)
+  Step 5/16  Loss=2.0843  [mse=0.1165  v_opt=0.00190  v_mand=0.00000  ptv=0.0548  smooth=0.3675]
+  Step 10/16  Loss=1.3793  [mse=0.0965  v_opt=0.00105  v_mand=0.00000  ptv=0.0080  smooth=0.3323]
+  Step 15/16  Loss=1.2911  [mse=0.0866  v_opt=0.00005  v_mand=0.00000  ptv=0.0069  smooth=0.3558]
+  Step 16/16  Loss=1.3098  [mse=0.0848  v_opt=0.00040  v_mand=0.00000  ptv=0.0111  smooth=0.3497]
+  --> Epoch 31 Summary:  Train=1.6146  Val=4.3741
+      Clinical:  PTV D95=48.22 Gy  Bladder Mean=26.37 Gy  Rectum Mean=33.70 Gy
+
+Epoch 32/300  (lr=9.74e-05)
+  Step 5/16  Loss=1.1864  [mse=0.0774  v_opt=0.00854  v_mand=0.00000  ptv=0.0064  smooth=0.3313]
+  Step 10/16  Loss=1.4940  [mse=0.0986  v_opt=0.00760  v_mand=0.00000  ptv=0.0177  smooth=0.3160]
+  Step 15/16  Loss=1.6744  [mse=0.1018  v_opt=0.04298  v_mand=0.00791  ptv=0.0066  smooth=0.3065]
+  Step 16/16  Loss=1.2522  [mse=0.0854  v_opt=0.00334  v_mand=0.00000  ptv=0.0104  smooth=0.2875]
+  --> Epoch 32 Summary:  Train=1.4302  Val=5.0374
+      Clinical:  PTV D95=51.01 Gy  Bladder Mean=27.00 Gy  Rectum Mean=36.06 Gy
+
+Epoch 33/300  (lr=9.72e-05)
+  Step 5/16  Loss=1.1358  [mse=0.0739  v_opt=0.00239  v_mand=0.00000  ptv=0.0093  smooth=0.2985]
+  Step 10/16  Loss=1.2747  [mse=0.0833  v_opt=0.00000  v_mand=0.00000  ptv=0.0127  smooth=0.3150]
+  Step 15/16  Loss=1.1848  [mse=0.0845  v_opt=0.00661  v_mand=0.00000  ptv=0.0060  smooth=0.2664]
+  Step 16/16  Loss=1.3484  [mse=0.0861  v_opt=0.01948  v_mand=0.00115  ptv=0.0153  smooth=0.2673]
+  --> Epoch 33 Summary:  Train=1.3799  Val=5.3196
+      Clinical:  PTV D95=51.84 Gy  Bladder Mean=29.20 Gy  Rectum Mean=35.81 Gy
+
+Epoch 34/300  (lr=9.71e-05)
+  Step 5/16  Loss=1.3640  [mse=0.0937  v_opt=0.00190  v_mand=0.00000  ptv=0.0140  smooth=0.2830]
+  Step 10/16  Loss=1.2742  [mse=0.0956  v_opt=0.00168  v_mand=0.00000  ptv=0.0054  smooth=0.2611]
+  Step 15/16  Loss=1.2691  [mse=0.0795  v_opt=0.00302  v_mand=0.00000  ptv=0.0204  smooth=0.2637]
+  Step 16/16  Loss=1.1438  [mse=0.0804  v_opt=0.00036  v_mand=0.00000  ptv=0.0065  smooth=0.2736]
+  --> Epoch 34 Summary:  Train=1.4184  Val=3.9736
+      Clinical:  PTV D95=49.15 Gy  Bladder Mean=29.22 Gy  Rectum Mean=30.56 Gy
+  --> Saved new best model!
+
+Epoch 35/300  (lr=9.69e-05)
+  Step 5/16  Loss=1.5969  [mse=0.0909  v_opt=0.01646  v_mand=0.00080  ptv=0.0379  smooth=0.2559]
+  Step 10/16  Loss=1.4221  [mse=0.0911  v_opt=0.01118  v_mand=0.00132  ptv=0.0200  smooth=0.2559]
+  Step 15/16  Loss=1.2614  [mse=0.0793  v_opt=0.01668  v_mand=0.00036  ptv=0.0177  smooth=0.2486]
+  Step 16/16  Loss=1.1339  [mse=0.0753  v_opt=0.00000  v_mand=0.00000  ptv=0.0092  smooth=0.2897]
+  --> Epoch 35 Summary:  Train=1.3670  Val=4.1677
+      Clinical:  PTV D95=49.64 Gy  Bladder Mean=26.29 Gy  Rectum Mean=34.36 Gy
+
+Epoch 36/300  (lr=9.67e-05)
+  Step 5/16  Loss=1.2915  [mse=0.0933  v_opt=0.00002  v_mand=0.00000  ptv=0.0086  smooth=0.2731]
+  Step 10/16  Loss=1.0272  [mse=0.0693  v_opt=0.00396  v_mand=0.00000  ptv=0.0076  smooth=0.2496]
+  Step 15/16  Loss=1.3259  [mse=0.1035  v_opt=0.00057  v_mand=0.00000  ptv=0.0028  smooth=0.2617]
+  Step 16/16  Loss=1.2475  [mse=0.0863  v_opt=0.00048  v_mand=0.00000  ptv=0.0102  smooth=0.2820]
+  --> Epoch 36 Summary:  Train=1.2123  Val=5.1558
+      Clinical:  PTV D95=51.29 Gy  Bladder Mean=28.76 Gy  Rectum Mean=36.00 Gy
+
+Epoch 37/300  (lr=9.65e-05)
+  Step 5/16  Loss=1.2796  [mse=0.0888  v_opt=0.02396  v_mand=0.00159  ptv=0.0062  smooth=0.2417]
+  Step 10/16  Loss=1.1537  [mse=0.0817  v_opt=0.00197  v_mand=0.00000  ptv=0.0090  smooth=0.2421]
+  Step 15/16  Loss=1.0182  [mse=0.0700  v_opt=0.00257  v_mand=0.00000  ptv=0.0074  smooth=0.2395]
+  Step 16/16  Loss=1.1738  [mse=0.0890  v_opt=0.00214  v_mand=0.00000  ptv=0.0050  smooth=0.2300]
+  --> Epoch 37 Summary:  Train=1.1778  Val=4.2024
+      Clinical:  PTV D95=49.89 Gy  Bladder Mean=27.38 Gy  Rectum Mean=34.52 Gy
+
+Epoch 38/300  (lr=9.63e-05)
+  Step 5/16  Loss=1.1243  [mse=0.0868  v_opt=0.00192  v_mand=0.00000  ptv=0.0032  smooth=0.2208]
+  Step 10/16  Loss=1.0614  [mse=0.0779  v_opt=0.00583  v_mand=0.00000  ptv=0.0063  smooth=0.2071]
+  Step 15/16  Loss=1.2761  [mse=0.0968  v_opt=0.00542  v_mand=0.00000  ptv=0.0075  smooth=0.2224]
+  Step 16/16  Loss=1.0931  [mse=0.0631  v_opt=0.01888  v_mand=0.00129  ptv=0.0148  smooth=0.2444]
+  --> Epoch 38 Summary:  Train=1.1681  Val=3.4346
+      Clinical:  PTV D95=49.99 Gy  Bladder Mean=28.06 Gy  Rectum Mean=29.64 Gy
+  --> Saved new best model!
+
+Epoch 39/300  (lr=9.61e-05)
+  Step 5/16  Loss=1.1701  [mse=0.0883  v_opt=0.00315  v_mand=0.00000  ptv=0.0067  smooth=0.2133]
+  Step 10/16  Loss=1.0790  [mse=0.0727  v_opt=0.00616  v_mand=0.00000  ptv=0.0123  smooth=0.2166]
+  Step 15/16  Loss=0.9863  [mse=0.0725  v_opt=0.00088  v_mand=0.00000  ptv=0.0049  smooth=0.2105]
+  Step 16/16  Loss=0.8100  [mse=0.0566  v_opt=0.00707  v_mand=0.00000  ptv=0.0024  smooth=0.2062]
+  --> Epoch 39 Summary:  Train=1.0077  Val=4.0473
+      Clinical:  PTV D95=50.15 Gy  Bladder Mean=27.55 Gy  Rectum Mean=34.22 Gy
+
+Epoch 40/300  (lr=9.59e-05)
+  Step 5/16  Loss=0.9730  [mse=0.0541  v_opt=0.00248  v_mand=0.00000  ptv=0.0196  smooth=0.2312]
+  Step 10/16  Loss=0.8054  [mse=0.0589  v_opt=0.00218  v_mand=0.00000  ptv=0.0017  smooth=0.1944]
+  Step 15/16  Loss=0.9218  [mse=0.0693  v_opt=0.00764  v_mand=0.00000  ptv=0.0021  smooth=0.1926]
+  Step 16/16  Loss=0.9167  [mse=0.0692  v_opt=0.00000  v_mand=0.00000  ptv=0.0037  smooth=0.1882]
+  --> Epoch 40 Summary:  Train=1.0192  Val=3.5324
+      Clinical:  PTV D95=48.73 Gy  Bladder Mean=26.15 Gy  Rectum Mean=33.35 Gy
+
+Epoch 41/300  (lr=9.57e-05)
+  Step 5/16  Loss=1.0200  [mse=0.0743  v_opt=0.00038  v_mand=0.00000  ptv=0.0090  smooth=0.1863]
+  Step 10/16  Loss=1.0178  [mse=0.0780  v_opt=0.00000  v_mand=0.00000  ptv=0.0061  smooth=0.1774]
+  Step 15/16  Loss=1.1502  [mse=0.0944  v_opt=0.00000  v_mand=0.00000  ptv=0.0014  smooth=0.1926]
+  Step 16/16  Loss=0.7682  [mse=0.0547  v_opt=0.00468  v_mand=0.00000  ptv=0.0022  smooth=0.1898]
+  --> Epoch 41 Summary:  Train=0.9998  Val=3.9261
+      Clinical:  PTV D95=50.53 Gy  Bladder Mean=26.77 Gy  Rectum Mean=34.72 Gy
+
+Epoch 42/300  (lr=9.55e-05)
+  Step 5/16  Loss=0.9830  [mse=0.0685  v_opt=0.00924  v_mand=0.00000  ptv=0.0096  smooth=0.1834]
+  Step 10/16  Loss=1.0541  [mse=0.0866  v_opt=0.00107  v_mand=0.00000  ptv=0.0018  smooth=0.1679]
+  Step 15/16  Loss=0.7444  [mse=0.0550  v_opt=0.00031  v_mand=0.00000  ptv=0.0015  smooth=0.1789]
+  Step 16/16  Loss=0.9785  [mse=0.0770  v_opt=0.00000  v_mand=0.00000  ptv=0.0031  smooth=0.1781]
+  --> Epoch 42 Summary:  Train=0.8946  Val=3.4691
+      Clinical:  PTV D95=49.60 Gy  Bladder Mean=27.09 Gy  Rectum Mean=32.80 Gy
+
+Epoch 43/300  (lr=9.53e-05)
+  Step 5/16  Loss=0.9451  [mse=0.0743  v_opt=0.00000  v_mand=0.00000  ptv=0.0025  smooth=0.1769]
+  Step 10/16  Loss=0.7298  [mse=0.0537  v_opt=0.00077  v_mand=0.00000  ptv=0.0025  smooth=0.1660]
+  Step 15/16  Loss=0.8083  [mse=0.0605  v_opt=0.00850  v_mand=0.00000  ptv=0.0034  smooth=0.1525]
+  Step 16/16  Loss=0.8355  [mse=0.0635  v_opt=0.00149  v_mand=0.00000  ptv=0.0031  smooth=0.1666]
+  --> Epoch 43 Summary:  Train=0.8803  Val=3.8289
+      Clinical:  PTV D95=51.24 Gy  Bladder Mean=28.19 Gy  Rectum Mean=34.74 Gy
+
+Epoch 44/300  (lr=9.51e-05)
+  Step 5/16  Loss=1.1466  [mse=0.0742  v_opt=0.00006  v_mand=0.00000  ptv=0.0234  smooth=0.1700]
+  Step 10/16  Loss=0.9304  [mse=0.0731  v_opt=0.00016  v_mand=0.00000  ptv=0.0034  smooth=0.1653]
+  Step 15/16  Loss=0.6341  [mse=0.0463  v_opt=0.00000  v_mand=0.00000  ptv=0.0018  smooth=0.1535]
+  Step 16/16  Loss=0.7711  [mse=0.0583  v_opt=0.00000  v_mand=0.00000  ptv=0.0026  smooth=0.1619]
+  --> Epoch 44 Summary:  Train=0.8352  Val=3.3695
+      Clinical:  PTV D95=49.73 Gy  Bladder Mean=26.42 Gy  Rectum Mean=33.80 Gy
+  --> Saved new best model!
+
+Epoch 45/300  (lr=9.48e-05)
+  Step 5/16  Loss=0.7604  [mse=0.0528  v_opt=0.00700  v_mand=0.00000  ptv=0.0065  smooth=0.1542]
+  Step 10/16  Loss=0.7857  [mse=0.0596  v_opt=0.00937  v_mand=0.00000  ptv=0.0021  smooth=0.1495]
+  Step 15/16  Loss=0.6895  [mse=0.0511  v_opt=0.00386  v_mand=0.00000  ptv=0.0024  smooth=0.1466]
+  Step 16/16  Loss=0.8281  [mse=0.0619  v_opt=0.00000  v_mand=0.00000  ptv=0.0045  smooth=0.1640]
+  --> Epoch 45 Summary:  Train=0.8008  Val=3.7500
+      Clinical:  PTV D95=50.65 Gy  Bladder Mean=28.39 Gy  Rectum Mean=34.16 Gy
+
+Epoch 46/300  (lr=9.46e-05)
+  Step 5/16  Loss=0.8591  [mse=0.0651  v_opt=0.01405  v_mand=0.00000  ptv=0.0040  smooth=0.1398]
+  Step 10/16  Loss=0.9012  [mse=0.0670  v_opt=0.00543  v_mand=0.00000  ptv=0.0097  smooth=0.1236]
+  Step 15/16  Loss=0.6581  [mse=0.0497  v_opt=0.00084  v_mand=0.00000  ptv=0.0017  smooth=0.1423]
+  Step 16/16  Loss=0.8825  [mse=0.0713  v_opt=0.00000  v_mand=0.00000  ptv=0.0023  smooth=0.1467]
+  --> Epoch 46 Summary:  Train=0.8042  Val=3.5055
+      Clinical:  PTV D95=49.97 Gy  Bladder Mean=26.43 Gy  Rectum Mean=34.37 Gy
+
+Epoch 47/300  (lr=9.44e-05)
+  Step 5/16  Loss=0.8187  [mse=0.0574  v_opt=0.00000  v_mand=0.00000  ptv=0.0095  smooth=0.1495]
+  Step 10/16  Loss=0.9069  [mse=0.0709  v_opt=0.00148  v_mand=0.00000  ptv=0.0060  smooth=0.1344]
+  Step 15/16  Loss=0.7274  [mse=0.0564  v_opt=0.00294  v_mand=0.00000  ptv=0.0025  smooth=0.1320]
+  Step 16/16  Loss=0.7129  [mse=0.0501  v_opt=0.00620  v_mand=0.00000  ptv=0.0069  smooth=0.1307]
+  --> Epoch 47 Summary:  Train=0.8303  Val=3.3562
+      Clinical:  PTV D95=48.09 Gy  Bladder Mean=28.04 Gy  Rectum Mean=32.03 Gy
+  --> Saved new best model!
+
+Epoch 48/300  (lr=9.41e-05)
+  Step 5/16  Loss=1.0936  [mse=0.0912  v_opt=0.01557  v_mand=0.00033  ptv=0.0007  smooth=0.1357]
+  Step 10/16  Loss=0.6005  [mse=0.0433  v_opt=0.00468  v_mand=0.00000  ptv=0.0025  smooth=0.1335]
+  Step 15/16  Loss=0.7535  [mse=0.0526  v_opt=0.00000  v_mand=0.00000  ptv=0.0093  smooth=0.1350]
+  Step 16/16  Loss=0.6742  [mse=0.0501  v_opt=0.00723  v_mand=0.00000  ptv=0.0022  smooth=0.1364]
+  --> Epoch 48 Summary:  Train=0.8208  Val=2.9442
+      Clinical:  PTV D95=48.07 Gy  Bladder Mean=27.42 Gy  Rectum Mean=27.55 Gy
+  --> Saved new best model!
+
+Epoch 49/300  (lr=9.39e-05)
+  Step 5/16  Loss=0.7375  [mse=0.0471  v_opt=0.00509  v_mand=0.00000  ptv=0.0122  smooth=0.1340]
+  Step 10/16  Loss=0.6215  [mse=0.0456  v_opt=0.00185  v_mand=0.00000  ptv=0.0035  smooth=0.1267]
+  Step 15/16  Loss=0.7495  [mse=0.0611  v_opt=0.00000  v_mand=0.00000  ptv=0.0013  smooth=0.1253]
+  Step 16/16  Loss=0.6912  [mse=0.0550  v_opt=0.00067  v_mand=0.00000  ptv=0.0014  smooth=0.1259]
+  --> Epoch 49 Summary:  Train=0.7861  Val=3.1616
+      Clinical:  PTV D95=51.26 Gy  Bladder Mean=27.58 Gy  Rectum Mean=32.32 Gy
+
+Epoch 50/300  (lr=9.36e-05)
+  Step 5/16  Loss=0.6905  [mse=0.0487  v_opt=0.00608  v_mand=0.00000  ptv=0.0066  smooth=0.1260]
+  Step 10/16  Loss=0.6836  [mse=0.0508  v_opt=0.00264  v_mand=0.00000  ptv=0.0053  smooth=0.1166]
+  Step 15/16  Loss=0.9752  [mse=0.0855  v_opt=0.00212  v_mand=0.00000  ptv=0.0003  smooth=0.1129]
+  Step 16/16  Loss=0.5955  [mse=0.0449  v_opt=0.00000  v_mand=0.00000  ptv=0.0026  smooth=0.1202]
+  --> Epoch 50 Summary:  Train=0.7317  Val=3.3590
+      Clinical:  PTV D95=49.33 Gy  Bladder Mean=26.28 Gy  Rectum Mean=34.51 Gy
+
+Epoch 51/300  (lr=9.34e-05)
+  Step 5/16  Loss=0.8445  [mse=0.0710  v_opt=0.00146  v_mand=0.00000  ptv=0.0015  smooth=0.1167]
+  Step 10/16  Loss=0.5741  [mse=0.0418  v_opt=0.00286  v_mand=0.00000  ptv=0.0033  smooth=0.1165]
+  Step 15/16  Loss=0.6241  [mse=0.0492  v_opt=0.00102  v_mand=0.00000  ptv=0.0021  smooth=0.1089]
+  Step 16/16  Loss=0.6416  [mse=0.0495  v_opt=0.00000  v_mand=0.00000  ptv=0.0030  smooth=0.1160]
+  --> Epoch 51 Summary:  Train=0.7008  Val=2.9907
+      Clinical:  PTV D95=49.09 Gy  Bladder Mean=27.44 Gy  Rectum Mean=30.78 Gy
+
+Epoch 52/300  (lr=9.31e-05)
+  Step 5/16  Loss=0.5643  [mse=0.0446  v_opt=0.00002  v_mand=0.00000  ptv=0.0011  smooth=0.1068]
+  Step 10/16  Loss=0.7701  [mse=0.0599  v_opt=0.00265  v_mand=0.00000  ptv=0.0057  smooth=0.1094]
+  Step 15/16  Loss=0.6507  [mse=0.0481  v_opt=0.01802  v_mand=0.00077  ptv=0.0009  smooth=0.1049]
+  Step 16/16  Loss=0.6626  [mse=0.0500  v_opt=0.00574  v_mand=0.00000  ptv=0.0040  smooth=0.1113]
+  --> Epoch 52 Summary:  Train=0.6970  Val=3.0763
+      Clinical:  PTV D95=49.99 Gy  Bladder Mean=27.75 Gy  Rectum Mean=33.04 Gy
+
+Epoch 53/300  (lr=9.28e-05)
+  Step 5/16  Loss=0.6165  [mse=0.0477  v_opt=0.00308  v_mand=0.00000  ptv=0.0032  smooth=0.1017]
+  Step 10/16  Loss=0.7794  [mse=0.0648  v_opt=0.00000  v_mand=0.00000  ptv=0.0025  smooth=0.1060]
+  Step 15/16  Loss=0.6210  [mse=0.0505  v_opt=0.00394  v_mand=0.00000  ptv=0.0012  smooth=0.0967]
+  Step 16/16  Loss=0.5589  [mse=0.0416  v_opt=0.00603  v_mand=0.00000  ptv=0.0029  smooth=0.1016]
+  --> Epoch 53 Summary:  Train=0.6694  Val=3.7264
+      Clinical:  PTV D95=52.63 Gy  Bladder Mean=28.31 Gy  Rectum Mean=35.50 Gy
+
+Epoch 54/300  (lr=9.26e-05)
+  Step 5/16  Loss=0.7277  [mse=0.0561  v_opt=0.00000  v_mand=0.00000  ptv=0.0066  smooth=0.1004]
+  Step 10/16  Loss=0.7048  [mse=0.0476  v_opt=0.00002  v_mand=0.00000  ptv=0.0121  smooth=0.1078]
+  Step 15/16  Loss=0.5351  [mse=0.0429  v_opt=0.00348  v_mand=0.00000  ptv=0.0008  smooth=0.0914]
+  Step 16/16  Loss=0.6547  [mse=0.0534  v_opt=0.00000  v_mand=0.00000  ptv=0.0022  smooth=0.0987]
+  --> Epoch 54 Summary:  Train=0.6566  Val=3.4306
+      Clinical:  PTV D95=51.19 Gy  Bladder Mean=28.75 Gy  Rectum Mean=33.78 Gy
