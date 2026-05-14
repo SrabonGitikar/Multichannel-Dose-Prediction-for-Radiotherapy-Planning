@@ -58,9 +58,9 @@ CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum S
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (96, 96, 96)
 
-PRESCRIPTION_DOSE_GY = 60.0  # Normalisation factor (Gy -> [0,1])
+PRESCRIPTION_DOSE_GY = 70.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
 CONSTRAINT_CSV = os.environ.get(
-    "CONSTRAINT_CSV", "./prostate_prime_constraints.csv"
+    "CONSTRAINT_CSV", "./prostate_prime_constraints_v2.csv"
 )
 
 # ===================================================================
@@ -69,7 +69,23 @@ CONSTRAINT_CSV = os.environ.get(
 
 def load_clinical_constraints(csv_path, patient_class="N0"):
     """
-    Parse prostate_prime_constraints.csv into structured dicts.
+    Parse prostate_prime_constraints_v2.csv into structured dicts.
+
+    V2 schema (one row per tier):
+      Name               — structure name; plain = N0, _Nplus suffix = N+
+      Type               — PTV / CTV / Avoidance
+      Constraint_Type    — D or V
+      Constraint_Value   — numeric dose threshold (Gy) or percentile string
+      Constraint_Unit    — Gy or %
+      Constraint_Priority
+      Evaluation_Type    — <=, >=, <, >
+      Objective_Value    — the limit value (volume fraction or dose fraction)
+      Objective_Unit     — % or Gy or cc
+      Objective_Type     — "Optimal" or "Mandatory"
+
+    Patient class mapping:
+      N0  -> Name in {"Bladder", "Anorectum", "PTV62", "PTV44", "PTV55", ...}
+      N+  -> Name ends with "_Nplus"
 
     Returns
     -------
@@ -77,71 +93,111 @@ def load_clinical_constraints(csv_path, patient_class="N0"):
         "v_type"  -> {"Bladder": [...], "Anorectum": [...]}
         "d_type"  -> {"PTV_max_dose_gy": float or None,
                       "PTV_coverage": [...]}
-    All dose thresholds for V-Type are normalised to [0, 1] by dividing
-    by PRESCRIPTION_DOSE_GY (60 Gy).
+    All V-Type dose thresholds are normalised to [0, 1] by dividing
+    by PRESCRIPTION_DOSE_GY (70 Gy).
     """
-    v_constraints = {"Bladder": [], "Anorectum": []}
+    # Accumulate Optimal and Mandatory rows separately, then merge per dose level.
+    # Key: (organ_canonical, dose_gy)  Value: {"optimal_v": ..., "mandatory_v": ...}
+    v_accum = {}          # (organ, dose_gy) -> {"optimal_v": nan, "mandatory_v": nan}
     ptv_coverage = []
     ptv_max_dose_gy = None
+
+    # Determine the Name suffix that signals patient class
+    # N0  -> no suffix (exact names like "Bladder", "Anorectum", "PTV62" ...)
+    # N+  -> suffix "_Nplus"
+    nplus_suffix = "_Nplus"
 
     with open(csv_path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if row["Patient_Class"].strip() != patient_class:
+            name        = row["Name"].strip()
+            struct_type = row["Type"].strip()           # PTV / CTV / Avoidance
+            ctype       = row["Constraint_Type"].strip() # D or V
+            c_val_raw   = row["Constraint_Value"].strip()
+            c_unit      = row["Constraint_Unit"].strip()
+            obj_val_raw = row["Objective_Value"].strip()
+            obj_unit    = row["Objective_Unit"].strip()
+            obj_type    = row["Objective_Type"].strip()  # Optimal / Mandatory
+
+            # Skip rows with no objective value (empty rules)
+            if not obj_val_raw:
                 continue
 
-            struct = row["Structure_Name"].strip()
-            ctype = row["Constraint_Type"].strip()
-            metric = row["Metric"].strip()
-            opt_raw = row["Optimal_Value"].strip()
-            mand_raw = row["Mandatory_Value"].strip()
+            # ---- Determine patient class from Name ------------------
+            is_nplus = name.endswith(nplus_suffix)
+            if patient_class == "N0" and is_nplus:
+                continue
+            if patient_class == "N+" and not is_nplus:
+                continue
 
-            # --- V-Type constraints (Bladder / Anorectum) -----------
-            if ctype == "V" and struct in ("Bladder", "Anorectum"):
-                # Unit must be 'pct' (fractional volume).  Skip cc-based
-                if row["Unit"].strip() != "pct":
+            # Canonical organ name (strip the _Nplus suffix if present)
+            canonical = name[: -len(nplus_suffix)] if is_nplus else name
+
+            # ---- V-Type constraints (Bladder / Anorectum) -----------
+            if ctype == "V" and canonical in ("Bladder", "Anorectum"):
+                # Only fractional-volume limits (Objective_Unit == %)
+                if obj_unit.strip() != "%":
+                    continue  # skip cc-based rules (Small_Bowel etc.)
+                # Constraint_Value is the dose threshold in Gy
+                dose_thresh_gy = float(c_val_raw)
+                obj_value      = float(obj_val_raw)
+
+                key = (canonical, dose_thresh_gy)
+                if key not in v_accum:
+                    v_accum[key] = {"optimal_v": float("nan"),
+                                    "mandatory_v": float("nan")}
+
+                if obj_type == "Optimal":
+                    v_accum[key]["optimal_v"] = obj_value
+                elif obj_type == "Mandatory":
+                    v_accum[key]["mandatory_v"] = obj_value
+
+            # ---- D-Type: PTV max dose -------------------------------
+            if (ctype == "D" and struct_type == "PTV"
+                    and c_val_raw == "Max" and c_unit == "Gy"):
+                if obj_type == "Mandatory":
+                    ptv_max_dose_gy = float(obj_val_raw)
+
+            # ---- D-Type: PTV coverage (D95 / D98 etc.) -------------
+            # Constraint_Value is the percentile (e.g. "95", "98") and
+            # Constraint_Unit is "%".  Objective_Value is the required
+            # dose as a fraction of prescription (e.g. 0.95).
+            if (ctype == "D" and struct_type == "PTV"
+                    and c_unit == "%" and obj_unit == "%"):
+                try:
+                    percentile = float(c_val_raw)
+                except ValueError:
                     continue
-                if not mand_raw:
-                    continue  # no mandatory value -> skip
-
-                # Parse dose threshold from metric string, e.g. "V60.4Gy"
-                dose_thresh_gy = float(
-                    metric.replace("V", "").replace("Gy", "")
-                )
-                norm_dose = dose_thresh_gy / PRESCRIPTION_DOSE_GY
-
-                opt_v = float(opt_raw) if opt_raw else float("nan")
-                mand_v = float(mand_raw)
-
-                v_constraints[struct].append(
-                    {
-                        "dose_gy": dose_thresh_gy,
-                        "norm_dose": norm_dose,
-                        "optimal_v": opt_v,
-                        "mandatory_v": mand_v,
-                    }
-                )
-
-            # --- D-Type: PTV max dose --------------------------------
-            if ctype == "D" and struct.startswith("PTV") and metric == "Max":
-                if mand_raw:
-                    ptv_max_dose_gy = float(mand_raw)
-
-            # --- D-Type: PTV coverage (D95/D98 etc.) ------------------
-            if ctype == "D" and struct.startswith("PTV") and metric.startswith("D9"):
-                if mand_raw:
+                if percentile >= 90 and obj_type == "Mandatory":
                     ptv_coverage.append(
                         {
-                            "metric": metric,
-                            "fraction": float(mand_raw),  # e.g. 0.95
+                            "metric": f"D{int(percentile)}",
+                            "fraction": float(obj_val_raw),  # e.g. 0.95
                         }
                     )
+
+    # ---- Build the final v_constraints list (per organ) -------------
+    v_constraints = {"Bladder": [], "Anorectum": []}
+    for (organ, dose_gy), tiers in sorted(v_accum.items(),
+                                          key=lambda x: x[0][1]):
+        # Only include rules that have at least a mandatory limit
+        if math.isnan(tiers["mandatory_v"]):
+            continue
+        norm_dose = dose_gy / PRESCRIPTION_DOSE_GY
+        v_constraints[organ].append(
+            {
+                "dose_gy":     dose_gy,
+                "norm_dose":   norm_dose,
+                "optimal_v":   tiers["optimal_v"],
+                "mandatory_v": tiers["mandatory_v"],
+            }
+        )
 
     return {
         "v_type": v_constraints,
         "d_type": {
             "PTV_max_dose_gy": ptv_max_dose_gy,
-            "PTV_coverage": ptv_coverage,
+            "PTV_coverage":    ptv_coverage,
         },
     }
 
@@ -166,12 +222,12 @@ class PhysicsGuidedDoseLoss(nn.Module):
     def __init__(
         self,
         constraints_dict,
-        lambda_mse=1.0,
-        lambda_optimal=10.0,
-        lambda_mandatory=100.0,
-        lambda_ptv=5.0,
-        lambda_smooth=0.1,
-        k_steepness=50.0,
+        lambda_mse=10.0,        # Anchors the dose to the human ground truth
+        lambda_optimal=2.0,     # A gentle nudge to keep OARs as low as possible
+        lambda_mandatory=50.0,  # A strict brick wall to protect the organs
+        lambda_ptv=50.0,        # Fiercely forces the model to hit the 57+ Gy target
+        lambda_smooth=0.1,      # Prevents jagged isodose lines
+        k_steepness=50.0,       # Perfect for [0, 1] normalized space
     ):
         super().__init__()
         self.mse = nn.MSELoss()
