@@ -511,11 +511,11 @@ def main():
     # ---- Loss / Optimizer / Scheduler ------------------------------
     loss_function = PhysicsGuidedDoseLoss(
         constraints_dict=constraints,
-        lambda_mse=10.0,        # Increased from 1.0 to anchor the model to the human ground truth
-        lambda_ptv=10.0,        # Balanced equally with MSE so it actively wants to heat the tumor
-        lambda_optimal=2.0,     # A mild nudge (down from 10.0)
-        lambda_mandatory=25.0,  # A firm, heavy wall, but not a 100x explosion
-        lambda_smooth=1.0,
+        lambda_mse=10.0,        
+        lambda_optimal=2.0,     
+        lambda_mandatory=50.0,  
+        lambda_ptv=50.0,       
+        lambda_smooth=0.1,      
         k_steepness=50.0,
     )
 
