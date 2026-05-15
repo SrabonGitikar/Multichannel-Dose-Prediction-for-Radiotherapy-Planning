@@ -16,6 +16,8 @@ import os
 import glob
 import math
 import csv
+import logging
+import datetime
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -58,7 +60,7 @@ LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
 CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum SDM
 TARGET_SPACING = (1.27, 1.27, 2.5)
-PATCH_SIZE = (96, 96, 96)
+PATCH_SIZE = (128, 128, 64)   # Larger XY footprint; shallower Z matches 2.5mm slice spacing
 
 PRESCRIPTION_DOSE_GY = 75.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
 CONSTRAINT_CSV = os.environ.get(
@@ -408,7 +410,7 @@ train_transforms = Compose(
             spatial_size=PATCH_SIZE,
             num_classes=4,
             ratios=[0.0, 1.0, 1.0, 1.0],
-            num_samples=4,
+            num_samples=6,   # 6 crops/volume: more diversity per step on 62 GB RAM
         ),
         ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
         ToTensord(keys=["image", "dose_label"]),
@@ -487,12 +489,30 @@ def main():
     val_files   = data_dicts[n_train:]
     print(f"Split: {n_train} train  /  {n_val} val  (val_frac={val_frac:.0%})")
 
-    # ---- Batch size and workers (env-var overrideable) ---------------
-    # BATCH_SIZE=2 doubles VRAM usage (each sample = 4 crops of 96³).
-    # For a 24 GB GPU, BATCH_SIZE=1 is safe; BATCH_SIZE=2 may work.
+    # ---- Logging setup ----------------------------------------------------
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file  = os.path.join(log_dir, f"train_physics_{timestamp}.log")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(message)s",
+        datefmt="%H:%M:%S",
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(),
+        ],
+    )
+    log = logging.getLogger()
+    log.info(f"Log file: {log_file}")
+
+    # ---- Batch size and workers (tuned for RTX 4070 12 GB + 62 GB RAM) ----
+    # num_workers=4: PersistentDataset + multiprocessing can deadlock at high
+    # worker counts due to file-handle contention on the cache directory.
+    # 4 workers is the safe sweet-spot for NVMe + 28-core system.
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
-    num_workers  = min(os.cpu_count() or 4, 8)
-    print(f"Batch size={batch_size}  num_workers={num_workers}")
+    num_workers  = int(os.environ.get("NUM_WORKERS", "4"))   # safe for PersistentDataset
+    log.info(f"Batch size={batch_size}  num_workers={num_workers}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
     os.makedirs(cache_dir, exist_ok=True)
@@ -506,6 +526,8 @@ def main():
         shuffle=True,
         num_workers=num_workers,
         pin_memory=torch.cuda.is_available(),
+        persistent_workers=(num_workers > 0),   # keep workers alive between epochs
+        prefetch_factor=2 if num_workers > 0 else None,
         collate_fn=list_data_collate,
     )
 
@@ -514,23 +536,24 @@ def main():
     )
     val_loader = DataLoader(
         val_ds,
-        batch_size=1,              # always 1 for val — sliding window handles the patch
+        batch_size=1,
         shuffle=False,
-        num_workers=min(num_workers, 4),
+        num_workers=2,                          # val: 2 workers is enough
         pin_memory=torch.cuda.is_available(),
+        persistent_workers=True,
     )
 
     # ---- Model -----------------------------------------------------
-    print("Building 3D U-Net...")
+    log.info("Building 3D U-Net...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = UNet(
         spatial_dims=3,
         in_channels=4,
         out_channels=1,
-        channels=(16, 32, 64, 128, 256),
+        channels=(32, 64, 128, 256, 512),  # 2x capacity — fits 12 GB at fp16
         strides=(2, 2, 2, 2),
-        num_res_units=2,
+        num_res_units=3,                   # deeper residual blocks
     ).to(device)
 
     # ---- Loss / Optimizer / Scheduler ------------------------------
@@ -544,26 +567,26 @@ def main():
         k_steepness=50.0,
     )
 
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-5)
 
     epochs = 100
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=epochs, eta_min=1e-6
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=50, T_mult=2, eta_min=1e-6
     )
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
 
-    print(f"Model and dataloaders ready on {device}!")
-    print(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
-          f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
+    log.info(f"Model and dataloaders ready on {device}!")
+    log.info(f"Epochs={epochs}  Scheduler=CosineAnnealingWarmRestarts  "
+             f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
 
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
-        print(f"\nEpoch {epoch + 1}/{epochs}  "
-              f"(lr={optimizer.param_groups[0]['lr']:.2e})")
+        log.info(f"\nEpoch {epoch + 1}/{epochs}  "
+                 f"(lr={optimizer.param_groups[0]['lr']:.2e})")
 
         # ---- Train -------------------------------------------------
         model.train()
@@ -618,7 +641,7 @@ def main():
 
             train_loss_sum += loss.item()
             if step % 5 == 0 or step == len(train_loader):
-                print(
+                log.info(
                     f"  Step {step}/{len(train_loader)}  "
                     f"Loss={loss.item():.4f}  "
                     f"[mse={components['mse']:.4f}  "
