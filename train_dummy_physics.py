@@ -16,6 +16,8 @@ import os
 import glob
 import math
 import csv
+import logging
+import datetime
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -471,10 +473,28 @@ def main():
                   f"opt={r['optimal_v']:.2f}  mand={r['mandatory_v']:.2f}  "
                   f"norm_thresh={r['norm_dose']:.4f}")
 
+    # ---- Logging setup -----------------------------------------
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = os.path.join(log_dir, f"train_physics_{timestamp}.log")
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(message)s",
+        datefmt="%H:%M:%S",
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(),
+        ],
+    )
+    log = logging.getLogger()
+    log.info(f"Log file: {log_file}")
+
     # ---- Dataset ---------------------------------------------------
-    print("\nFinding data...")
+    log.info("\nFinding data...")
     data_dicts = get_data_dicts()
-    print(f"Found {len(data_dicts)} patients.")
+    log.info(f"Found {len(data_dicts)} patients.")
 
     train_files = data_dicts[:16]
     val_files = data_dicts[16:]
@@ -496,7 +516,7 @@ def main():
     val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=1)
 
     # ---- Model -----------------------------------------------------
-    print("Building 3D U-Net...")
+    log.info("Building 3D U-Net...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = UNet(
@@ -528,17 +548,17 @@ def main():
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
 
-    print(f"Model and dataloaders ready on {device}!")
-    print(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
-          f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
+    log.info(f"Model and dataloaders ready on {device}!")
+    log.info(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
+             f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
 
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
-        print(f"\nEpoch {epoch + 1}/{epochs}  "
-              f"(lr={optimizer.param_groups[0]['lr']:.2e})")
+        log.info(f"\nEpoch {epoch + 1}/{epochs}  "
+                 f"(lr={optimizer.param_groups[0]['lr']:.2e})")
 
         # ---- Train -------------------------------------------------
         model.train()
@@ -587,7 +607,7 @@ def main():
 
             train_loss_sum += loss.item()
             if step % 5 == 0 or step == len(train_loader):
-                print(
+                log.info(
                     f"  Step {step}/{len(train_loader)}  "
                     f"Loss={loss.item():.4f}  "
                     f"[mse={components['mse']:.4f}  "
@@ -662,11 +682,11 @@ def main():
         avg_bladder = val_bladder_mean_sum / max(n_val, 1)
         avg_rectum = val_rectum_mean_sum / max(n_val, 1)
 
-        print(
+        log.info(
             f"  --> Epoch {epoch + 1} Summary:  "
             f"Train={train_loss_avg:.4f}  Val={val_loss_avg:.4f}"
         )
-        print(
+        log.info(
             f"      Clinical:  PTV D95={avg_d95:.2f} Gy  "
             f"Bladder Mean={avg_bladder:.2f} Gy  "
             f"Rectum Mean={avg_rectum:.2f} Gy"
@@ -676,8 +696,8 @@ def main():
         if val_loss_avg < best_val_loss:
             best_val_loss = val_loss_avg
             torch.save(model.state_dict(), "best_dose_model_physics.pth")
-            print(f"  --> [PHYSICS]  Saved best PHYSICS model  "
-                  f"(val_loss={best_val_loss:.4f})")
+            log.info(f"  --> [PHYSICS]  Saved best PHYSICS model  "
+                     f"(val_loss={best_val_loss:.4f})")
 
         # -- Clinical checkpoint: soft-margin exchange-rate score --------
         # Penalises OAR toxicity AND PTV underdose simultaneously.
@@ -689,23 +709,23 @@ def main():
         if clinical_score < best_clinical_score:
             best_clinical_score = clinical_score
             torch.save(model.state_dict(), "best_dose_model_clinical.pth")
-            print(f"  --> [CLINICAL] Saved best CLINICAL model  "
-                  f"Score={clinical_score:.3f}  "
-                  f"PTV_D95={avg_d95:.2f} Gy  "
-                  f"Bladder={avg_bladder:.2f} Gy  "
-                  f"Rectum={avg_rectum:.2f} Gy")
+            log.info(f"  --> [CLINICAL] Saved best CLINICAL model  "
+                     f"Score={clinical_score:.3f}  "
+                     f"PTV_D95={avg_d95:.2f} Gy  "
+                     f"Bladder={avg_bladder:.2f} Gy  "
+                     f"Rectum={avg_rectum:.2f} Gy")
 
-    print(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
-          f"Best clinical score: {best_clinical_score:.4f}")
+    log.info(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
+             f"Best clinical score: {best_clinical_score:.4f}")
 
     # ====================================================================
     # FINAL CLINICAL EVALUATION BLOCK
     # Iterates over both saved checkpoints (Physics + Clinical) and
     # produces a separate patient-by-patient DVH summary CSV for each.
     # ====================================================================
-    print("\n" + "=" * 68)
-    print("FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)")
-    print("=" * 68)
+    log.info("\n" + "=" * 68)
+    log.info("FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)")
+    log.info("=" * 68)
 
     # ---- Imports needed only for this block ----------------------------
     import pandas as pd  # pyrefly: ignore [missing-import]
@@ -737,14 +757,14 @@ def main():
         ("best_dose_model_physics.pth",  "validation_physics_summary.csv"),
         ("best_dose_model_clinical.pth", "validation_clinical_summary.csv"),
     ]:
-        print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
+        log.info(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
         # Load checkpoint
         if os.path.isfile(model_path):
             model.load_state_dict(torch.load(model_path, map_location=device))
-            print(f"  Loaded weights from '{model_path}'")
+            log.info(f"  Loaded weights from '{model_path}'")
         else:
-            print(f"  WARNING: '{model_path}' not found — skipping.")
+            log.warning(f"  WARNING: '{model_path}' not found — skipping.")
             continue
 
         model.eval()
@@ -806,7 +826,7 @@ def main():
                     row[f"Rectum_V{thresh}Gy (%)"] = v_metric(rectum_dose, thresh)
 
                 records.append(row)
-                print(
+                log.info(
                     f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
                     f"PTV D95={row['PTV_D95 (Gy)']:.2f} Gy  "
                     f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
@@ -818,8 +838,8 @@ def main():
         float_cols = [c for c in df.columns if c != "Patient_ID"]
         df[float_cols] = df[float_cols].round(2)
         df.to_csv(csv_name, index=False)
-        print(f"\n  Saved '{csv_name}'")
-        print(df.to_string(index=False))
+        log.info(f"\n  Saved '{csv_name}'")
+        log.info(df.to_string(index=False))
 
 
 if __name__ == "__main__":

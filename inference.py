@@ -47,11 +47,6 @@ inference_transforms = Compose([
         pixdim=TARGET_SPACING,
         mode=("bilinear", "nearest", "bilinear", "bilinear")
     ),
-    # Pad to ensure consistent size (handles variable patient dimensions)
-    SpatialPadd(
-        keys=["ch_0", "ch_1", "ch_2", "ch_3"],
-        spatial_size=(512, 512, 256)
-    ),
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
     ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
     DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
@@ -123,21 +118,22 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
                 overlap=0.25
             )
     
-    # outputs shape: [1, 1, D, H, W]
-    pred_dose = outputs[0, 0].cpu().numpy()  # [D, H, W]
+    # outputs shape: [1, 1, H, W, D] (MONAI spatial order after Spacingd)
+    # Transpose to (D, H, W) = (Z, Y, X) to match SimpleITK/NIfTI convention
+    pred_dose = outputs[0, 0].cpu().numpy()          # (H, W, D)
+    pred_dose = np.transpose(pred_dose, (2, 0, 1))   # -> (D, H, W) = (Z, Y, X)
+    pred_dose = pred_dose * 60.0                     # denormalise to Gy
+    pred_dose = np.clip(pred_dose, 0.0, None)        # dose cannot be negative
     
     print(f"Prediction complete. Shape: {pred_dose.shape}")
     print(f"Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
     
-    # Calculate clinical metrics if PTV mask is available
-    # (For detailed analysis, you'd need to load the original mask)
-    
-    # Save to NIfTI
+    # Save to NIfTI with correct spatial metadata from resampled input
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
         
-        sitk_img = sitk.GetImageFromArray(pred_dose)
+        sitk_img = sitk.GetImageFromArray(pred_dose.astype(np.float32))
         sitk_img.SetSpacing(TARGET_SPACING)
         sitk.WriteImage(sitk_img, out_file)
         
@@ -155,6 +151,8 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
 
 
 def main():
+    global MODEL_PATH
+    
     parser = argparse.ArgumentParser(description="Dose prediction inference")
     parser.add_argument("--patient", type=str, required=True, 
                         help="Patient ID (e.g., prostate_000)")
@@ -164,9 +162,7 @@ def main():
                         help="Path to model checkpoint")
     
     args = parser.parse_args()
-    
-    global best_dose_model
-    best_dose_model = args.model
+    MODEL_PATH = args.model
     
     try:
         pred_dose, metadata = run_inference(args.patient, args.output_dir)
