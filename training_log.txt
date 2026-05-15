@@ -1,998 +1,874 @@
-Step 7/9 - Train Loss: 0.1288
-  Step 8/9 - Train Loss: 0.1327
-  Step 9/9 - Train Loss: 0.1557
-  --> Epoch 23 Summary: Train MSE: 0.1327 | Val MSE: 0.1504
-      Validation Clinical Metrics: PTV D95: 17.15 Gy | Bladder Mean: 32.40 Gy | Rectum Mean: 32.61 Gy
-  --> Saved new best model!
-\nEpoch 24/100
-  Step 1/9 - Train Loss: 0.1539
-  Step 2/9 - Train Loss: 0.1266
-  Step 3/9 - Train Loss: 0.1139
-  Step 4/9 - Train Loss: 0.1407
-  Step 5/9 - Train Loss: 0.1317
-  Step 6/9 - Train Loss: 0.1131
-  Step 7/9 - Train Loss: 0.1541
-  Step 8/9 - Train Loss: 0.1068
-  Step 9/9 - Train Loss: 0.0938
-  --> Epoch 24 Summary: Train MSE: 0.1261 | Val MSE: 0.1488
-      Validation Clinical Metrics: PTV D95: 17.61 Gy | Bladder Mean: 33.43 Gy | Rectum Mean: 32.09 Gy
-  --> Saved new best model!
-\nEpoch 25/100
-  Step 1/9 - Train Loss: 0.1561
-  Step 2/9 - Train Loss: 0.1261
-  Step 3/9 - Train Loss: 0.1535
-  Step 4/9 - Train Loss: 0.1271
-  Step 5/9 - Train Loss: 0.1282
-  Step 6/9 - Train Loss: 0.1139
-  Step 7/9 - Train Loss: 0.1309
-  Step 8/9 - Train Loss: 0.1247
-  Step 9/9 - Train Loss: 0.1294
-  --> Epoch 25 Summary: Train MSE: 0.1322 | Val MSE: 0.1471
-      Validation Clinical Metrics: PTV D95: 17.94 Gy | Bladder Mean: 32.73 Gy | Rectum Mean: 32.39 Gy
-  --> Saved new best model!
-\nEpoch 26/100
-  Step 1/9 - Train Loss: 0.1258
-  Step 2/9 - Train Loss: 0.1286
-  Step 3/9 - Train Loss: 0.1403
-  Step 4/9 - Train Loss: 0.0840
-  Step 5/9 - Train Loss: 0.1170
-  Step 6/9 - Train Loss: 0.1215
-  Step 7/9 - Train Loss: 0.1368
-  Step 8/9 - Train Loss: 0.1450
-  Step 9/9 - Train Loss: 0.1261
-  --> Epoch 26 Summary: Train MSE: 0.1250 | Val MSE: 0.1464
-      Validation Clinical Metrics: PTV D95: 17.84 Gy | Bladder Mean: 31.28 Gy | Rectum Mean: 31.93 Gy
-  --> Saved new best model!
-\nEpoch 27/100
-  Step 1/9 - Train Loss: 0.1167
-  Step 2/9 - Train Loss: 0.1060
-  Step 3/9 - Train Loss: 0.1096
-  Step 4/9 - Train Loss: 0.1021
-  Step 5/9 - Train Loss: 0.1300
-  Step 6/9 - Train Loss: 0.1293
-  Step 7/9 - Train Loss: 0.0897
-  Step 8/9 - Train Loss: 0.1278
-  Step 9/9 - Train Loss: 0.1245
-  --> Epoch 27 Summary: Train MSE: 0.1151 | Val MSE: 0.1446
-      Validation Clinical Metrics: PTV D95: 19.66 Gy | Bladder Mean: 31.15 Gy | Rectum Mean: 32.26 Gy
-  --> Saved new best model!
-\nEpoch 28/100
-  Step 1/9 - Train Loss: 0.1553
-  Step 2/9 - Train Loss: 0.1389
-  Step 3/9 - Train Loss: 0.1036
-  Step 4/9 - Train Loss: 0.1033
-  Step 5/9 - Train Loss: 0.1256
-  Step 6/9 - Train Loss: 0.1039
-  Step 7/9 - Train Loss: 0.1353
-  Step 8/9 - Train Loss: 0.1144
-  Step 9/9 - Train Loss: 0.1608
-  --> Epoch 28 Summary: Train MSE: 0.1268 | Val MSE: 0.1440
-      Validation Clinical Metrics: PTV D95: 18.71 Gy | Bladder Mean: 32.51 Gy | Rectum Mean: 31.94 Gy
-  --> Saved new best model!
-\nEpoch 29/100
-  Step 1/9 - Train Loss: 0.1210
-  Step 2/9 - Train Loss: 0.1614
-  Step 3/9 - Train Loss: 0.1211
-  Step 4/9 - Train Loss: 0.1356
-  Step 5/9 - Train Loss: 0.1203
-  Step 6/9 - Train Loss: 0.1028
-  Step 7/9 - Train Loss: 0.1487
-  Step 8/9 - Train Loss: 0.0994
-  Step 9/9 - Train Loss: 0.1385
-  --> Epoch 29 Summary: Train MSE: 0.1276 | Val MSE: 0.1423
-      Validation Clinical Metrics: PTV D95: 19.83 Gy | Bladder Mean: 32.22 Gy | Rectum Mean: 32.76 Gy
-  --> Saved new best model!
-\nEpoch 30/100
-  Step 1/9 - Train Loss: 0.1229
-  Step 2/9 - Train Loss: 0.1400
-  Step 3/9 - Train Loss: 0.0997
-  Step 4/9 - Train Loss: 0.1425
-  Step 5/9 - Train Loss: 0.1007
-  Step 6/9 - Train Loss: 0.1174
-  Step 7/9 - Train Loss: 0.1280
-  Step 8/9 - Train Loss: 0.1221
-  Step 9/9 - Train Loss: 0.1321
-  --> Epoch 30 Summary: Train MSE: 0.1228 | Val MSE: 0.1426
-      Validation Clinical Metrics: PTV D95: 15.93 Gy | Bladder Mean: 30.68 Gy | Rectum Mean: 27.64 Gy
-\nEpoch 31/100
-  Step 1/9 - Train Loss: 0.1332
-  Step 2/9 - Train Loss: 0.1293
-  Step 3/9 - Train Loss: 0.0953
-  Step 4/9 - Train Loss: 0.1005
-  Step 5/9 - Train Loss: 0.1084
-  Step 6/9 - Train Loss: 0.0973
-  Step 7/9 - Train Loss: 0.1212
-  Step 8/9 - Train Loss: 0.1414
-  Step 9/9 - Train Loss: 0.1181
-  --> Epoch 31 Summary: Train MSE: 0.1161 | Val MSE: 0.1401
-      Validation Clinical Metrics: PTV D95: 20.95 Gy | Bladder Mean: 31.48 Gy | Rectum Mean: 32.90 Gy
-  --> Saved new best model!
-\nEpoch 32/100
-  Step 1/9 - Train Loss: 0.1246
-  Step 2/9 - Train Loss: 0.1042
-  Step 3/9 - Train Loss: 0.1236
-  Step 4/9 - Train Loss: 0.0967
-  Step 5/9 - Train Loss: 0.1387
-  Step 6/9 - Train Loss: 0.1479
-  Step 7/9 - Train Loss: 0.1408
-  Step 8/9 - Train Loss: 0.1370
-  Step 9/9 - Train Loss: 0.0805
-  --> Epoch 32 Summary: Train MSE: 0.1216 | Val MSE: 0.1395
-      Validation Clinical Metrics: PTV D95: 19.80 Gy | Bladder Mean: 29.15 Gy | Rectum Mean: 31.09 Gy
-  --> Saved new best model!
-\nEpoch 33/100
-  Step 1/9 - Train Loss: 0.1182
-  Step 2/9 - Train Loss: 0.1298
-  Step 3/9 - Train Loss: 0.1190
-  Step 4/9 - Train Loss: 0.1133
-  Step 5/9 - Train Loss: 0.1159
-  Step 6/9 - Train Loss: 0.0821
-  Step 7/9 - Train Loss: 0.1363
-  Step 8/9 - Train Loss: 0.1122
-  Step 9/9 - Train Loss: 0.1117
-  --> Epoch 33 Summary: Train MSE: 0.1154 | Val MSE: 0.1385
-      Validation Clinical Metrics: PTV D95: 21.47 Gy | Bladder Mean: 31.43 Gy | Rectum Mean: 31.18 Gy
-  --> Saved new best model!
-\nEpoch 34/100
-  Step 1/9 - Train Loss: 0.1241
-  Step 2/9 - Train Loss: 0.1353
-  Step 3/9 - Train Loss: 0.0981
-  Step 4/9 - Train Loss: 0.1374
-  Step 5/9 - Train Loss: 0.1156
-  Step 6/9 - Train Loss: 0.1058
-  Step 7/9 - Train Loss: 0.1312
-  Step 8/9 - Train Loss: 0.0961
-  Step 9/9 - Train Loss: 0.1134
-  --> Epoch 34 Summary: Train MSE: 0.1174 | Val MSE: 0.1366
-      Validation Clinical Metrics: PTV D95: 21.55 Gy | Bladder Mean: 30.28 Gy | Rectum Mean: 30.58 Gy
-  --> Saved new best model!
-\nEpoch 35/100
-  Step 1/9 - Train Loss: 0.1050
-  Step 2/9 - Train Loss: 0.1204
-  Step 3/9 - Train Loss: 0.0980
-  Step 4/9 - Train Loss: 0.1313
-  Step 5/9 - Train Loss: 0.1090
-  Step 6/9 - Train Loss: 0.1160
-  Step 7/9 - Train Loss: 0.1317
-  Step 8/9 - Train Loss: 0.1349
-  Step 9/9 - Train Loss: 0.1124
-  --> Epoch 35 Summary: Train MSE: 0.1176 | Val MSE: 0.1365
-      Validation Clinical Metrics: PTV D95: 21.62 Gy | Bladder Mean: 29.17 Gy | Rectum Mean: 29.70 Gy
-  --> Saved new best model!
-\nEpoch 36/100
-  Step 1/9 - Train Loss: 0.1340
-  Step 2/9 - Train Loss: 0.1299
-  Step 3/9 - Train Loss: 0.0876
-  Step 4/9 - Train Loss: 0.1181
-  Step 5/9 - Train Loss: 0.0894
-  Step 6/9 - Train Loss: 0.0898
-  Step 7/9 - Train Loss: 0.1315
-  Step 8/9 - Train Loss: 0.0945
-  Step 9/9 - Train Loss: 0.1133
-  --> Epoch 36 Summary: Train MSE: 0.1098 | Val MSE: 0.1342
-      Validation Clinical Metrics: PTV D95: 21.03 Gy | Bladder Mean: 31.99 Gy | Rectum Mean: 30.61 Gy
-  --> Saved new best model!
-\nEpoch 37/100
-  Step 1/9 - Train Loss: 0.1431
-  Step 2/9 - Train Loss: 0.1510
-  Step 3/9 - Train Loss: 0.1082
-  Step 4/9 - Train Loss: 0.1107
-  Step 5/9 - Train Loss: 0.1171
-  Step 6/9 - Train Loss: 0.1316
-  Step 7/9 - Train Loss: 0.1102
-  Step 8/9 - Train Loss: 0.1071
-  Step 9/9 - Train Loss: 0.1137
-  --> Epoch 37 Summary: Train MSE: 0.1214 | Val MSE: 0.1341
-      Validation Clinical Metrics: PTV D95: 19.40 Gy | Bladder Mean: 30.70 Gy | Rectum Mean: 28.57 Gy
-  --> Saved new best model!
-\nEpoch 38/100
-  Step 1/9 - Train Loss: 0.0923
-  Step 2/9 - Train Loss: 0.1352
-  Step 3/9 - Train Loss: 0.0722
-  Step 4/9 - Train Loss: 0.1048
-  Step 5/9 - Train Loss: 0.1223
-  Step 6/9 - Train Loss: 0.1424
-  Step 7/9 - Train Loss: 0.1182
-  Step 8/9 - Train Loss: 0.1112
-  Step 9/9 - Train Loss: 0.1054
-  --> Epoch 38 Summary: Train MSE: 0.1116 | Val MSE: 0.1327
-      Validation Clinical Metrics: PTV D95: 21.04 Gy | Bladder Mean: 29.67 Gy | Rectum Mean: 31.76 Gy
-  --> Saved new best model!
-\nEpoch 39/100
-  Step 1/9 - Train Loss: 0.1017
-  Step 2/9 - Train Loss: 0.1045
-  Step 3/9 - Train Loss: 0.0880
-  Step 4/9 - Train Loss: 0.0872
-  Step 5/9 - Train Loss: 0.1136
-  Step 6/9 - Train Loss: 0.0843
-  Step 7/9 - Train Loss: 0.1280
-  Step 8/9 - Train Loss: 0.1351
-  Step 9/9 - Train Loss: 0.1034
-  --> Epoch 39 Summary: Train MSE: 0.1051 | Val MSE: 0.1317
-      Validation Clinical Metrics: PTV D95: 19.92 Gy | Bladder Mean: 29.84 Gy | Rectum Mean: 27.67 Gy
-  --> Saved new best model!
-\nEpoch 40/100
-  Step 1/9 - Train Loss: 0.1075
-  Step 2/9 - Train Loss: 0.1089
-  Step 3/9 - Train Loss: 0.1268
-  Step 4/9 - Train Loss: 0.0835
-  Step 5/9 - Train Loss: 0.1077
-  Step 6/9 - Train Loss: 0.1351
-  Step 7/9 - Train Loss: 0.0953
-  Step 8/9 - Train Loss: 0.1277
-  Step 9/9 - Train Loss: 0.0865
-  --> Epoch 40 Summary: Train MSE: 0.1088 | Val MSE: 0.1295
-      Validation Clinical Metrics: PTV D95: 25.58 Gy | Bladder Mean: 31.07 Gy | Rectum Mean: 30.90 Gy
-  --> Saved new best model!
-\nEpoch 41/100
-  Step 1/9 - Train Loss: 0.1132
-  Step 2/9 - Train Loss: 0.0926
-  Step 3/9 - Train Loss: 0.1374
-  Step 4/9 - Train Loss: 0.0877
-  Step 5/9 - Train Loss: 0.1187
-  Step 6/9 - Train Loss: 0.0735
-  Step 7/9 - Train Loss: 0.1246
-  Step 8/9 - Train Loss: 0.1257
-  Step 9/9 - Train Loss: 0.1229
-  --> Epoch 41 Summary: Train MSE: 0.1107 | Val MSE: 0.1294
-      Validation Clinical Metrics: PTV D95: 20.46 Gy | Bladder Mean: 28.44 Gy | Rectum Mean: 28.20 Gy
-  --> Saved new best model!
-\nEpoch 42/100
-  Step 1/9 - Train Loss: 0.1022
-  Step 2/9 - Train Loss: 0.1080
-  Step 3/9 - Train Loss: 0.1261
-  Step 4/9 - Train Loss: 0.1129
-  Step 5/9 - Train Loss: 0.1180
-  Step 6/9 - Train Loss: 0.1021
-  Step 7/9 - Train Loss: 0.0995
-  Step 8/9 - Train Loss: 0.0830
-  Step 9/9 - Train Loss: 0.1315
-  --> Epoch 42 Summary: Train MSE: 0.1093 | Val MSE: 0.1278
-      Validation Clinical Metrics: PTV D95: 23.48 Gy | Bladder Mean: 30.99 Gy | Rectum Mean: 29.86 Gy
-  --> Saved new best model!
-\nEpoch 43/100
-  Step 1/9 - Train Loss: 0.1282
-  Step 2/9 - Train Loss: 0.1301
-  Step 3/9 - Train Loss: 0.0707
-  Step 4/9 - Train Loss: 0.0864
-  Step 5/9 - Train Loss: 0.1042
-  Step 6/9 - Train Loss: 0.0881
-  Step 7/9 - Train Loss: 0.1243
-  Step 8/9 - Train Loss: 0.1236
-  Step 9/9 - Train Loss: 0.1056
-  --> Epoch 43 Summary: Train MSE: 0.1068 | Val MSE: 0.1260
-      Validation Clinical Metrics: PTV D95: 23.44 Gy | Bladder Mean: 28.63 Gy | Rectum Mean: 30.32 Gy
-  --> Saved new best model!
-\nEpoch 44/100
-  Step 1/9 - Train Loss: 0.0972
-  Step 2/9 - Train Loss: 0.1014
-  Step 3/9 - Train Loss: 0.1264
-  Step 4/9 - Train Loss: 0.1364
-  Step 5/9 - Train Loss: 0.1170
-  Step 6/9 - Train Loss: 0.1003
-  Step 7/9 - Train Loss: 0.1227
-  Step 8/9 - Train Loss: 0.1136
-  Step 9/9 - Train Loss: 0.0980
-  --> Epoch 44 Summary: Train MSE: 0.1126 | Val MSE: 0.1252
-      Validation Clinical Metrics: PTV D95: 24.41 Gy | Bladder Mean: 30.12 Gy | Rectum Mean: 29.78 Gy
-  --> Saved new best model!
-\nEpoch 45/100
-  Step 1/9 - Train Loss: 0.1275
-  Step 2/9 - Train Loss: 0.1109
-  Step 3/9 - Train Loss: 0.1408
-  Step 4/9 - Train Loss: 0.0939
-  Step 5/9 - Train Loss: 0.1073
-  Step 6/9 - Train Loss: 0.1311
-  Step 7/9 - Train Loss: 0.0823
-  Step 8/9 - Train Loss: 0.0628
-  Step 9/9 - Train Loss: 0.1057
-  --> Epoch 45 Summary: Train MSE: 0.1069 | Val MSE: 0.1242
-      Validation Clinical Metrics: PTV D95: 20.06 Gy | Bladder Mean: 29.04 Gy | Rectum Mean: 27.06 Gy
-  --> Saved new best model!
-\nEpoch 46/100
-  Step 1/9 - Train Loss: 0.1226
-  Step 2/9 - Train Loss: 0.1027
-  Step 3/9 - Train Loss: 0.0931
-  Step 4/9 - Train Loss: 0.1070
-  Step 5/9 - Train Loss: 0.1196
-  Step 6/9 - Train Loss: 0.1018
-  Step 7/9 - Train Loss: 0.0832
-  Step 8/9 - Train Loss: 0.1031
-  Step 9/9 - Train Loss: 0.1002
-  --> Epoch 46 Summary: Train MSE: 0.1037 | Val MSE: 0.1220
-      Validation Clinical Metrics: PTV D95: 25.17 Gy | Bladder Mean: 29.63 Gy | Rectum Mean: 32.05 Gy
-  --> Saved new best model!
-\nEpoch 47/100
-  Step 1/9 - Train Loss: 0.0785
-  Step 2/9 - Train Loss: 0.0797
-  Step 3/9 - Train Loss: 0.0997
-  Step 4/9 - Train Loss: 0.1317
-  Step 5/9 - Train Loss: 0.0933
-  Step 6/9 - Train Loss: 0.0592
-  Step 7/9 - Train Loss: 0.0729
-  Step 8/9 - Train Loss: 0.0608
-  Step 9/9 - Train Loss: 0.0815
-  --> Epoch 47 Summary: Train MSE: 0.0842 | Val MSE: 0.1221
-      Validation Clinical Metrics: PTV D95: 24.60 Gy | Bladder Mean: 29.95 Gy | Rectum Mean: 28.42 Gy
-\nEpoch 48/100
-  Step 1/9 - Train Loss: 0.1021
-  Step 2/9 - Train Loss: 0.1362
-  Step 3/9 - Train Loss: 0.0985
-  Step 4/9 - Train Loss: 0.1087
-  Step 5/9 - Train Loss: 0.0787
-  Step 6/9 - Train Loss: 0.1375
-  Step 7/9 - Train Loss: 0.1015
-  Step 8/9 - Train Loss: 0.0928
-  Step 9/9 - Train Loss: 0.0941
-  --> Epoch 48 Summary: Train MSE: 0.1056 | Val MSE: 0.1212
-      Validation Clinical Metrics: PTV D95: 22.33 Gy | Bladder Mean: 27.80 Gy | Rectum Mean: 30.10 Gy
-  --> Saved new best model!
-\nEpoch 49/100
-  Step 1/9 - Train Loss: 0.0976
-  Step 2/9 - Train Loss: 0.0625
-  Step 3/9 - Train Loss: 0.0853
-  Step 4/9 - Train Loss: 0.1044
-  Step 5/9 - Train Loss: 0.1269
-  Step 6/9 - Train Loss: 0.0795
-  Step 7/9 - Train Loss: 0.1141
-  Step 8/9 - Train Loss: 0.1024
-  Step 9/9 - Train Loss: 0.0963
-  --> Epoch 49 Summary: Train MSE: 0.0965 | Val MSE: 0.1200
-      Validation Clinical Metrics: PTV D95: 26.12 Gy | Bladder Mean: 30.85 Gy | Rectum Mean: 29.82 Gy
-  --> Saved new best model!
-\nEpoch 50/100
-  Step 1/9 - Train Loss: 0.0930
-  Step 2/9 - Train Loss: 0.1230
-  Step 3/9 - Train Loss: 0.0813
-  Step 4/9 - Train Loss: 0.0897
-  Step 5/9 - Train Loss: 0.0760
-  Step 6/9 - Train Loss: 0.0787
-  Step 7/9 - Train Loss: 0.0800
-  Step 8/9 - Train Loss: 0.1186
-  Step 9/9 - Train Loss: 0.1126
-  --> Epoch 50 Summary: Train MSE: 0.0948 | Val MSE: 0.1189
-      Validation Clinical Metrics: PTV D95: 23.89 Gy | Bladder Mean: 27.94 Gy | Rectum Mean: 28.97 Gy
-  --> Saved new best model!
-\nEpoch 51/100
-  Step 1/9 - Train Loss: 0.0816
-  Step 2/9 - Train Loss: 0.0897
-  Step 3/9 - Train Loss: 0.0905
-  Step 4/9 - Train Loss: 0.0785
-  Step 5/9 - Train Loss: 0.0906
-  Step 6/9 - Train Loss: 0.1129
-  Step 7/9 - Train Loss: 0.0976
-  Step 8/9 - Train Loss: 0.1260
-  Step 9/9 - Train Loss: 0.1032
-  --> Epoch 51 Summary: Train MSE: 0.0967 | Val MSE: 0.1178
-      Validation Clinical Metrics: PTV D95: 28.17 Gy | Bladder Mean: 29.60 Gy | Rectum Mean: 29.64 Gy
-  --> Saved new best model!
-\nEpoch 52/100
-  Step 1/9 - Train Loss: 0.0933
-  Step 2/9 - Train Loss: 0.0545
-  Step 3/9 - Train Loss: 0.0692
-  Step 4/9 - Train Loss: 0.0977
-  Step 5/9 - Train Loss: 0.0807
-  Step 6/9 - Train Loss: 0.1182
-  Step 7/9 - Train Loss: 0.0982
-  Step 8/9 - Train Loss: 0.0940
-  Step 9/9 - Train Loss: 0.1322
-  --> Epoch 52 Summary: Train MSE: 0.0931 | Val MSE: 0.1176
-      Validation Clinical Metrics: PTV D95: 26.34 Gy | Bladder Mean: 28.93 Gy | Rectum Mean: 27.40 Gy
-  --> Saved new best model!
-\nEpoch 53/100
-  Step 1/9 - Train Loss: 0.1013
-  Step 2/9 - Train Loss: 0.0666
-  Step 3/9 - Train Loss: 0.1323
-  Step 4/9 - Train Loss: 0.0933
-  Step 5/9 - Train Loss: 0.0962
-  Step 6/9 - Train Loss: 0.0881
-  Step 7/9 - Train Loss: 0.1298
-  Step 8/9 - Train Loss: 0.0587
-  Step 9/9 - Train Loss: 0.0734
-  --> Epoch 53 Summary: Train MSE: 0.0933 | Val MSE: 0.1157
-      Validation Clinical Metrics: PTV D95: 25.49 Gy | Bladder Mean: 28.73 Gy | Rectum Mean: 29.37 Gy
-  --> Saved new best model!
-\nEpoch 54/100
-  Step 1/9 - Train Loss: 0.1075
-  Step 2/9 - Train Loss: 0.0911
-  Step 3/9 - Train Loss: 0.1240
-  Step 4/9 - Train Loss: 0.0944
-  Step 5/9 - Train Loss: 0.0544
-  Step 6/9 - Train Loss: 0.0789
-  Step 7/9 - Train Loss: 0.0918
-  Step 8/9 - Train Loss: 0.0911
-  Step 9/9 - Train Loss: 0.0915
-  --> Epoch 54 Summary: Train MSE: 0.0916 | Val MSE: 0.1144
-      Validation Clinical Metrics: PTV D95: 28.96 Gy | Bladder Mean: 29.44 Gy | Rectum Mean: 29.07 Gy
-  --> Saved new best model!
-\nEpoch 55/100
-  Step 1/9 - Train Loss: 0.0874
-  Step 2/9 - Train Loss: 0.1243
-  Step 3/9 - Train Loss: 0.0919
-  Step 4/9 - Train Loss: 0.1256
-  Step 5/9 - Train Loss: 0.0673
-  Step 6/9 - Train Loss: 0.0656
-  Step 7/9 - Train Loss: 0.0922
-  Step 8/9 - Train Loss: 0.0857
-  Step 9/9 - Train Loss: 0.1092
-  --> Epoch 55 Summary: Train MSE: 0.0944 | Val MSE: 0.1135
-      Validation Clinical Metrics: PTV D95: 28.40 Gy | Bladder Mean: 28.80 Gy | Rectum Mean: 28.26 Gy
-  --> Saved new best model!
-\nEpoch 56/100
-  Step 1/9 - Train Loss: 0.1225
-  Step 2/9 - Train Loss: 0.0705
-  Step 3/9 - Train Loss: 0.0712
-  Step 4/9 - Train Loss: 0.0924
-  Step 5/9 - Train Loss: 0.1077
-  Step 6/9 - Train Loss: 0.0742
-  Step 7/9 - Train Loss: 0.0998
-  Step 8/9 - Train Loss: 0.0746
-  Step 9/9 - Train Loss: 0.0786
-  --> Epoch 56 Summary: Train MSE: 0.0879 | Val MSE: 0.1130
-      Validation Clinical Metrics: PTV D95: 26.03 Gy | Bladder Mean: 28.52 Gy | Rectum Mean: 27.96 Gy
-  --> Saved new best model!
-\nEpoch 57/100
-  Step 1/9 - Train Loss: 0.0662
-  Step 2/9 - Train Loss: 0.1108
-  Step 3/9 - Train Loss: 0.0678
-  Step 4/9 - Train Loss: 0.0705
-  Step 5/9 - Train Loss: 0.0723
-  Step 6/9 - Train Loss: 0.0918
-  Step 7/9 - Train Loss: 0.1079
-  Step 8/9 - Train Loss: 0.0935
-  Step 9/9 - Train Loss: 0.0788
-  --> Epoch 57 Summary: Train MSE: 0.0844 | Val MSE: 0.1121
-      Validation Clinical Metrics: PTV D95: 28.48 Gy | Bladder Mean: 29.42 Gy | Rectum Mean: 27.94 Gy
-  --> Saved new best model!
-\nEpoch 58/100
-  Step 1/9 - Train Loss: 0.1083
-  Step 2/9 - Train Loss: 0.1044
-  Step 3/9 - Train Loss: 0.0688
-  Step 4/9 - Train Loss: 0.0834
-  Step 5/9 - Train Loss: 0.0668
-  Step 6/9 - Train Loss: 0.1106
-  Step 7/9 - Train Loss: 0.1210
-  Step 8/9 - Train Loss: 0.0502
-  Step 9/9 - Train Loss: 0.0938
-  --> Epoch 58 Summary: Train MSE: 0.0897 | Val MSE: 0.1117
-      Validation Clinical Metrics: PTV D95: 26.56 Gy | Bladder Mean: 27.46 Gy | Rectum Mean: 27.84 Gy
-  --> Saved new best model!
-\nEpoch 59/100
-  Step 1/9 - Train Loss: 0.1066
-  Step 2/9 - Train Loss: 0.1078
-  Step 3/9 - Train Loss: 0.0958
-  Step 4/9 - Train Loss: 0.0745
-  Step 5/9 - Train Loss: 0.1072
-  Step 6/9 - Train Loss: 0.0862
-  Step 7/9 - Train Loss: 0.1121
-  Step 8/9 - Train Loss: 0.0672
-  Step 9/9 - Train Loss: 0.0893
-  --> Epoch 59 Summary: Train MSE: 0.0941 | Val MSE: 0.1098
-      Validation Clinical Metrics: PTV D95: 31.62 Gy | Bladder Mean: 26.96 Gy | Rectum Mean: 30.22 Gy
-  --> Saved new best model!
-\nEpoch 60/100
-  Step 1/9 - Train Loss: 0.0680
-  Step 2/9 - Train Loss: 0.0848
-  Step 3/9 - Train Loss: 0.0476
-  Step 4/9 - Train Loss: 0.0599
-  Step 5/9 - Train Loss: 0.0668
-  Step 6/9 - Train Loss: 0.1154
-  Step 7/9 - Train Loss: 0.0698
-  Step 8/9 - Train Loss: 0.1036
-  Step 9/9 - Train Loss: 0.1070
-  --> Epoch 60 Summary: Train MSE: 0.0803 | Val MSE: 0.1091
-      Validation Clinical Metrics: PTV D95: 33.06 Gy | Bladder Mean: 27.17 Gy | Rectum Mean: 28.14 Gy
-  --> Saved new best model!
-\nEpoch 61/100
-  Step 1/9 - Train Loss: 0.0849
-  Step 2/9 - Train Loss: 0.0679
-  Step 3/9 - Train Loss: 0.1024
-  Step 4/9 - Train Loss: 0.0795
-  Step 5/9 - Train Loss: 0.1039
-  Step 6/9 - Train Loss: 0.0682
-  Step 7/9 - Train Loss: 0.1061
-  Step 8/9 - Train Loss: 0.0691
-  Step 9/9 - Train Loss: 0.0800
-  --> Epoch 61 Summary: Train MSE: 0.0847 | Val MSE: 0.1092
-      Validation Clinical Metrics: PTV D95: 27.41 Gy | Bladder Mean: 25.22 Gy | Rectum Mean: 23.60 Gy
-\nEpoch 62/100
-  Step 1/9 - Train Loss: 0.1044
-  Step 2/9 - Train Loss: 0.0860
-  Step 3/9 - Train Loss: 0.0836
-  Step 4/9 - Train Loss: 0.0978
-  Step 5/9 - Train Loss: 0.0517
-  Step 6/9 - Train Loss: 0.0916
-  Step 7/9 - Train Loss: 0.0647
-  Step 8/9 - Train Loss: 0.0677
-  Step 9/9 - Train Loss: 0.0637
-  --> Epoch 62 Summary: Train MSE: 0.0790 | Val MSE: 0.1074
-      Validation Clinical Metrics: PTV D95: 27.58 Gy | Bladder Mean: 25.94 Gy | Rectum Mean: 24.68 Gy
-  --> Saved new best model!
-\nEpoch 63/100
-  Step 1/9 - Train Loss: 0.0811
-  Step 2/9 - Train Loss: 0.0975
-  Step 3/9 - Train Loss: 0.0419
-  Step 4/9 - Train Loss: 0.0661
-  Step 5/9 - Train Loss: 0.1022
-  Step 6/9 - Train Loss: 0.1164
-  Step 7/9 - Train Loss: 0.0949
-  Step 8/9 - Train Loss: 0.0744
-  Step 9/9 - Train Loss: 0.1043
-  --> Epoch 63 Summary: Train MSE: 0.0865 | Val MSE: 0.1067
-      Validation Clinical Metrics: PTV D95: 32.88 Gy | Bladder Mean: 25.54 Gy | Rectum Mean: 28.60 Gy
-  --> Saved new best model!
-\nEpoch 64/100
-  Step 1/9 - Train Loss: 0.0820
-  Step 2/9 - Train Loss: 0.1038
-  Step 3/9 - Train Loss: 0.0520
-  Step 4/9 - Train Loss: 0.0796
-  Step 5/9 - Train Loss: 0.0712
-  Step 6/9 - Train Loss: 0.1040
-  Step 7/9 - Train Loss: 0.0835
-  Step 8/9 - Train Loss: 0.0827
-  Step 9/9 - Train Loss: 0.0836
-  --> Epoch 64 Summary: Train MSE: 0.0825 | Val MSE: 0.1043
-      Validation Clinical Metrics: PTV D95: 33.76 Gy | Bladder Mean: 26.46 Gy | Rectum Mean: 29.31 Gy
-  --> Saved new best model!
-\nEpoch 65/100
-  Step 1/9 - Train Loss: 0.0637
-  Step 2/9 - Train Loss: 0.1047
-  Step 3/9 - Train Loss: 0.0627
-  Step 4/9 - Train Loss: 0.0637
-  Step 5/9 - Train Loss: 0.0743
-  Step 6/9 - Train Loss: 0.1181
-  Step 7/9 - Train Loss: 0.0692
-  Step 8/9 - Train Loss: 0.0738
-  Step 9/9 - Train Loss: 0.0833
-  --> Epoch 65 Summary: Train MSE: 0.0793 | Val MSE: 0.1032
-      Validation Clinical Metrics: PTV D95: 33.10 Gy | Bladder Mean: 28.98 Gy | Rectum Mean: 30.29 Gy
-  --> Saved new best model!
-\nEpoch 66/100
-  Step 1/9 - Train Loss: 0.0424
-  Step 2/9 - Train Loss: 0.1014
-  Step 3/9 - Train Loss: 0.1007
-  Step 4/9 - Train Loss: 0.0613
-  Step 5/9 - Train Loss: 0.0940
-  Step 6/9 - Train Loss: 0.1055
-  Step 7/9 - Train Loss: 0.0766
-  Step 8/9 - Train Loss: 0.0836
-  Step 9/9 - Train Loss: 0.1004
-  --> Epoch 66 Summary: Train MSE: 0.0851 | Val MSE: 0.1032
-      Validation Clinical Metrics: PTV D95: 32.80 Gy | Bladder Mean: 23.83 Gy | Rectum Mean: 28.70 Gy
-\nEpoch 67/100
-  Step 1/9 - Train Loss: 0.0739
-  Step 2/9 - Train Loss: 0.0824
-  Step 3/9 - Train Loss: 0.0978
-  Step 4/9 - Train Loss: 0.1025
-  Step 5/9 - Train Loss: 0.0675
-  Step 6/9 - Train Loss: 0.0446
-  Step 7/9 - Train Loss: 0.1083
-  Step 8/9 - Train Loss: 0.0553
-  Step 9/9 - Train Loss: 0.0907
-  --> Epoch 67 Summary: Train MSE: 0.0803 | Val MSE: 0.1022
-      Validation Clinical Metrics: PTV D95: 27.84 Gy | Bladder Mean: 23.68 Gy | Rectum Mean: 25.65 Gy
-  --> Saved new best model!
-\nEpoch 68/100
-  Step 1/9 - Train Loss: 0.1092
-  Step 2/9 - Train Loss: 0.0769
-  Step 3/9 - Train Loss: 0.1134
-  Step 4/9 - Train Loss: 0.0625
-  Step 5/9 - Train Loss: 0.0787
-  Step 6/9 - Train Loss: 0.0721
-  Step 7/9 - Train Loss: 0.0894
-  Step 8/9 - Train Loss: 0.0997
-  Step 9/9 - Train Loss: 0.0598
-  --> Epoch 68 Summary: Train MSE: 0.0846 | Val MSE: 0.0993
-      Validation Clinical Metrics: PTV D95: 33.95 Gy | Bladder Mean: 31.50 Gy | Rectum Mean: 29.61 Gy
-  --> Saved new best model!
-\nEpoch 69/100
-  Step 1/9 - Train Loss: 0.0447
-  Step 2/9 - Train Loss: 0.0711
-  Step 3/9 - Train Loss: 0.0782
-  Step 4/9 - Train Loss: 0.1062
-  Step 5/9 - Train Loss: 0.0784
-  Step 6/9 - Train Loss: 0.0945
-  Step 7/9 - Train Loss: 0.0580
-  Step 8/9 - Train Loss: 0.0945
-  Step 9/9 - Train Loss: 0.1007
-  --> Epoch 69 Summary: Train MSE: 0.0807 | Val MSE: 0.1005
-      Validation Clinical Metrics: PTV D95: 29.75 Gy | Bladder Mean: 25.03 Gy | Rectum Mean: 26.55 Gy
-\nEpoch 70/100
-  Step 1/9 - Train Loss: 0.0747
-  Step 2/9 - Train Loss: 0.0824
-  Step 3/9 - Train Loss: 0.1089
-  Step 4/9 - Train Loss: 0.0870
-  Step 5/9 - Train Loss: 0.0877
-  Step 6/9 - Train Loss: 0.0868
-  Step 7/9 - Train Loss: 0.0611
-  Step 8/9 - Train Loss: 0.0888
-  Step 9/9 - Train Loss: 0.0771
-  --> Epoch 70 Summary: Train MSE: 0.0838 | Val MSE: 0.0980
-      Validation Clinical Metrics: PTV D95: 33.66 Gy | Bladder Mean: 27.35 Gy | Rectum Mean: 27.79 Gy
-  --> Saved new best model!
-\nEpoch 71/100
-  Step 1/9 - Train Loss: 0.1013
-  Step 2/9 - Train Loss: 0.0941
-  Step 3/9 - Train Loss: 0.0801
-  Step 4/9 - Train Loss: 0.0437
-  Step 5/9 - Train Loss: 0.0829
-  Step 6/9 - Train Loss: 0.0643
-  Step 7/9 - Train Loss: 0.0672
-  Step 8/9 - Train Loss: 0.0749
-  Step 9/9 - Train Loss: 0.0709
-  --> Epoch 71 Summary: Train MSE: 0.0755 | Val MSE: 0.0959
-      Validation Clinical Metrics: PTV D95: 33.05 Gy | Bladder Mean: 27.60 Gy | Rectum Mean: 29.45 Gy
-  --> Saved new best model!
-\nEpoch 72/100
-  Step 1/9 - Train Loss: 0.0593
-  Step 2/9 - Train Loss: 0.1068
-  Step 3/9 - Train Loss: 0.0816
-  Step 4/9 - Train Loss: 0.0785
-  Step 5/9 - Train Loss: 0.0778
-  Step 6/9 - Train Loss: 0.0763
-  Step 7/9 - Train Loss: 0.0789
-  Step 8/9 - Train Loss: 0.0923
-  Step 9/9 - Train Loss: 0.0571
-  --> Epoch 72 Summary: Train MSE: 0.0787 | Val MSE: 0.0961
-      Validation Clinical Metrics: PTV D95: 30.91 Gy | Bladder Mean: 26.09 Gy | Rectum Mean: 28.51 Gy
-\nEpoch 73/100
-  Step 1/9 - Train Loss: 0.0757
-  Step 2/9 - Train Loss: 0.0662
-  Step 3/9 - Train Loss: 0.0622
-  Step 4/9 - Train Loss: 0.0910
-  Step 5/9 - Train Loss: 0.0745
-  Step 6/9 - Train Loss: 0.0582
-  Step 7/9 - Train Loss: 0.0598
-  Step 8/9 - Train Loss: 0.0993
-  Step 9/9 - Train Loss: 0.0574
-  --> Epoch 73 Summary: Train MSE: 0.0716 | Val MSE: 0.0957
-      Validation Clinical Metrics: PTV D95: 32.54 Gy | Bladder Mean: 25.72 Gy | Rectum Mean: 26.98 Gy
-  --> Saved new best model!
-\nEpoch 74/100
-  Step 1/9 - Train Loss: 0.0722
-  Step 2/9 - Train Loss: 0.0913
-  Step 3/9 - Train Loss: 0.0702
-  Step 4/9 - Train Loss: 0.0892
-  Step 5/9 - Train Loss: 0.0622
-  Step 6/9 - Train Loss: 0.0768
-  Step 7/9 - Train Loss: 0.0909
-  Step 8/9 - Train Loss: 0.0885
-  Step 9/9 - Train Loss: 0.0447
-  --> Epoch 74 Summary: Train MSE: 0.0762 | Val MSE: 0.0946
-      Validation Clinical Metrics: PTV D95: 32.80 Gy | Bladder Mean: 27.02 Gy | Rectum Mean: 25.41 Gy
-  --> Saved new best model!
-\nEpoch 75/100
-  Step 1/9 - Train Loss: 0.0612
-  Step 2/9 - Train Loss: 0.0933
-  Step 3/9 - Train Loss: 0.0571
-  Step 4/9 - Train Loss: 0.0992
-  Step 5/9 - Train Loss: 0.0643
-  Step 6/9 - Train Loss: 0.0457
-  Step 7/9 - Train Loss: 0.0764
-  Step 8/9 - Train Loss: 0.0813
-  Step 9/9 - Train Loss: 0.0739
-  --> Epoch 75 Summary: Train MSE: 0.0725 | Val MSE: 0.0926
-      Validation Clinical Metrics: PTV D95: 31.29 Gy | Bladder Mean: 27.36 Gy | Rectum Mean: 28.31 Gy
-  --> Saved new best model!
-\nEpoch 76/100
-  Step 1/9 - Train Loss: 0.0597
-  Step 2/9 - Train Loss: 0.0604
-  Step 3/9 - Train Loss: 0.0714
-  Step 4/9 - Train Loss: 0.1011
-  Step 5/9 - Train Loss: 0.0727
-  Step 6/9 - Train Loss: 0.0553
-  Step 7/9 - Train Loss: 0.0468
-  Step 8/9 - Train Loss: 0.0709
-  Step 9/9 - Train Loss: 0.0884
-  --> Epoch 76 Summary: Train MSE: 0.0696 | Val MSE: 0.0930
-      Validation Clinical Metrics: PTV D95: 35.31 Gy | Bladder Mean: 27.21 Gy | Rectum Mean: 27.16 Gy
-\nEpoch 77/100
-  Step 1/9 - Train Loss: 0.0704
-  Step 2/9 - Train Loss: 0.0718
-  Step 3/9 - Train Loss: 0.0900
-  Step 4/9 - Train Loss: 0.0998
-  Step 5/9 - Train Loss: 0.0852
-  Step 6/9 - Train Loss: 0.0678
-  Step 7/9 - Train Loss: 0.0890
-  Step 8/9 - Train Loss: 0.0716
-  Step 9/9 - Train Loss: 0.0756
-  --> Epoch 77 Summary: Train MSE: 0.0801 | Val MSE: 0.0912
-      Validation Clinical Metrics: PTV D95: 33.89 Gy | Bladder Mean: 27.14 Gy | Rectum Mean: 28.88 Gy
-  --> Saved new best model!
-\nEpoch 78/100
-  Step 1/9 - Train Loss: 0.0880
-  Step 2/9 - Train Loss: 0.0716
-  Step 3/9 - Train Loss: 0.0689
-  Step 4/9 - Train Loss: 0.0597
-  Step 5/9 - Train Loss: 0.0851
-  Step 6/9 - Train Loss: 0.0898
-  Step 7/9 - Train Loss: 0.0964
-  Step 8/9 - Train Loss: 0.0717
-  Step 9/9 - Train Loss: 0.0699
-  --> Epoch 78 Summary: Train MSE: 0.0779 | Val MSE: 0.0899
-      Validation Clinical Metrics: PTV D95: 38.78 Gy | Bladder Mean: 26.71 Gy | Rectum Mean: 26.31 Gy
-  --> Saved new best model!
-\nEpoch 79/100
-  Step 1/9 - Train Loss: 0.0860
-  Step 2/9 - Train Loss: 0.0610
-  Step 3/9 - Train Loss: 0.0927
-  Step 4/9 - Train Loss: 0.0662
-  Step 5/9 - Train Loss: 0.0560
-  Step 6/9 - Train Loss: 0.0704
-  Step 7/9 - Train Loss: 0.0827
-  Step 8/9 - Train Loss: 0.0790
-  Step 9/9 - Train Loss: 0.0945
-  --> Epoch 79 Summary: Train MSE: 0.0765 | Val MSE: 0.0889
-      Validation Clinical Metrics: PTV D95: 30.80 Gy | Bladder Mean: 26.27 Gy | Rectum Mean: 26.06 Gy
-  --> Saved new best model!
-\nEpoch 80/100
-  Step 1/9 - Train Loss: 0.0716
-  Step 2/9 - Train Loss: 0.0857
-  Step 3/9 - Train Loss: 0.0958
-  Step 4/9 - Train Loss: 0.0619
-  Step 5/9 - Train Loss: 0.0579
-  Step 6/9 - Train Loss: 0.0579
-  Step 7/9 - Train Loss: 0.0859
-  Step 8/9 - Train Loss: 0.0802
-  Step 9/9 - Train Loss: 0.0679
-  --> Epoch 80 Summary: Train MSE: 0.0739 | Val MSE: 0.0867
-      Validation Clinical Metrics: PTV D95: 34.44 Gy | Bladder Mean: 29.42 Gy | Rectum Mean: 28.31 Gy
-  --> Saved new best model!
-\nEpoch 81/100
-  Step 1/9 - Train Loss: 0.0846
-  Step 2/9 - Train Loss: 0.0668
-  Step 3/9 - Train Loss: 0.0496
-  Step 4/9 - Train Loss: 0.0790
-  Step 5/9 - Train Loss: 0.0688
-  Step 6/9 - Train Loss: 0.0535
-  Step 7/9 - Train Loss: 0.0901
-  Step 8/9 - Train Loss: 0.0494
-  Step 9/9 - Train Loss: 0.0547
-  --> Epoch 81 Summary: Train MSE: 0.0663 | Val MSE: 0.0864
-      Validation Clinical Metrics: PTV D95: 36.70 Gy | Bladder Mean: 29.27 Gy | Rectum Mean: 29.93 Gy
-  --> Saved new best model!
-\nEpoch 82/100
-  Step 1/9 - Train Loss: 0.0838
-  Step 2/9 - Train Loss: 0.0589
-  Step 3/9 - Train Loss: 0.0819
-  Step 4/9 - Train Loss: 0.0710
-  Step 5/9 - Train Loss: 0.0578
-  Step 6/9 - Train Loss: 0.0552
-  Step 7/9 - Train Loss: 0.0549
-  Step 8/9 - Train Loss: 0.0664
-  Step 9/9 - Train Loss: 0.0702
-  --> Epoch 82 Summary: Train MSE: 0.0667 | Val MSE: 0.0864
-      Validation Clinical Metrics: PTV D95: 25.95 Gy | Bladder Mean: 24.15 Gy | Rectum Mean: 25.57 Gy
-  --> Saved new best model!
-\nEpoch 83/100
-  Step 1/9 - Train Loss: 0.0521
-  Step 2/9 - Train Loss: 0.0394
-  Step 3/9 - Train Loss: 0.0675
-  Step 4/9 - Train Loss: 0.0529
-  Step 5/9 - Train Loss: 0.0589
-  Step 6/9 - Train Loss: 0.0518
-  Step 7/9 - Train Loss: 0.0833
-  Step 8/9 - Train Loss: 0.0848
-  Step 9/9 - Train Loss: 0.0473
-  --> Epoch 83 Summary: Train MSE: 0.0598 | Val MSE: 0.0863
-      Validation Clinical Metrics: PTV D95: 34.27 Gy | Bladder Mean: 25.07 Gy | Rectum Mean: 25.53 Gy
-  --> Saved new best model!
-\nEpoch 84/100
-  Step 1/9 - Train Loss: 0.0484
-  Step 2/9 - Train Loss: 0.0532
-  Step 3/9 - Train Loss: 0.0926
-  Step 4/9 - Train Loss: 0.0513
-  Step 5/9 - Train Loss: 0.0857
-  Step 6/9 - Train Loss: 0.0661
-  Step 7/9 - Train Loss: 0.0405
-  Step 8/9 - Train Loss: 0.0640
-  Step 9/9 - Train Loss: 0.0668
-  --> Epoch 84 Summary: Train MSE: 0.0632 | Val MSE: 0.0846
-      Validation Clinical Metrics: PTV D95: 35.47 Gy | Bladder Mean: 31.00 Gy | Rectum Mean: 29.19 Gy
-  --> Saved new best model!
-\nEpoch 85/100
-  Step 1/9 - Train Loss: 0.0817
-  Step 2/9 - Train Loss: 0.0923
-  Step 3/9 - Train Loss: 0.0760
-  Step 4/9 - Train Loss: 0.0505
-  Step 5/9 - Train Loss: 0.0404
-  Step 6/9 - Train Loss: 0.0561
-  Step 7/9 - Train Loss: 0.0691
-  Step 8/9 - Train Loss: 0.0713
-  Step 9/9 - Train Loss: 0.0651
-  --> Epoch 85 Summary: Train MSE: 0.0669 | Val MSE: 0.0846
-      Validation Clinical Metrics: PTV D95: 34.02 Gy | Bladder Mean: 27.66 Gy | Rectum Mean: 25.01 Gy
-  --> Saved new best model!
-\nEpoch 86/100
-  Step 1/9 - Train Loss: 0.0795
-  Step 2/9 - Train Loss: 0.0579
-  Step 3/9 - Train Loss: 0.0525
-  Step 4/9 - Train Loss: 0.0715
-  Step 5/9 - Train Loss: 0.0542
-  Step 6/9 - Train Loss: 0.0341
-  Step 7/9 - Train Loss: 0.0813
-  Step 8/9 - Train Loss: 0.0657
-  Step 9/9 - Train Loss: 0.0388
-  --> Epoch 86 Summary: Train MSE: 0.0595 | Val MSE: 0.0829
-      Validation Clinical Metrics: PTV D95: 32.77 Gy | Bladder Mean: 29.99 Gy | Rectum Mean: 27.71 Gy
-  --> Saved new best model!
-\nEpoch 87/100
-  Step 1/9 - Train Loss: 0.0761
-  Step 2/9 - Train Loss: 0.0652
-  Step 3/9 - Train Loss: 0.0588
-  Step 4/9 - Train Loss: 0.0518
-  Step 5/9 - Train Loss: 0.0819
-  Step 6/9 - Train Loss: 0.0704
-  Step 7/9 - Train Loss: 0.0942
-  Step 8/9 - Train Loss: 0.0664
-  Step 9/9 - Train Loss: 0.0551
-  --> Epoch 87 Summary: Train MSE: 0.0689 | Val MSE: 0.0840
-      Validation Clinical Metrics: PTV D95: 34.24 Gy | Bladder Mean: 22.60 Gy | Rectum Mean: 23.70 Gy
-\nEpoch 88/100
-  Step 1/9 - Train Loss: 0.0483
-  Step 2/9 - Train Loss: 0.0637
-  Step 3/9 - Train Loss: 0.0493
-  Step 4/9 - Train Loss: 0.0444
-  Step 5/9 - Train Loss: 0.0608
-  Step 6/9 - Train Loss: 0.0416
-  Step 7/9 - Train Loss: 0.0879
-  Step 8/9 - Train Loss: 0.0502
-  Step 9/9 - Train Loss: 0.0878
-  --> Epoch 88 Summary: Train MSE: 0.0593 | Val MSE: 0.0831
-      Validation Clinical Metrics: PTV D95: 32.81 Gy | Bladder Mean: 21.65 Gy | Rectum Mean: 26.40 Gy
-\nEpoch 89/100
-  Step 1/9 - Train Loss: 0.0516
-  Step 2/9 - Train Loss: 0.0656
-  Step 3/9 - Train Loss: 0.0520
-  Step 4/9 - Train Loss: 0.0533
-  Step 5/9 - Train Loss: 0.0614
-  Step 6/9 - Train Loss: 0.0941
-  Step 7/9 - Train Loss: 0.0632
-  Step 8/9 - Train Loss: 0.0584
-  Step 9/9 - Train Loss: 0.0522
-  --> Epoch 89 Summary: Train MSE: 0.0613 | Val MSE: 0.0814
-      Validation Clinical Metrics: PTV D95: 38.45 Gy | Bladder Mean: 27.51 Gy | Rectum Mean: 31.04 Gy
-  --> Saved new best model!
-\nEpoch 90/100
-  Step 1/9 - Train Loss: 0.0790
-  Step 2/9 - Train Loss: 0.0922
-  Step 3/9 - Train Loss: 0.0641
-  Step 4/9 - Train Loss: 0.0874
-  Step 5/9 - Train Loss: 0.0791
-  Step 6/9 - Train Loss: 0.0742
-  Step 7/9 - Train Loss: 0.0667
-  Step 8/9 - Train Loss: 0.0527
-  Step 9/9 - Train Loss: 0.0663
-  --> Epoch 90 Summary: Train MSE: 0.0735 | Val MSE: 0.0803
-      Validation Clinical Metrics: PTV D95: 35.99 Gy | Bladder Mean: 25.73 Gy | Rectum Mean: 24.18 Gy
-  --> Saved new best model!
-\nEpoch 91/100
-  Step 1/9 - Train Loss: 0.0786
-  Step 2/9 - Train Loss: 0.0633
-  Step 3/9 - Train Loss: 0.0823
-  Step 4/9 - Train Loss: 0.0509
-  Step 5/9 - Train Loss: 0.0615
-  Step 6/9 - Train Loss: 0.0456
-  Step 7/9 - Train Loss: 0.0652
-  Step 8/9 - Train Loss: 0.0622
-  Step 9/9 - Train Loss: 0.0541
-  --> Epoch 91 Summary: Train MSE: 0.0626 | Val MSE: 0.0797
-      Validation Clinical Metrics: PTV D95: 35.60 Gy | Bladder Mean: 26.41 Gy | Rectum Mean: 28.22 Gy
-  --> Saved new best model!
-\nEpoch 92/100
-  Step 1/9 - Train Loss: 0.0746
-  Step 2/9 - Train Loss: 0.0617
-  Step 3/9 - Train Loss: 0.0779
-  Step 4/9 - Train Loss: 0.0623
-  Step 5/9 - Train Loss: 0.0747
-  Step 6/9 - Train Loss: 0.0796
-  Step 7/9 - Train Loss: 0.0503
-  Step 8/9 - Train Loss: 0.0870
-  Step 9/9 - Train Loss: 0.0751
-  --> Epoch 92 Summary: Train MSE: 0.0715 | Val MSE: 0.0784
-      Validation Clinical Metrics: PTV D95: 32.72 Gy | Bladder Mean: 24.89 Gy | Rectum Mean: 26.14 Gy
-  --> Saved new best model!
-\nEpoch 93/100
-  Step 1/9 - Train Loss: 0.0617
-  Step 2/9 - Train Loss: 0.0757
-  Step 3/9 - Train Loss: 0.0582
-  Step 4/9 - Train Loss: 0.0867
-  Step 5/9 - Train Loss: 0.0633
-  Step 6/9 - Train Loss: 0.0632
-  Step 7/9 - Train Loss: 0.0375
-  Step 8/9 - Train Loss: 0.0775
-  Step 9/9 - Train Loss: 0.0607
-  --> Epoch 93 Summary: Train MSE: 0.0649 | Val MSE: 0.0768
-      Validation Clinical Metrics: PTV D95: 35.43 Gy | Bladder Mean: 25.26 Gy | Rectum Mean: 26.75 Gy
-  --> Saved new best model!
-\nEpoch 94/100
-  Step 1/9 - Train Loss: 0.0732
-  Step 2/9 - Train Loss: 0.0617
-  Step 3/9 - Train Loss: 0.0632
-  Step 4/9 - Train Loss: 0.0765
-  Step 5/9 - Train Loss: 0.0742
-  Step 6/9 - Train Loss: 0.0514
-  Step 7/9 - Train Loss: 0.0508
-  Step 8/9 - Train Loss: 0.0445
-  Step 9/9 - Train Loss: 0.0549
-  --> Epoch 94 Summary: Train MSE: 0.0611 | Val MSE: 0.0762
-      Validation Clinical Metrics: PTV D95: 33.33 Gy | Bladder Mean: 27.63 Gy | Rectum Mean: 25.06 Gy
-  --> Saved new best model!
-\nEpoch 95/100
-  Step 1/9 - Train Loss: 0.0572
-  Step 2/9 - Train Loss: 0.0726
-  Step 3/9 - Train Loss: 0.0754
-  Step 4/9 - Train Loss: 0.0673
-  Step 5/9 - Train Loss: 0.0587
-  Step 6/9 - Train Loss: 0.0682
-  Step 7/9 - Train Loss: 0.0468
-  Step 8/9 - Train Loss: 0.0514
-  Step 9/9 - Train Loss: 0.0713
-  --> Epoch 95 Summary: Train MSE: 0.0632 | Val MSE: 0.0753
-      Validation Clinical Metrics: PTV D95: 36.16 Gy | Bladder Mean: 27.51 Gy | Rectum Mean: 29.85 Gy
-  --> Saved new best model!
-\nEpoch 96/100
-  Step 1/9 - Train Loss: 0.0683
-  Step 2/9 - Train Loss: 0.0606
-  Step 3/9 - Train Loss: 0.0611
-  Step 4/9 - Train Loss: 0.0729
-  Step 5/9 - Train Loss: 0.0659
-  Step 6/9 - Train Loss: 0.0720
-  Step 7/9 - Train Loss: 0.0583
-  Step 8/9 - Train Loss: 0.0497
-  Step 9/9 - Train Loss: 0.0364
-  --> Epoch 96 Summary: Train MSE: 0.0606 | Val MSE: 0.0739
-      Validation Clinical Metrics: PTV D95: 36.50 Gy | Bladder Mean: 28.05 Gy | Rectum Mean: 25.89 Gy
-  --> Saved new best model!
-\nEpoch 97/100
-  Step 1/9 - Train Loss: 0.0346
-  Step 2/9 - Train Loss: 0.0581
-  Step 3/9 - Train Loss: 0.0742
-  Step 4/9 - Train Loss: 0.0766
-  Step 5/9 - Train Loss: 0.0472
-  Step 6/9 - Train Loss: 0.0704
-  Step 7/9 - Train Loss: 0.0699
-  Step 8/9 - Train Loss: 0.0320
-  Step 9/9 - Train Loss: 0.0481
-  --> Epoch 97 Summary: Train MSE: 0.0568 | Val MSE: 0.0738
-      Validation Clinical Metrics: PTV D95: 35.77 Gy | Bladder Mean: 25.50 Gy | Rectum Mean: 28.20 Gy
-  --> Saved new best model!
-\nEpoch 98/100
-  Step 1/9 - Train Loss: 0.0556
-  Step 2/9 - Train Loss: 0.0671
-  Step 3/9 - Train Loss: 0.0822
-  Step 4/9 - Train Loss: 0.0639
-  Step 5/9 - Train Loss: 0.0515
-  Step 6/9 - Train Loss: 0.0724
-  Step 7/9 - Train Loss: 0.0479
-  Step 8/9 - Train Loss: 0.0814
-  Step 9/9 - Train Loss: 0.0482
-  --> Epoch 98 Summary: Train MSE: 0.0633 | Val MSE: 0.0716
-      Validation Clinical Metrics: PTV D95: 38.99 Gy | Bladder Mean: 28.53 Gy | Rectum Mean: 25.80 Gy
-  --> Saved new best model!
-\nEpoch 99/100
-  Step 1/9 - Train Loss: 0.0725
-  Step 2/9 - Train Loss: 0.0604
-  Step 3/9 - Train Loss: 0.0756
-  Step 4/9 - Train Loss: 0.0593
-  Step 5/9 - Train Loss: 0.0642
-  Step 6/9 - Train Loss: 0.0733
-  Step 7/9 - Train Loss: 0.0488
-  Step 8/9 - Train Loss: 0.0722
-  Step 9/9 - Train Loss: 0.0597
-  --> Epoch 99 Summary: Train MSE: 0.0651 | Val MSE: 0.0708
-      Validation Clinical Metrics: PTV D95: 30.37 Gy | Bladder Mean: 24.25 Gy | Rectum Mean: 26.80 Gy
-  --> Saved new best model!
-\nEpoch 100/100
-  Step 1/9 - Train Loss: 0.0610
-  Step 2/9 - Train Loss: 0.0576
-  Step 3/9 - Train Loss: 0.0573
-  Step 4/9 - Train Loss: 0.0654
-  Step 5/9 - Train Loss: 0.0598
-  Step 6/9 - Train Loss: 0.0555
-  Step 7/9 - Train Loss: 0.0589
-  Step 8/9 - Train Loss: 0.0587
-  Step 9/9 - Train Loss: 0.0499
-  --> Epoch 100 Summary: Train MSE: 0.0582 | Val MSE: 0.0695
-      Validation Clinical Metrics: PTV D95: 34.57 Gy | Bladder Mean: 27.99 Gy | Rectum Mean: 28.40 Gy
-  --> Saved new best model!
+12:49:33  Log file: /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/logs/train_physics_20260515_124933.log
+12:49:33  
+Finding data...
+12:49:33  Found 20 patients.
+12:49:33  Building 3D U-Net...
+12:49:33  Model and dataloaders ready on cuda!
+12:49:33  Epochs=100  Scheduler=CosineAnnealingLR  AMP=ON
+
+12:49:33  
+Epoch 1/100  (lr=1.00e-04)
+12:49:39    Step 5/16  Loss=46.3554  [mse=0.8623  v_opt=0.00891  v_mand=0.00310  ptv=3.7177  smooth=4.5997]
+12:49:43    Step 10/16  Loss=44.8404  [mse=0.8024  v_opt=0.00913  v_mand=0.00387  ptv=3.6273  smooth=4.2826]
+12:49:49    Step 15/16  Loss=41.1846  [mse=0.7474  v_opt=0.05208  v_mand=0.03043  ptv=3.2462  smooth=3.8351]
+12:49:50    Step 16/16  Loss=40.8778  [mse=0.7259  v_opt=0.01134  v_mand=0.00467  ptv=3.3109  smooth=3.7089]
+12:49:59    --> Epoch 1 Summary:  Train=44.4125  Val=40.0064
+12:49:59        Clinical:  PTV D95=-13.45 Gy  Bladder Mean=9.91 Gy  Rectum Mean=15.64 Gy
+12:49:59    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=40.0064)
+12:49:59    --> [CLINICAL] Saved best CLINICAL model  Score=235.978  PTV_D95=-13.45 Gy  Bladder=9.91 Gy  Rectum=15.64 Gy
+12:49:59  
+Epoch 2/100  (lr=1.00e-04)
+12:50:05    Step 5/16  Loss=35.5680  [mse=0.6527  v_opt=0.08146  v_mand=0.04033  ptv=2.7518  smooth=3.5170]
+12:50:10    Step 10/16  Loss=31.2626  [mse=0.5701  v_opt=0.08345  v_mand=0.04195  ptv=2.4039  smooth=3.0748]
+12:50:16    Step 15/16  Loss=28.4132  [mse=0.5216  v_opt=0.10721  v_mand=0.04558  ptv=2.1574  smooth=2.7001]
+12:50:16    Step 16/16  Loss=27.1699  [mse=0.5173  v_opt=0.19181  v_mand=0.09041  ptv=1.9077  smooth=2.7572]
+12:50:26    --> Epoch 2 Summary:  Train=33.5628  Val=26.1208
+12:50:26        Clinical:  PTV D95=-8.47 Gy  Bladder Mean=21.98 Gy  Rectum Mean=33.11 Gy
+12:50:26    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=26.1208)
+12:50:26  
+Epoch 3/100  (lr=9.99e-05)
+12:50:32    Step 5/16  Loss=21.9182  [mse=0.4519  v_opt=0.26763  v_mand=0.12615  ptv=1.3451  smooth=2.5981]
+12:50:36    Step 10/16  Loss=25.0684  [mse=0.4534  v_opt=0.14557  v_mand=0.06961  ptv=1.8246  smooth=2.5675]
+12:50:42    Step 15/16  Loss=17.2276  [mse=0.4353  v_opt=0.10873  v_mand=0.03019  ptv=1.1640  smooth=2.6238]
+12:50:43    Step 16/16  Loss=18.0996  [mse=0.4188  v_opt=0.17460  v_mand=0.06931  ptv=1.1575  smooth=2.5507]
+12:50:52    --> Epoch 3 Summary:  Train=20.7783  Val=17.2592
+12:50:52        Clinical:  PTV D95=3.83 Gy  Bladder Mean=26.61 Gy  Rectum Mean=32.32 Gy
+12:50:52    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=17.2592)
+12:50:52    --> [CLINICAL] Saved best CLINICAL model  Score=200.821  PTV_D95=3.83 Gy  Bladder=26.61 Gy  Rectum=32.32 Gy
+12:50:52  
+Epoch 4/100  (lr=9.98e-05)
+12:50:59    Step 5/16  Loss=15.8231  [mse=0.3794  v_opt=0.14824  v_mand=0.05008  ptv=1.0247  smooth=2.3324]
+12:51:03    Step 10/16  Loss=12.4946  [mse=0.3592  v_opt=0.11365  v_mand=0.03174  ptv=0.7661  smooth=2.2069]
+12:51:09    Step 15/16  Loss=11.9173  [mse=0.3499  v_opt=0.10660  v_mand=0.02225  ptv=0.7426  smooth=2.2291]
+12:51:09    Step 16/16  Loss=11.8630  [mse=0.3434  v_opt=0.11429  v_mand=0.04066  ptv=0.6968  smooth=2.1541]
+12:51:19    --> Epoch 4 Summary:  Train=13.6017  Val=12.2142
+12:51:19        Clinical:  PTV D95=18.69 Gy  Bladder Mean=27.23 Gy  Rectum Mean=30.38 Gy
+12:51:19    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=12.2142)
+12:51:19    --> [CLINICAL] Saved best CLINICAL model  Score=154.308  PTV_D95=18.69 Gy  Bladder=27.23 Gy  Rectum=30.38 Gy
+12:51:19  
+Epoch 5/100  (lr=9.96e-05)
+12:51:25    Step 5/16  Loss=10.2299  [mse=0.3315  v_opt=0.09215  v_mand=0.01550  ptv=0.6132  smooth=2.1084]
+12:51:30    Step 10/16  Loss=8.8084  [mse=0.3052  v_opt=0.10975  v_mand=0.02828  ptv=0.4640  smooth=1.8966]
+12:51:36    Step 15/16  Loss=14.4051  [mse=0.3407  v_opt=0.02928  v_mand=0.00263  ptv=1.0665  smooth=2.0926]
+12:51:36    Step 16/16  Loss=8.1956  [mse=0.3088  v_opt=0.06352  v_mand=0.00953  ptv=0.4551  smooth=1.9081]
+12:51:46    --> Epoch 5 Summary:  Train=9.4479  Val=10.5887
+12:51:46        Clinical:  PTV D95=32.02 Gy  Bladder Mean=28.44 Gy  Rectum Mean=36.92 Gy
+12:51:46    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=10.5887)
+12:51:46    --> [CLINICAL] Saved best CLINICAL model  Score=120.874  PTV_D95=32.02 Gy  Bladder=28.44 Gy  Rectum=36.92 Gy
+12:51:46  
+Epoch 6/100  (lr=9.94e-05)
+12:51:52    Step 5/16  Loss=7.7961  [mse=0.2925  v_opt=0.14590  v_mand=0.05365  ptv=0.3051  smooth=1.8696]
+12:51:57    Step 10/16  Loss=6.6591  [mse=0.2550  v_opt=0.03943  v_mand=0.00137  ptv=0.3843  smooth=1.5348]
+12:52:03    Step 15/16  Loss=11.5012  [mse=0.2538  v_opt=0.03573  v_mand=0.00396  ptv=0.8636  smooth=1.5729]
+12:52:03    Step 16/16  Loss=6.3774  [mse=0.2417  v_opt=0.10089  v_mand=0.01812  ptv=0.3156  smooth=1.4879]
+12:52:12    --> Epoch 6 Summary:  Train=6.8701  Val=9.9859
+12:52:12        Clinical:  PTV D95=38.52 Gy  Bladder Mean=29.44 Gy  Rectum Mean=38.44 Gy
+12:52:12    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=9.9859)
+12:52:12    --> [CLINICAL] Saved best CLINICAL model  Score=102.875  PTV_D95=38.52 Gy  Bladder=29.44 Gy  Rectum=38.44 Gy
+12:52:12  
+Epoch 7/100  (lr=9.91e-05)
+12:52:19    Step 5/16  Loss=5.0918  [mse=0.2541  v_opt=0.03167  v_mand=0.00180  ptv=0.2283  smooth=1.5929]
+12:52:23    Step 10/16  Loss=4.2319  [mse=0.2409  v_opt=0.03344  v_mand=0.00015  ptv=0.1601  smooth=1.5212]
+12:52:29    Step 15/16  Loss=4.8298  [mse=0.2110  v_opt=0.09004  v_mand=0.01665  ptv=0.1990  smooth=1.3346]
+12:52:30    Step 16/16  Loss=4.0573  [mse=0.2338  v_opt=0.04509  v_mand=0.00371  ptv=0.1389  smooth=1.4734]
+12:52:39    --> Epoch 7 Summary:  Train=5.2941  Val=7.7991
+12:52:39        Clinical:  PTV D95=43.12 Gy  Bladder Mean=29.21 Gy  Rectum Mean=35.29 Gy
+12:52:39    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=7.7991)
+12:52:39    --> [CLINICAL] Saved best CLINICAL model  Score=85.920  PTV_D95=43.12 Gy  Bladder=29.21 Gy  Rectum=35.29 Gy
+12:52:39  
+Epoch 8/100  (lr=9.88e-05)
+12:52:46    Step 5/16  Loss=4.0654  [mse=0.2088  v_opt=0.11375  v_mand=0.02446  ptv=0.1011  smooth=1.2731]
+12:52:50    Step 10/16  Loss=3.9783  [mse=0.2043  v_opt=0.04328  v_mand=0.00801  ptv=0.1522  smooth=1.2631]
+12:52:57    Step 15/16  Loss=3.0229  [mse=0.1906  v_opt=0.03605  v_mand=0.00174  ptv=0.0887  smooth=1.1428]
+12:52:57    Step 16/16  Loss=3.5836  [mse=0.1671  v_opt=0.07274  v_mand=0.00985  ptv=0.1422  smooth=0.9844]
+12:53:06    --> Epoch 8 Summary:  Train=4.1268  Val=8.7299
+12:53:06        Clinical:  PTV D95=47.79 Gy  Bladder Mean=28.01 Gy  Rectum Mean=39.95 Gy
+12:53:06    --> [CLINICAL] Saved best CLINICAL model  Score=76.582  PTV_D95=47.79 Gy  Bladder=28.01 Gy  Rectum=39.95 Gy
+12:53:06  
+Epoch 9/100  (lr=9.84e-05)
+12:53:12    Step 5/16  Loss=4.3339  [mse=0.1889  v_opt=0.00097  v_mand=0.00000  ptv=0.2334  smooth=1.0918]
+12:53:17    Step 10/16  Loss=4.0522  [mse=0.1864  v_opt=0.11444  v_mand=0.04941  ptv=0.0631  smooth=0.9297]
+12:53:23    Step 15/16  Loss=2.5032  [mse=0.1570  v_opt=0.03351  v_mand=0.00077  ptv=0.0758  smooth=0.8925]
+12:53:23    Step 16/16  Loss=2.5509  [mse=0.1599  v_opt=0.00749  v_mand=0.00000  ptv=0.0855  smooth=0.8211]
+12:53:33    --> Epoch 9 Summary:  Train=3.6230  Val=7.3574
+12:53:33        Clinical:  PTV D95=46.64 Gy  Bladder Mean=25.58 Gy  Rectum Mean=37.32 Gy
+12:53:33    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=7.3574)
+12:53:33  
+Epoch 10/100  (lr=9.80e-05)
+12:53:39    Step 5/16  Loss=2.0147  [mse=0.1341  v_opt=0.01892  v_mand=0.00103  ptv=0.0533  smooth=0.7679]
+12:53:44    Step 10/16  Loss=2.2998  [mse=0.1531  v_opt=0.01542  v_mand=0.00025  ptv=0.0656  smooth=0.7607]
+12:53:50    Step 15/16  Loss=2.9814  [mse=0.1363  v_opt=0.04496  v_mand=0.00561  ptv=0.1315  smooth=0.7258]
+12:53:50    Step 16/16  Loss=6.4521  [mse=0.1465  v_opt=0.01171  v_mand=0.00000  ptv=0.4886  smooth=0.7800]
+12:53:59    --> Epoch 10 Summary:  Train=2.8464  Val=7.6975
+12:53:59        Clinical:  PTV D95=46.77 Gy  Bladder Mean=25.48 Gy  Rectum Mean=39.88 Gy
+12:53:59  
+Epoch 11/100  (lr=9.76e-05)
+12:54:05    Step 5/16  Loss=2.8758  [mse=0.1383  v_opt=0.00235  v_mand=0.00000  ptv=0.1419  smooth=0.6871]
+12:54:10    Step 10/16  Loss=5.2201  [mse=0.1325  v_opt=0.00539  v_mand=0.00000  ptv=0.3818  smooth=0.6596]
+12:54:16    Step 15/16  Loss=2.6271  [mse=0.1244  v_opt=0.06207  v_mand=0.01018  ptv=0.0946  smooth=0.5813]
+12:54:16    Step 16/16  Loss=1.9228  [mse=0.1400  v_opt=0.01449  v_mand=0.00015  ptv=0.0432  smooth=0.5834]
+12:54:26    --> Epoch 11 Summary:  Train=2.3773  Val=6.5965
+12:54:26        Clinical:  PTV D95=50.25 Gy  Bladder Mean=28.77 Gy  Rectum Mean=34.71 Gy
+12:54:26    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=6.5965)
+12:54:26    --> [CLINICAL] Saved best CLINICAL model  Score=63.970  PTV_D95=50.25 Gy  Bladder=28.77 Gy  Rectum=34.71 Gy
+12:54:26  
+Epoch 12/100  (lr=9.71e-05)
+12:54:32    Step 5/16  Loss=1.7699  [mse=0.1219  v_opt=0.01995  v_mand=0.00115  ptv=0.0426  smooth=0.5637]
+12:54:37    Step 10/16  Loss=1.9651  [mse=0.1148  v_opt=0.04472  v_mand=0.00872  ptv=0.0453  smooth=0.5624]
+12:54:43    Step 15/16  Loss=2.6735  [mse=0.1252  v_opt=0.00000  v_mand=0.00000  ptv=0.1362  smooth=0.6025]
+12:54:43    Step 16/16  Loss=1.7725  [mse=0.1174  v_opt=0.00970  v_mand=0.00000  ptv=0.0522  smooth=0.5624]
+12:54:53    --> Epoch 12 Summary:  Train=2.4052  Val=6.0112
+12:54:53        Clinical:  PTV D95=52.32 Gy  Bladder Mean=26.85 Gy  Rectum Mean=35.41 Gy
+12:54:53    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=6.0112)
+12:54:53    --> [CLINICAL] Saved best CLINICAL model  Score=58.453  PTV_D95=52.32 Gy  Bladder=26.85 Gy  Rectum=35.41 Gy
+12:54:53  
+Epoch 13/100  (lr=9.65e-05)
+12:55:00    Step 5/16  Loss=1.7835  [mse=0.1143  v_opt=0.03709  v_mand=0.00454  ptv=0.0399  smooth=0.5344]
+12:55:04    Step 10/16  Loss=1.8509  [mse=0.1107  v_opt=0.00273  v_mand=0.00000  ptv=0.0685  smooth=0.5280]
+12:55:10    Step 15/16  Loss=1.9099  [mse=0.1020  v_opt=0.05863  v_mand=0.01169  ptv=0.0431  smooth=0.4889]
+12:55:10    Step 16/16  Loss=2.1557  [mse=0.1114  v_opt=0.00316  v_mand=0.00000  ptv=0.0983  smooth=0.5197]
+12:55:20    --> Epoch 13 Summary:  Train=1.9008  Val=12.3152
+12:55:20        Clinical:  PTV D95=58.74 Gy  Bladder Mean=30.27 Gy  Rectum Mean=43.90 Gy
+12:55:20    --> [CLINICAL] Saved best CLINICAL model  Score=47.686  PTV_D95=58.74 Gy  Bladder=30.27 Gy  Rectum=43.90 Gy
+12:55:20  
+Epoch 14/100  (lr=9.59e-05)
+12:55:26    Step 5/16  Loss=1.8656  [mse=0.1149  v_opt=0.03210  v_mand=0.00551  ptv=0.0462  smooth=0.5282]
+12:55:31    Step 10/16  Loss=2.3681  [mse=0.1114  v_opt=0.00230  v_mand=0.00058  ptv=0.1184  smooth=0.5128]
+12:55:37    Step 15/16  Loss=1.4442  [mse=0.0954  v_opt=0.01640  v_mand=0.00077  ptv=0.0391  smooth=0.4716]
+12:55:37    Step 16/16  Loss=1.7635  [mse=0.1051  v_opt=0.04706  v_mand=0.00986  ptv=0.0324  smooth=0.4801]
+12:55:46    --> Epoch 14 Summary:  Train=2.0811  Val=6.8035
+12:55:46        Clinical:  PTV D95=53.59 Gy  Bladder Mean=27.20 Gy  Rectum Mean=36.13 Gy
+12:55:46  
+Epoch 15/100  (lr=9.53e-05)
+12:55:53    Step 5/16  Loss=3.7058  [mse=0.1462  v_opt=0.15023  v_mand=0.06215  ptv=0.0342  smooth=0.4812]
+12:55:58    Step 10/16  Loss=1.5397  [mse=0.1088  v_opt=0.00001  v_mand=0.00000  ptv=0.0402  smooth=0.4900]
+12:56:04    Step 15/16  Loss=10.0090  [mse=0.0998  v_opt=0.49345  v_mand=0.30790  ptv=0.0284  smooth=0.4259]
+12:56:04    Step 16/16  Loss=5.6112  [mse=0.1013  v_opt=0.28932  v_mand=0.14171  ptv=0.0432  smooth=0.4480]
+12:56:13    --> Epoch 15 Summary:  Train=2.6215  Val=9.5995
+12:56:13        Clinical:  PTV D95=57.67 Gy  Bladder Mean=29.42 Gy  Rectum Mean=41.18 Gy
+12:56:13  
+Epoch 16/100  (lr=9.46e-05)
+12:56:20    Step 5/16  Loss=1.3354  [mse=0.0999  v_opt=0.00839  v_mand=0.00000  ptv=0.0274  smooth=0.4520]
+12:56:24    Step 10/16  Loss=1.5659  [mse=0.0947  v_opt=0.02661  v_mand=0.00354  ptv=0.0434  smooth=0.4350]
+12:56:31    Step 15/16  Loss=2.0544  [mse=0.1289  v_opt=0.01711  v_mand=0.00053  ptv=0.0673  smooth=0.4455]
+12:56:31    Step 16/16  Loss=1.3293  [mse=0.0943  v_opt=0.00000  v_mand=0.00000  ptv=0.0342  smooth=0.4470]
+12:56:40    --> Epoch 16 Summary:  Train=1.6649  Val=7.4957
+12:56:40        Clinical:  PTV D95=50.98 Gy  Bladder Mean=25.63 Gy  Rectum Mean=37.96 Gy
+12:56:40  
+Epoch 17/100  (lr=9.39e-05)
+12:56:47    Step 5/16  Loss=1.4067  [mse=0.1026  v_opt=0.00020  v_mand=0.00000  ptv=0.0337  smooth=0.4355]
+12:56:51    Step 10/16  Loss=1.5987  [mse=0.0975  v_opt=0.00088  v_mand=0.00000  ptv=0.0579  smooth=0.4289]
+12:56:58    Step 15/16  Loss=1.1019  [mse=0.0821  v_opt=0.00211  v_mand=0.00000  ptv=0.0237  smooth=0.3916]
+12:56:58    Step 16/16  Loss=1.7487  [mse=0.0950  v_opt=0.04647  v_mand=0.01353  ptv=0.0325  smooth=0.4250]
+12:57:08    --> Epoch 17 Summary:  Train=1.7497  Val=6.6046
+12:57:08        Clinical:  PTV D95=54.72 Gy  Bladder Mean=26.79 Gy  Rectum Mean=35.40 Gy
+12:57:08  
+Epoch 18/100  (lr=9.31e-05)
+12:57:14    Step 5/16  Loss=1.7827  [mse=0.0880  v_opt=0.00144  v_mand=0.00000  ptv=0.0860  smooth=0.3972]
+12:57:18    Step 10/16  Loss=1.1717  [mse=0.0841  v_opt=0.01297  v_mand=0.00039  ptv=0.0256  smooth=0.3910]
+12:57:25    Step 15/16  Loss=1.4885  [mse=0.1164  v_opt=0.00652  v_mand=0.00000  ptv=0.0273  smooth=0.3845]
+12:57:25    Step 16/16  Loss=1.3662  [mse=0.0905  v_opt=0.00000  v_mand=0.00000  ptv=0.0421  smooth=0.3988]
+12:57:35    --> Epoch 18 Summary:  Train=1.5083  Val=7.5897
+12:57:35        Clinical:  PTV D95=54.41 Gy  Bladder Mean=26.54 Gy  Rectum Mean=38.47 Gy
+12:57:35  
+Epoch 19/100  (lr=9.23e-05)
+12:57:41    Step 5/16  Loss=1.3058  [mse=0.0927  v_opt=0.00298  v_mand=0.00000  ptv=0.0335  smooth=0.3809]
+12:57:45    Step 10/16  Loss=1.2575  [mse=0.0809  v_opt=0.00651  v_mand=0.00000  ptv=0.0397  smooth=0.3772]
+12:57:51    Step 15/16  Loss=1.6359  [mse=0.0816  v_opt=0.06971  v_mand=0.01454  ptv=0.0283  smooth=0.3417]
+12:57:52    Step 16/16  Loss=1.2903  [mse=0.0846  v_opt=0.00943  v_mand=0.00097  ptv=0.0364  smooth=0.3631]
+12:58:02    --> Epoch 19 Summary:  Train=1.3700  Val=6.1189
+12:58:02        Clinical:  PTV D95=57.36 Gy  Bladder Mean=29.57 Gy  Rectum Mean=34.35 Gy
+12:58:02    --> [CLINICAL] Saved best CLINICAL model  Score=42.263  PTV_D95=57.36 Gy  Bladder=29.57 Gy  Rectum=34.35 Gy
+12:58:02  
+Epoch 20/100  (lr=9.14e-05)
+12:58:08    Step 5/16  Loss=2.2597  [mse=0.0817  v_opt=0.00000  v_mand=0.00000  ptv=0.1407  smooth=0.3607]
+12:58:13    Step 10/16  Loss=1.3343  [mse=0.0807  v_opt=0.00071  v_mand=0.00004  ptv=0.0489  smooth=0.3520]
+12:58:19    Step 15/16  Loss=1.5318  [mse=0.0709  v_opt=0.05653  v_mand=0.01626  ptv=0.0270  smooth=0.3256]
+12:58:19    Step 16/16  Loss=1.0746  [mse=0.0754  v_opt=0.00002  v_mand=0.00000  ptv=0.0287  smooth=0.3338]
+12:58:28    --> Epoch 20 Summary:  Train=1.3752  Val=6.3652
+12:58:28        Clinical:  PTV D95=58.03 Gy  Bladder Mean=28.38 Gy  Rectum Mean=36.15 Gy
+12:58:28    --> [CLINICAL] Saved best CLINICAL model  Score=42.071  PTV_D95=58.03 Gy  Bladder=28.38 Gy  Rectum=36.15 Gy
+12:58:28  
+Epoch 21/100  (lr=9.05e-05)
+12:58:34    Step 5/16  Loss=0.9959  [mse=0.0716  v_opt=0.01180  v_mand=0.00000  ptv=0.0223  smooth=0.3352]
+12:58:39    Step 10/16  Loss=1.5298  [mse=0.0766  v_opt=0.07588  v_mand=0.01482  ptv=0.0210  smooth=0.3152]
+12:58:45    Step 15/16  Loss=1.0853  [mse=0.0726  v_opt=0.00227  v_mand=0.00001  ptv=0.0323  smooth=0.3170]
+12:58:45    Step 16/16  Loss=0.9491  [mse=0.0700  v_opt=0.00240  v_mand=0.00035  ptv=0.0204  smooth=0.3123]
+12:58:55    --> Epoch 21 Summary:  Train=1.2896  Val=6.2758
+12:58:55        Clinical:  PTV D95=54.44 Gy  Bladder Mean=27.31 Gy  Rectum Mean=35.79 Gy
+12:58:55  
+Epoch 22/100  (lr=8.96e-05)
+12:59:01    Step 5/16  Loss=1.2063  [mse=0.0711  v_opt=0.03191  v_mand=0.00510  ptv=0.0273  smooth=0.3084]
+12:59:06    Step 10/16  Loss=0.9483  [mse=0.0690  v_opt=0.01140  v_mand=0.00000  ptv=0.0204  smooth=0.3142]
+12:59:12    Step 15/16  Loss=1.3481  [mse=0.0713  v_opt=0.00000  v_mand=0.00000  ptv=0.0605  smooth=0.3005]
+12:59:12    Step 16/16  Loss=1.4583  [mse=0.1210  v_opt=0.00415  v_mand=0.00000  ptv=0.0210  smooth=0.3001]
+12:59:22    --> Epoch 22 Summary:  Train=1.2353  Val=5.4158
+12:59:22        Clinical:  PTV D95=56.51 Gy  Bladder Mean=27.63 Gy  Rectum Mean=33.40 Gy
+12:59:22    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=5.4158)
+12:59:22  
+Epoch 23/100  (lr=8.86e-05)
+12:59:28    Step 5/16  Loss=1.0388  [mse=0.0655  v_opt=0.00081  v_mand=0.00007  ptv=0.0351  smooth=0.2891]
+12:59:33    Step 10/16  Loss=1.3004  [mse=0.0978  v_opt=0.00393  v_mand=0.00000  ptv=0.0286  smooth=0.2768]
+12:59:39    Step 15/16  Loss=0.9498  [mse=0.0714  v_opt=0.00000  v_mand=0.00000  ptv=0.0208  smooth=0.2843]
+12:59:39    Step 16/16  Loss=0.8737  [mse=0.0682  v_opt=0.00002  v_mand=0.00000  ptv=0.0165  smooth=0.2736]
+12:59:48    --> Epoch 23 Summary:  Train=1.0689  Val=6.1565
+12:59:48        Clinical:  PTV D95=59.14 Gy  Bladder Mean=27.88 Gy  Rectum Mean=35.78 Gy
+12:59:48    --> [CLINICAL] Saved best CLINICAL model  Score=38.363  PTV_D95=59.14 Gy  Bladder=27.88 Gy  Rectum=35.78 Gy
+12:59:48  
+Epoch 24/100  (lr=8.76e-05)
+12:59:55    Step 5/16  Loss=1.3955  [mse=0.1182  v_opt=0.01916  v_mand=0.00085  ptv=0.0128  smooth=0.2585]
+12:59:59    Step 10/16  Loss=0.9439  [mse=0.0598  v_opt=0.01880  v_mand=0.00259  ptv=0.0218  smooth=0.2515]
+13:00:06    Step 15/16  Loss=1.0467  [mse=0.0628  v_opt=0.02124  v_mand=0.00151  ptv=0.0312  smooth=0.2650]
+13:00:06    Step 16/16  Loss=1.1182  [mse=0.0610  v_opt=0.01031  v_mand=0.00000  ptv=0.0461  smooth=0.2629]
+13:00:15    --> Epoch 24 Summary:  Train=1.0095  Val=4.4916
+13:00:15        Clinical:  PTV D95=54.63 Gy  Bladder Mean=28.84 Gy  Rectum Mean=28.57 Gy
+13:00:15    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=4.4916)
+13:00:15  
+Epoch 25/100  (lr=8.66e-05)
+13:00:21    Step 5/16  Loss=1.0014  [mse=0.0613  v_opt=0.00520  v_mand=0.00227  ptv=0.0297  smooth=0.2405]
+13:00:26    Step 10/16  Loss=0.8906  [mse=0.0627  v_opt=0.00729  v_mand=0.00000  ptv=0.0223  smooth=0.2530]
+13:00:32    Step 15/16  Loss=0.8838  [mse=0.0612  v_opt=0.00933  v_mand=0.00032  ptv=0.0221  smooth=0.2421]
+13:00:32    Step 16/16  Loss=0.8162  [mse=0.0623  v_opt=0.00045  v_mand=0.00000  ptv=0.0169  smooth=0.2391]
+13:00:42    --> Epoch 25 Summary:  Train=1.1591  Val=5.1458
+13:00:42        Clinical:  PTV D95=56.42 Gy  Bladder Mean=27.31 Gy  Rectum Mean=33.52 Gy
+13:00:42  
+Epoch 26/100  (lr=8.55e-05)
+13:00:49    Step 5/16  Loss=0.7535  [mse=0.0573  v_opt=0.00006  v_mand=0.00000  ptv=0.0158  smooth=0.2268]
+13:00:53    Step 10/16  Loss=1.2798  [mse=0.0561  v_opt=0.00638  v_mand=0.00000  ptv=0.0682  smooth=0.2478]
+13:00:59    Step 15/16  Loss=0.9381  [mse=0.0558  v_opt=0.01946  v_mand=0.00365  ptv=0.0226  smooth=0.2360]
+13:01:00    Step 16/16  Loss=0.9203  [mse=0.0657  v_opt=0.00021  v_mand=0.00000  ptv=0.0238  smooth=0.2450]
+13:01:09    --> Epoch 26 Summary:  Train=0.9751  Val=4.7893
+13:01:09        Clinical:  PTV D95=54.05 Gy  Bladder Mean=27.06 Gy  Rectum Mean=31.78 Gy
+13:01:09  
+Epoch 27/100  (lr=8.44e-05)
+13:01:16    Step 5/16  Loss=1.4096  [mse=0.1071  v_opt=0.00886  v_mand=0.00093  ptv=0.0276  smooth=0.2111]
+13:01:20    Step 10/16  Loss=1.3569  [mse=0.0491  v_opt=0.00052  v_mand=0.00000  ptv=0.0844  smooth=0.2064]
+13:01:27    Step 15/16  Loss=0.6404  [mse=0.0443  v_opt=0.00238  v_mand=0.00000  ptv=0.0173  smooth=0.1971]
+13:01:27    Step 16/16  Loss=1.1223  [mse=0.0914  v_opt=0.00694  v_mand=0.00000  ptv=0.0173  smooth=0.2120]
+13:01:36    --> Epoch 27 Summary:  Train=0.9107  Val=6.3739
+13:01:36        Clinical:  PTV D95=60.65 Gy  Bladder Mean=28.99 Gy  Rectum Mean=37.39 Gy
+13:01:36    --> [CLINICAL] Saved best CLINICAL model  Score=37.394  PTV_D95=60.65 Gy  Bladder=28.99 Gy  Rectum=37.39 Gy
+13:01:36  
+Epoch 28/100  (lr=8.32e-05)
+13:01:43    Step 5/16  Loss=0.6888  [mse=0.0515  v_opt=0.01028  v_mand=0.00007  ptv=0.0130  smooth=0.2083]
+13:01:47    Step 10/16  Loss=1.1582  [mse=0.0927  v_opt=0.00039  v_mand=0.00000  ptv=0.0210  smooth=0.2056]
+13:01:53    Step 15/16  Loss=0.7973  [mse=0.0462  v_opt=0.00738  v_mand=0.00202  ptv=0.0251  smooth=0.1928]
+13:01:53    Step 16/16  Loss=0.9737  [mse=0.0516  v_opt=0.02176  v_mand=0.00481  ptv=0.0275  smooth=0.1866]
+13:02:03    --> Epoch 28 Summary:  Train=0.9004  Val=5.3832
+13:02:03        Clinical:  PTV D95=57.23 Gy  Bladder Mean=27.84 Gy  Rectum Mean=34.49 Gy
+13:02:03  
+Epoch 29/100  (lr=8.21e-05)
+13:02:10    Step 5/16  Loss=1.3211  [mse=0.0512  v_opt=0.00035  v_mand=0.00000  ptv=0.0789  smooth=0.1927]
+13:02:14    Step 10/16  Loss=0.7145  [mse=0.0450  v_opt=0.01705  v_mand=0.00077  ptv=0.0193  smooth=0.1870]
+13:02:20    Step 15/16  Loss=0.7763  [mse=0.0481  v_opt=0.00758  v_mand=0.00085  ptv=0.0240  smooth=0.1932]
+13:02:20    Step 16/16  Loss=0.9220  [mse=0.0509  v_opt=0.00000  v_mand=0.00000  ptv=0.0393  smooth=0.2042]
+13:02:29    --> Epoch 29 Summary:  Train=1.0638  Val=4.0297
+13:02:29        Clinical:  PTV D95=58.88 Gy  Bladder Mean=28.01 Gy  Rectum Mean=30.02 Gy
+13:02:29    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=4.0297)
+13:02:30    --> [CLINICAL] Saved best CLINICAL model  Score=33.380  PTV_D95=58.88 Gy  Bladder=28.01 Gy  Rectum=30.02 Gy
+13:02:30  
+Epoch 30/100  (lr=8.08e-05)
+13:02:36    Step 5/16  Loss=0.8471  [mse=0.0495  v_opt=0.00000  v_mand=0.00000  ptv=0.0333  smooth=0.1934]
+13:02:41    Step 10/16  Loss=0.6324  [mse=0.0477  v_opt=0.00510  v_mand=0.00000  ptv=0.0127  smooth=0.1818]
+13:02:47    Step 15/16  Loss=0.7208  [mse=0.0557  v_opt=0.00038  v_mand=0.00000  ptv=0.0145  smooth=0.1794]
+13:02:47    Step 16/16  Loss=1.2988  [mse=0.1016  v_opt=0.00318  v_mand=0.00039  ptv=0.0249  smooth=0.1774]
+13:02:57    --> Epoch 30 Summary:  Train=0.9892  Val=4.6386
+13:02:57        Clinical:  PTV D95=59.22 Gy  Bladder Mean=28.95 Gy  Rectum Mean=33.24 Gy
+13:02:57  
+Epoch 31/100  (lr=7.96e-05)
+13:03:04    Step 5/16  Loss=0.5643  [mse=0.0410  v_opt=0.00014  v_mand=0.00000  ptv=0.0136  smooth=0.1702]
+13:03:08    Step 10/16  Loss=0.7875  [mse=0.0488  v_opt=0.00190  v_mand=0.00010  ptv=0.0275  smooth=0.1781]
+13:03:14    Step 15/16  Loss=0.7328  [mse=0.0397  v_opt=0.00628  v_mand=0.00000  ptv=0.0307  smooth=0.1590]
+13:03:15    Step 16/16  Loss=0.6715  [mse=0.0508  v_opt=0.00025  v_mand=0.00000  ptv=0.0145  smooth=0.1788]
+13:03:24    --> Epoch 31 Summary:  Train=0.9181  Val=4.4023
+13:03:24        Clinical:  PTV D95=57.83 Gy  Bladder Mean=27.45 Gy  Rectum Mean=34.21 Gy
+13:03:24  
+Epoch 32/100  (lr=7.83e-05)
+13:03:32    Step 5/16  Loss=0.6697  [mse=0.0478  v_opt=0.00494  v_mand=0.00085  ptv=0.0144  smooth=0.1611]
+13:03:36    Step 10/16  Loss=1.0366  [mse=0.0492  v_opt=0.03832  v_mand=0.00779  ptv=0.0257  smooth=0.1644]
+13:03:43    Step 15/16  Loss=0.5542  [mse=0.0368  v_opt=0.00002  v_mand=0.00000  ptv=0.0171  smooth=0.1537]
+13:03:43    Step 16/16  Loss=0.5776  [mse=0.0358  v_opt=0.00410  v_mand=0.00045  ptv=0.0185  smooth=0.1469]
+13:03:53    --> Epoch 32 Summary:  Train=0.7618  Val=4.5371
+13:03:53        Clinical:  PTV D95=55.19 Gy  Bladder Mean=28.61 Gy  Rectum Mean=31.90 Gy
+13:03:53  
+Epoch 33/100  (lr=7.70e-05)
+13:04:00    Step 5/16  Loss=0.7773  [mse=0.0468  v_opt=0.00003  v_mand=0.00000  ptv=0.0293  smooth=0.1629]
+13:04:04    Step 10/16  Loss=0.5653  [mse=0.0382  v_opt=0.00093  v_mand=0.00000  ptv=0.0167  smooth=0.1429]
+13:04:10    Step 15/16  Loss=0.8841  [mse=0.0440  v_opt=0.02045  v_mand=0.00125  ptv=0.0356  smooth=0.1642]
+13:04:10    Step 16/16  Loss=1.2473  [mse=0.0462  v_opt=0.05458  v_mand=0.01537  ptv=0.0277  smooth=0.1496]
+13:04:20    --> Epoch 33 Summary:  Train=0.7433  Val=6.0096
+13:04:20        Clinical:  PTV D95=61.50 Gy  Bladder Mean=31.53 Gy  Rectum Mean=36.28 Gy
+13:04:20  
+Epoch 34/100  (lr=7.57e-05)
+13:04:26    Step 5/16  Loss=1.0867  [mse=0.0427  v_opt=0.00000  v_mand=0.00000  ptv=0.0645  smooth=0.1461]
+13:04:30    Step 10/16  Loss=0.6772  [mse=0.0423  v_opt=0.00601  v_mand=0.00031  ptv=0.0221  smooth=0.1306]
+13:04:36    Step 15/16  Loss=0.6331  [mse=0.0371  v_opt=0.00961  v_mand=0.00000  ptv=0.0230  smooth=0.1298]
+13:04:37    Step 16/16  Loss=0.8348  [mse=0.0399  v_opt=0.02702  v_mand=0.00414  ptv=0.0264  smooth=0.1360]
+13:04:46    --> Epoch 34 Summary:  Train=0.7695  Val=5.1861
+13:04:46        Clinical:  PTV D95=56.08 Gy  Bladder Mean=28.87 Gy  Rectum Mean=33.91 Gy
+13:04:46  
+Epoch 35/100  (lr=7.43e-05)
+13:04:53    Step 5/16  Loss=1.1615  [mse=0.0970  v_opt=0.00442  v_mand=0.00171  ptv=0.0127  smooth=0.1280]
+13:04:57    Step 10/16  Loss=0.7031  [mse=0.0354  v_opt=0.02887  v_mand=0.00604  ptv=0.0129  smooth=0.1152]
+13:05:03    Step 15/16  Loss=0.6139  [mse=0.0360  v_opt=0.00000  v_mand=0.00000  ptv=0.0242  smooth=0.1168]
+13:05:03    Step 16/16  Loss=0.5573  [mse=0.0372  v_opt=0.00165  v_mand=0.00000  ptv=0.0169  smooth=0.1357]
+13:05:13    --> Epoch 35 Summary:  Train=0.6692  Val=4.5840
+13:05:13        Clinical:  PTV D95=54.89 Gy  Bladder Mean=27.41 Gy  Rectum Mean=33.58 Gy
+13:05:13  
+Epoch 36/100  (lr=7.30e-05)
+13:05:20    Step 5/16  Loss=0.5505  [mse=0.0371  v_opt=0.00000  v_mand=0.00000  ptv=0.0166  smooth=0.1334]
+13:05:25    Step 10/16  Loss=1.1418  [mse=0.0834  v_opt=0.01375  v_mand=0.00162  ptv=0.0228  smooth=0.1277]
+13:05:31    Step 15/16  Loss=0.6456  [mse=0.0366  v_opt=0.00000  v_mand=0.00000  ptv=0.0268  smooth=0.1234]
+13:05:31    Step 16/16  Loss=0.5985  [mse=0.0348  v_opt=0.00000  v_mand=0.00000  ptv=0.0238  smooth=0.1243]
+13:05:40    --> Epoch 36 Summary:  Train=0.7773  Val=4.2190
+13:05:40        Clinical:  PTV D95=54.77 Gy  Bladder Mean=26.46 Gy  Rectum Mean=32.56 Gy
+13:05:40  
+Epoch 37/100  (lr=7.16e-05)
+13:05:47    Step 5/16  Loss=0.6733  [mse=0.0385  v_opt=0.00543  v_mand=0.00015  ptv=0.0261  smooth=0.1298]
+13:05:51    Step 10/16  Loss=0.7856  [mse=0.0341  v_opt=0.02384  v_mand=0.00160  ptv=0.0344  smooth=0.1247]
+13:05:57    Step 15/16  Loss=0.5776  [mse=0.0375  v_opt=0.00023  v_mand=0.00000  ptv=0.0190  smooth=0.1216]
+13:05:58    Step 16/16  Loss=0.4492  [mse=0.0292  v_opt=0.00050  v_mand=0.00000  ptv=0.0144  smooth=0.1132]
+13:06:07    --> Epoch 37 Summary:  Train=0.6600  Val=5.3211
+13:06:07        Clinical:  PTV D95=61.77 Gy  Bladder Mean=28.57 Gy  Rectum Mean=36.82 Gy
+13:06:07  
+Epoch 38/100  (lr=7.02e-05)
+13:06:14    Step 5/16  Loss=0.4867  [mse=0.0348  v_opt=0.00395  v_mand=0.00000  ptv=0.0119  smooth=0.1133]
+13:06:18    Step 10/16  Loss=0.8964  [mse=0.0768  v_opt=0.00068  v_mand=0.00000  ptv=0.0116  smooth=0.1061]
+13:06:24    Step 15/16  Loss=1.0886  [mse=0.0927  v_opt=0.01062  v_mand=0.00102  ptv=0.0104  smooth=0.1067]
+13:06:25    Step 16/16  Loss=0.5576  [mse=0.0342  v_opt=0.00033  v_mand=0.00000  ptv=0.0204  smooth=0.1162]
+13:06:35    --> Epoch 38 Summary:  Train=0.7095  Val=4.7252
+13:06:35        Clinical:  PTV D95=58.21 Gy  Bladder Mean=27.75 Gy  Rectum Mean=35.57 Gy
+13:06:35  
+Epoch 39/100  (lr=6.87e-05)
+13:06:42    Step 5/16  Loss=0.4791  [mse=0.0349  v_opt=0.00145  v_mand=0.00024  ptv=0.0111  smooth=0.1004]
+13:06:46    Step 10/16  Loss=0.6953  [mse=0.0315  v_opt=0.00368  v_mand=0.00000  ptv=0.0362  smooth=0.1055]
+13:06:53    Step 15/16  Loss=0.4610  [mse=0.0300  v_opt=0.00300  v_mand=0.00003  ptv=0.0144  smooth=0.1016]
+13:06:53    Step 16/16  Loss=0.6119  [mse=0.0320  v_opt=0.00386  v_mand=0.00000  ptv=0.0274  smooth=0.1102]
+13:07:03    --> Epoch 39 Summary:  Train=0.5916  Val=7.1229
+13:07:03        Clinical:  PTV D95=61.65 Gy  Bladder Mean=30.75 Gy  Rectum Mean=39.03 Gy
+13:07:03  
+Epoch 40/100  (lr=6.73e-05)
+13:07:09    Step 5/16  Loss=0.4991  [mse=0.0298  v_opt=0.01780  v_mand=0.00100  ptv=0.0131  smooth=0.1011]
+13:07:14    Step 10/16  Loss=0.5864  [mse=0.0332  v_opt=0.00000  v_mand=0.00000  ptv=0.0243  smooth=0.1100]
+13:07:21    Step 15/16  Loss=0.4953  [mse=0.0341  v_opt=0.00052  v_mand=0.00000  ptv=0.0143  smooth=0.1076]
+13:07:21    Step 16/16  Loss=0.4819  [mse=0.0323  v_opt=0.01340  v_mand=0.00022  ptv=0.0117  smooth=0.0964]
+13:07:30    --> Epoch 40 Summary:  Train=0.5824  Val=4.5625
+13:07:30        Clinical:  PTV D95=57.99 Gy  Bladder Mean=29.08 Gy  Rectum Mean=32.43 Gy
+13:07:30  
+Epoch 41/100  (lr=6.58e-05)
+13:07:37    Step 5/16  Loss=0.5296  [mse=0.0302  v_opt=0.00814  v_mand=0.00338  ptv=0.0117  smooth=0.1003]
+13:07:41    Step 10/16  Loss=0.9259  [mse=0.0815  v_opt=0.00000  v_mand=0.00000  ptv=0.0100  smooth=0.1013]
+13:07:48    Step 15/16  Loss=0.4149  [mse=0.0305  v_opt=0.00001  v_mand=0.00000  ptv=0.0101  smooth=0.0922]
+13:07:48    Step 16/16  Loss=0.4914  [mse=0.0299  v_opt=0.00342  v_mand=0.00091  ptv=0.0153  smooth=0.0978]
+13:07:57    --> Epoch 41 Summary:  Train=0.5661  Val=4.9558
+13:07:57        Clinical:  PTV D95=57.19 Gy  Bladder Mean=28.40 Gy  Rectum Mean=36.49 Gy
+13:07:57  
+Epoch 42/100  (lr=6.43e-05)
+13:08:04    Step 5/16  Loss=0.5710  [mse=0.0291  v_opt=0.00039  v_mand=0.00000  ptv=0.0270  smooth=0.0938]
+13:08:08    Step 10/16  Loss=0.4966  [mse=0.0260  v_opt=0.00046  v_mand=0.00000  ptv=0.0227  smooth=0.0847]
+13:08:14    Step 15/16  Loss=0.9245  [mse=0.0720  v_opt=0.00020  v_mand=0.00000  ptv=0.0195  smooth=0.0865]
+13:08:15    Step 16/16  Loss=0.6627  [mse=0.0359  v_opt=0.00019  v_mand=0.00000  ptv=0.0294  smooth=0.0909]
+13:08:24    --> Epoch 42 Summary:  Train=0.5993  Val=5.2961
+13:08:24        Clinical:  PTV D95=56.68 Gy  Bladder Mean=29.47 Gy  Rectum Mean=36.05 Gy
+13:08:24  
+Epoch 43/100  (lr=6.28e-05)
+13:08:31    Step 5/16  Loss=0.4442  [mse=0.0266  v_opt=0.00325  v_mand=0.00000  ptv=0.0163  smooth=0.0866]
+13:08:35    Step 10/16  Loss=0.4233  [mse=0.0313  v_opt=0.00225  v_mand=0.00001  ptv=0.0096  smooth=0.0922]
+13:08:41    Step 15/16  Loss=0.5678  [mse=0.0338  v_opt=0.00242  v_mand=0.00006  ptv=0.0214  smooth=0.0961]
+13:08:42    Step 16/16  Loss=0.4706  [mse=0.0336  v_opt=0.00239  v_mand=0.00000  ptv=0.0121  smooth=0.0922]
+13:08:51    --> Epoch 43 Summary:  Train=0.5440  Val=4.2553
+13:08:51        Clinical:  PTV D95=55.56 Gy  Bladder Mean=26.77 Gy  Rectum Mean=35.61 Gy
+13:08:51  
+Epoch 44/100  (lr=6.13e-05)
+13:08:58    Step 5/16  Loss=0.6626  [mse=0.0393  v_opt=0.01202  v_mand=0.00018  ptv=0.0229  smooth=0.1182]
+13:09:02    Step 10/16  Loss=0.4388  [mse=0.0298  v_opt=0.00630  v_mand=0.00006  ptv=0.0118  smooth=0.0873]
+13:09:08    Step 15/16  Loss=0.4449  [mse=0.0287  v_opt=0.00004  v_mand=0.00000  ptv=0.0149  smooth=0.0867]
+13:09:09    Step 16/16  Loss=1.0706  [mse=0.0928  v_opt=0.00230  v_mand=0.00028  ptv=0.0123  smooth=0.0790]
+13:09:19    --> Epoch 44 Summary:  Train=0.5198  Val=5.2391
+13:09:19        Clinical:  PTV D95=62.46 Gy  Bladder Mean=29.94 Gy  Rectum Mean=37.60 Gy
+13:09:19  
+Epoch 45/100  (lr=5.98e-05)
+13:09:25    Step 5/16  Loss=1.0523  [mse=0.0927  v_opt=0.00714  v_mand=0.00013  ptv=0.0100  smooth=0.0771]
+13:09:30    Step 10/16  Loss=0.5266  [mse=0.0308  v_opt=0.00020  v_mand=0.00000  ptv=0.0211  smooth=0.0796]
+13:09:36    Step 15/16  Loss=0.4376  [mse=0.0291  v_opt=0.00158  v_mand=0.00000  ptv=0.0135  smooth=0.0809]
+13:09:36    Step 16/16  Loss=0.4127  [mse=0.0268  v_opt=0.00328  v_mand=0.00015  ptv=0.0127  smooth=0.0763]
+13:09:46    --> Epoch 45 Summary:  Train=0.5551  Val=4.3036
+13:09:46        Clinical:  PTV D95=59.23 Gy  Bladder Mean=29.08 Gy  Rectum Mean=35.23 Gy
+13:09:46  
+Epoch 46/100  (lr=5.82e-05)
+13:09:52    Step 5/16  Loss=0.3987  [mse=0.0239  v_opt=0.00385  v_mand=0.00000  ptv=0.0144  smooth=0.0776]
+13:09:57    Step 10/16  Loss=0.3734  [mse=0.0235  v_opt=0.00276  v_mand=0.00025  ptv=0.0119  smooth=0.0740]
+13:10:03    Step 15/16  Loss=0.4141  [mse=0.0267  v_opt=0.00000  v_mand=0.00000  ptv=0.0139  smooth=0.0771]
+13:10:03    Step 16/16  Loss=0.3923  [mse=0.0251  v_opt=0.00074  v_mand=0.00000  ptv=0.0132  smooth=0.0752]
+13:10:13    --> Epoch 46 Summary:  Train=0.4856  Val=4.5507
+13:10:13        Clinical:  PTV D95=57.83 Gy  Bladder Mean=28.24 Gy  Rectum Mean=36.47 Gy
+13:10:13  
+Epoch 47/100  (lr=5.67e-05)
+13:10:20    Step 5/16  Loss=0.3871  [mse=0.0233  v_opt=0.00108  v_mand=0.00004  ptv=0.0144  smooth=0.0733]
+13:10:24    Step 10/16  Loss=0.4802  [mse=0.0269  v_opt=0.00000  v_mand=0.00000  ptv=0.0203  smooth=0.0749]
+13:10:30    Step 15/16  Loss=0.3832  [mse=0.0218  v_opt=0.00595  v_mand=0.00003  ptv=0.0145  smooth=0.0686]
+13:10:31    Step 16/16  Loss=0.3526  [mse=0.0229  v_opt=0.00009  v_mand=0.00000  ptv=0.0116  smooth=0.0766]
+13:10:40    --> Epoch 47 Summary:  Train=0.5448  Val=4.2994
+13:10:40        Clinical:  PTV D95=60.10 Gy  Bladder Mean=31.48 Gy  Rectum Mean=33.34 Gy
+13:10:40    --> [CLINICAL] Saved best CLINICAL model  Score=33.345  PTV_D95=60.10 Gy  Bladder=31.48 Gy  Rectum=33.34 Gy
+13:10:40  
+Epoch 48/100  (lr=5.52e-05)
+13:10:47    Step 5/16  Loss=0.3920  [mse=0.0277  v_opt=0.00054  v_mand=0.00000  ptv=0.0107  smooth=0.0735]
+13:10:51    Step 10/16  Loss=1.0950  [mse=0.0969  v_opt=0.00268  v_mand=0.00000  ptv=0.0113  smooth=0.0750]
+13:10:58    Step 15/16  Loss=0.5053  [mse=0.0272  v_opt=0.00000  v_mand=0.00000  ptv=0.0226  smooth=0.0724]
+13:10:58    Step 16/16  Loss=0.3535  [mse=0.0219  v_opt=0.00006  v_mand=0.00000  ptv=0.0127  smooth=0.0698]
+13:11:08    --> Epoch 48 Summary:  Train=0.4830  Val=4.3481
+13:11:08        Clinical:  PTV D95=59.30 Gy  Bladder Mean=29.42 Gy  Rectum Mean=35.59 Gy
+13:11:08  
+Epoch 49/100  (lr=5.36e-05)
+13:11:14    Step 5/16  Loss=0.5225  [mse=0.0264  v_opt=0.02909  v_mand=0.00237  ptv=0.0134  smooth=0.0675]
+13:11:18    Step 10/16  Loss=0.5400  [mse=0.0240  v_opt=0.00000  v_mand=0.00000  ptv=0.0292  smooth=0.0743]
+13:11:25    Step 15/16  Loss=0.4163  [mse=0.0283  v_opt=0.00143  v_mand=0.00003  ptv=0.0123  smooth=0.0671]
+13:11:25    Step 16/16  Loss=0.4160  [mse=0.0237  v_opt=0.00112  v_mand=0.00003  ptv=0.0169  smooth=0.0719]
+13:11:34    --> Epoch 49 Summary:  Train=0.4992  Val=4.6448
+13:11:34        Clinical:  PTV D95=62.81 Gy  Bladder Mean=29.50 Gy  Rectum Mean=36.62 Gy
+13:11:34  
+Epoch 50/100  (lr=5.21e-05)
+13:11:41    Step 5/16  Loss=0.8758  [mse=0.0760  v_opt=0.00044  v_mand=0.00000  ptv=0.0107  smooth=0.0708]
+13:11:45    Step 10/16  Loss=0.4887  [mse=0.0243  v_opt=0.00065  v_mand=0.00003  ptv=0.0236  smooth=0.0732]
+13:11:52    Step 15/16  Loss=0.3718  [mse=0.0225  v_opt=0.00257  v_mand=0.00003  ptv=0.0134  smooth=0.0681]
+13:11:52    Step 16/16  Loss=0.5160  [mse=0.0322  v_opt=0.00054  v_mand=0.00000  ptv=0.0185  smooth=0.0804]
+13:12:01    --> Epoch 50 Summary:  Train=0.4779  Val=4.1656
+13:12:01        Clinical:  PTV D95=58.51 Gy  Bladder Mean=30.24 Gy  Rectum Mean=33.52 Gy
+13:12:01  
+Epoch 51/100  (lr=5.05e-05)
+13:12:07    Step 5/16  Loss=0.3574  [mse=0.0216  v_opt=0.01380  v_mand=0.00037  ptv=0.0098  smooth=0.0652]
+13:12:12    Step 10/16  Loss=0.3966  [mse=0.0290  v_opt=0.00003  v_mand=0.00000  ptv=0.0099  smooth=0.0701]
+13:12:18    Step 15/16  Loss=0.4658  [mse=0.0228  v_opt=0.01743  v_mand=0.00333  ptv=0.0113  smooth=0.0666]
+13:12:18    Step 16/16  Loss=0.4307  [mse=0.0286  v_opt=0.00332  v_mand=0.00021  ptv=0.0125  smooth=0.0800]
+13:12:28    --> Epoch 51 Summary:  Train=0.4740  Val=3.2939
+13:12:28        Clinical:  PTV D95=56.98 Gy  Bladder Mean=28.58 Gy  Rectum Mean=30.39 Gy
+13:12:28    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=3.2939)
+13:12:28  
+Epoch 52/100  (lr=4.89e-05)
+13:12:34    Step 5/16  Loss=0.3984  [mse=0.0262  v_opt=0.00004  v_mand=0.00000  ptv=0.0129  smooth=0.0749]
+13:12:39    Step 10/16  Loss=0.4968  [mse=0.0256  v_opt=0.00546  v_mand=0.00141  ptv=0.0188  smooth=0.0670]
+13:12:45    Step 15/16  Loss=0.7413  [mse=0.0316  v_opt=0.00486  v_mand=0.00000  ptv=0.0408  smooth=0.0682]
+13:12:45    Step 16/16  Loss=0.5594  [mse=0.0218  v_opt=0.00516  v_mand=0.00000  ptv=0.0325  smooth=0.0620]
+13:12:55    --> Epoch 52 Summary:  Train=0.5498  Val=3.3449
+13:12:55        Clinical:  PTV D95=55.56 Gy  Bladder Mean=29.74 Gy  Rectum Mean=28.47 Gy
+13:12:55  
+Epoch 53/100  (lr=4.74e-05)
+13:13:02    Step 5/16  Loss=0.3485  [mse=0.0215  v_opt=0.00253  v_mand=0.00039  ptv=0.0112  smooth=0.0625]
+13:13:06    Step 10/16  Loss=0.3715  [mse=0.0205  v_opt=0.00277  v_mand=0.00056  ptv=0.0141  smooth=0.0626]
+13:13:12    Step 15/16  Loss=0.4209  [mse=0.0233  v_opt=0.00000  v_mand=0.00000  ptv=0.0181  smooth=0.0648]
+13:13:12    Step 16/16  Loss=0.3218  [mse=0.0208  v_opt=0.00010  v_mand=0.00000  ptv=0.0107  smooth=0.0645]
+13:13:22    --> Epoch 53 Summary:  Train=0.4923  Val=3.5798
+13:13:22        Clinical:  PTV D95=59.24 Gy  Bladder Mean=29.77 Gy  Rectum Mean=33.58 Gy
+13:13:22  
+Epoch 54/100  (lr=4.58e-05)
+13:13:29    Step 5/16  Loss=0.6747  [mse=0.0247  v_opt=0.04492  v_mand=0.00925  ptv=0.0100  smooth=0.0656]
+13:13:33    Step 10/16  Loss=0.4240  [mse=0.0299  v_opt=0.00442  v_mand=0.00010  ptv=0.0106  smooth=0.0695]
+13:13:39    Step 15/16  Loss=0.4005  [mse=0.0250  v_opt=0.00161  v_mand=0.00036  ptv=0.0132  smooth=0.0646]
+13:13:39    Step 16/16  Loss=0.5061  [mse=0.0306  v_opt=0.00033  v_mand=0.00000  ptv=0.0194  smooth=0.0611]
+13:13:49    --> Epoch 54 Summary:  Train=0.4949  Val=3.0590
+13:13:49        Clinical:  PTV D95=57.96 Gy  Bladder Mean=27.59 Gy  Rectum Mean=31.16 Gy
+13:13:49    --> [PHYSICS]  Saved best PHYSICS model  (val_loss=3.0590)
+13:13:49  
+Epoch 55/100  (lr=4.43e-05)
+13:13:56    Step 5/16  Loss=0.4819  [mse=0.0216  v_opt=0.02262  v_mand=0.00214  ptv=0.0161  smooth=0.0599]
+13:14:00    Step 10/16  Loss=0.3490  [mse=0.0221  v_opt=0.00163  v_mand=0.00024  ptv=0.0112  smooth=0.0637]
+13:14:06    Step 15/16  Loss=0.3783  [mse=0.0254  v_opt=0.00005  v_mand=0.00000  ptv=0.0118  smooth=0.0654]
+13:14:06    Step 16/16  Loss=0.3321  [mse=0.0231  v_opt=0.00036  v_mand=0.00000  ptv=0.0095  smooth=0.0606]
+13:14:16    --> Epoch 55 Summary:  Train=0.4586  Val=4.0127
+13:14:16        Clinical:  PTV D95=59.98 Gy  Bladder Mean=29.05 Gy  Rectum Mean=36.03 Gy
+13:14:16  
+Epoch 56/100  (lr=4.28e-05)
+13:14:22    Step 5/16  Loss=0.3716  [mse=0.0235  v_opt=0.00049  v_mand=0.00000  ptv=0.0129  smooth=0.0636]
+13:14:27    Step 10/16  Loss=0.3437  [mse=0.0215  v_opt=0.00934  v_mand=0.00007  ptv=0.0102  smooth=0.0611]
+13:14:33    Step 15/16  Loss=0.9469  [mse=0.0869  v_opt=0.00007  v_mand=0.00000  ptv=0.0072  smooth=0.0594]
+13:14:33    Step 16/16  Loss=0.3975  [mse=0.0265  v_opt=0.00005  v_mand=0.00000  ptv=0.0126  smooth=0.0642]
+13:14:43    --> Epoch 56 Summary:  Train=0.5592  Val=3.1149
+13:14:43        Clinical:  PTV D95=59.21 Gy  Bladder Mean=27.76 Gy  Rectum Mean=32.17 Gy
+13:14:43  
+Epoch 57/100  (lr=4.12e-05)
+13:14:49    Step 5/16  Loss=0.3888  [mse=0.0254  v_opt=0.00135  v_mand=0.00002  ptv=0.0125  smooth=0.0644]
+13:14:53    Step 10/16  Loss=0.3717  [mse=0.0196  v_opt=0.01523  v_mand=0.00166  ptv=0.0098  smooth=0.0633]
+13:15:00    Step 15/16  Loss=0.9081  [mse=0.0805  v_opt=0.00051  v_mand=0.00001  ptv=0.0096  smooth=0.0614]
+13:15:00    Step 16/16  Loss=0.3677  [mse=0.0208  v_opt=0.01107  v_mand=0.00164  ptv=0.0091  smooth=0.0573]
+13:15:10    --> Epoch 57 Summary:  Train=0.4471  Val=4.2579
+13:15:10        Clinical:  PTV D95=60.97 Gy  Bladder Mean=29.54 Gy  Rectum Mean=36.05 Gy
+13:15:10  
+Epoch 58/100  (lr=3.97e-05)
+13:15:16    Step 5/16  Loss=0.3871  [mse=0.0281  v_opt=0.00090  v_mand=0.00000  ptv=0.0098  smooth=0.0609]
+13:15:21    Step 10/16  Loss=0.3191  [mse=0.0181  v_opt=0.00571  v_mand=0.00028  ptv=0.0114  smooth=0.0556]
+13:15:27    Step 15/16  Loss=0.3079  [mse=0.0210  v_opt=0.00182  v_mand=0.00000  ptv=0.0089  smooth=0.0565]
+13:15:27    Step 16/16  Loss=0.3381  [mse=0.0204  v_opt=0.00317  v_mand=0.00019  ptv=0.0117  smooth=0.0569]
+13:15:37    --> Epoch 58 Summary:  Train=0.4185  Val=4.3029
+13:15:37        Clinical:  PTV D95=60.93 Gy  Bladder Mean=30.98 Gy  Rectum Mean=35.28 Gy
+13:15:37  
+Epoch 59/100  (lr=3.82e-05)
+13:15:43    Step 5/16  Loss=0.2975  [mse=0.0190  v_opt=0.00048  v_mand=0.00000  ptv=0.0101  smooth=0.0581]
+13:15:47    Step 10/16  Loss=0.3271  [mse=0.0206  v_opt=0.00000  v_mand=0.00000  ptv=0.0115  smooth=0.0592]
+13:15:54    Step 15/16  Loss=1.0074  [mse=0.0927  v_opt=0.00249  v_mand=0.00000  ptv=0.0070  smooth=0.0557]
+13:15:54    Step 16/16  Loss=0.8906  [mse=0.0804  v_opt=0.00006  v_mand=0.00000  ptv=0.0081  smooth=0.0590]
+13:16:04    --> Epoch 59 Summary:  Train=0.4274  Val=3.9985
+13:16:04        Clinical:  PTV D95=60.10 Gy  Bladder Mean=29.57 Gy  Rectum Mean=35.18 Gy
+13:16:04  
+Epoch 60/100  (lr=3.67e-05)
+13:16:09    Step 5/16  Loss=0.9242  [mse=0.0842  v_opt=0.00055  v_mand=0.00000  ptv=0.0076  smooth=0.0516]
+13:16:14    Step 10/16  Loss=0.3486  [mse=0.0217  v_opt=0.00089  v_mand=0.00009  ptv=0.0122  smooth=0.0541]
+13:16:20    Step 15/16  Loss=0.4035  [mse=0.0235  v_opt=0.00000  v_mand=0.00000  ptv=0.0163  smooth=0.0577]
+13:16:20    Step 16/16  Loss=0.3447  [mse=0.0217  v_opt=0.00000  v_mand=0.00000  ptv=0.0122  smooth=0.0573]
+13:16:30    --> Epoch 60 Summary:  Train=0.4141  Val=3.2127
+13:16:30        Clinical:  PTV D95=57.64 Gy  Bladder Mean=28.01 Gy  Rectum Mean=32.16 Gy
+13:16:30  
+Epoch 61/100  (lr=3.52e-05)
+13:16:36    Step 5/16  Loss=0.3156  [mse=0.0226  v_opt=0.00000  v_mand=0.00000  ptv=0.0084  smooth=0.0536]
+13:16:41    Step 10/16  Loss=0.3255  [mse=0.0229  v_opt=0.00372  v_mand=0.00000  ptv=0.0084  smooth=0.0530]
+13:16:47    Step 15/16  Loss=0.3423  [mse=0.0213  v_opt=0.00368  v_mand=0.00019  ptv=0.0112  smooth=0.0545]
+13:16:47    Step 16/16  Loss=0.3067  [mse=0.0218  v_opt=0.00003  v_mand=0.00000  ptv=0.0083  smooth=0.0562]
+13:16:57    --> Epoch 61 Summary:  Train=0.3944  Val=3.4341
+13:16:57        Clinical:  PTV D95=59.33 Gy  Bladder Mean=29.31 Gy  Rectum Mean=33.45 Gy
+13:16:57  
+Epoch 62/100  (lr=3.37e-05)
+13:17:04    Step 5/16  Loss=0.2864  [mse=0.0178  v_opt=0.00250  v_mand=0.00016  ptv=0.0094  smooth=0.0538]
+13:17:08    Step 10/16  Loss=0.3454  [mse=0.0245  v_opt=0.00018  v_mand=0.00000  ptv=0.0095  smooth=0.0560]
+13:17:14    Step 15/16  Loss=0.4546  [mse=0.0296  v_opt=0.00564  v_mand=0.00095  ptv=0.0118  smooth=0.0521]
+13:17:14    Step 16/16  Loss=0.4594  [mse=0.0299  v_opt=0.01477  v_mand=0.00098  ptv=0.0100  smooth=0.0614]
+13:17:24    --> Epoch 62 Summary:  Train=0.4100  Val=4.3711
+13:17:24        Clinical:  PTV D95=60.56 Gy  Bladder Mean=30.02 Gy  Rectum Mean=36.19 Gy
+13:17:24  
+Epoch 63/100  (lr=3.23e-05)
+13:17:30    Step 5/16  Loss=0.3152  [mse=0.0211  v_opt=0.00206  v_mand=0.00000  ptv=0.0094  smooth=0.0542]
+13:17:35    Step 10/16  Loss=0.3280  [mse=0.0200  v_opt=0.00504  v_mand=0.00002  ptv=0.0112  smooth=0.0529]
+13:17:41    Step 15/16  Loss=0.2848  [mse=0.0182  v_opt=0.00018  v_mand=0.00000  ptv=0.0097  smooth=0.0525]
+13:17:41    Step 16/16  Loss=0.3116  [mse=0.0219  v_opt=0.00060  v_mand=0.00000  ptv=0.0086  smooth=0.0549]
+13:17:51    --> Epoch 63 Summary:  Train=0.4027  Val=3.7369
+13:17:51        Clinical:  PTV D95=60.03 Gy  Bladder Mean=29.87 Gy  Rectum Mean=33.85 Gy
+13:17:51  
+Epoch 64/100  (lr=3.08e-05)
+13:17:57    Step 5/16  Loss=0.2657  [mse=0.0180  v_opt=0.00027  v_mand=0.00000  ptv=0.0081  smooth=0.0498]
+13:18:02    Step 10/16  Loss=0.2639  [mse=0.0167  v_opt=0.00000  v_mand=0.00000  ptv=0.0092  smooth=0.0533]
+13:18:08    Step 15/16  Loss=0.9909  [mse=0.0912  v_opt=0.00218  v_mand=0.00000  ptv=0.0070  smooth=0.0522]
+13:18:08    Step 16/16  Loss=0.2944  [mse=0.0195  v_opt=0.00742  v_mand=0.00010  ptv=0.0076  smooth=0.0540]
+13:18:17    --> Epoch 64 Summary:  Train=0.3706  Val=3.8027
+13:18:17        Clinical:  PTV D95=60.57 Gy  Bladder Mean=28.97 Gy  Rectum Mean=35.51 Gy
+13:18:17  
+Epoch 65/100  (lr=2.94e-05)
+13:18:24    Step 5/16  Loss=0.8126  [mse=0.0727  v_opt=0.00031  v_mand=0.00000  ptv=0.0080  smooth=0.0524]
+13:18:28    Step 10/16  Loss=0.3011  [mse=0.0214  v_opt=0.00066  v_mand=0.00000  ptv=0.0080  smooth=0.0541]
+13:18:34    Step 15/16  Loss=0.3163  [mse=0.0214  v_opt=0.00016  v_mand=0.00000  ptv=0.0096  smooth=0.0522]
+13:18:35    Step 16/16  Loss=0.2893  [mse=0.0183  v_opt=0.00070  v_mand=0.00004  ptv=0.0099  smooth=0.0508]
+13:18:44    --> Epoch 65 Summary:  Train=0.3766  Val=3.8552
+13:18:44        Clinical:  PTV D95=58.48 Gy  Bladder Mean=28.78 Gy  Rectum Mean=35.33 Gy
+13:18:44  
+Epoch 66/100  (lr=2.80e-05)
+13:18:51    Step 5/16  Loss=0.3332  [mse=0.0175  v_opt=0.00518  v_mand=0.00120  ptv=0.0113  smooth=0.0507]
+13:18:55    Step 10/16  Loss=0.2977  [mse=0.0190  v_opt=0.00034  v_mand=0.00000  ptv=0.0102  smooth=0.0484]
+13:19:01    Step 15/16  Loss=0.3193  [mse=0.0213  v_opt=0.00184  v_mand=0.00004  ptv=0.0097  smooth=0.0545]
+13:19:02    Step 16/16  Loss=0.3295  [mse=0.0239  v_opt=0.00020  v_mand=0.00000  ptv=0.0085  smooth=0.0550]
+13:19:11    --> Epoch 66 Summary:  Train=0.4075  Val=3.7487
+13:19:11        Clinical:  PTV D95=61.49 Gy  Bladder Mean=28.96 Gy  Rectum Mean=35.27 Gy
+13:19:11  
+Epoch 67/100  (lr=2.67e-05)
+13:19:18    Step 5/16  Loss=0.2794  [mse=0.0191  v_opt=0.00000  v_mand=0.00000  ptv=0.0083  smooth=0.0525]
+13:19:22    Step 10/16  Loss=0.2649  [mse=0.0163  v_opt=0.00014  v_mand=0.00000  ptv=0.0096  smooth=0.0508]
+13:19:29    Step 15/16  Loss=1.0128  [mse=0.0911  v_opt=0.00387  v_mand=0.00041  ptv=0.0079  smooth=0.0523]
+13:19:29    Step 16/16  Loss=0.2673  [mse=0.0169  v_opt=0.00138  v_mand=0.00003  ptv=0.0089  smooth=0.0519]
+13:19:39    --> Epoch 67 Summary:  Train=0.4070  Val=3.9615
+13:19:39        Clinical:  PTV D95=60.21 Gy  Bladder Mean=29.93 Gy  Rectum Mean=35.55 Gy
+13:19:39  
+Epoch 68/100  (lr=2.53e-05)
+13:19:45    Step 5/16  Loss=0.3552  [mse=0.0214  v_opt=0.00000  v_mand=0.00000  ptv=0.0135  smooth=0.0548]
+13:19:50    Step 10/16  Loss=0.3288  [mse=0.0216  v_opt=0.00732  v_mand=0.00009  ptv=0.0090  smooth=0.0516]
+13:19:56    Step 15/16  Loss=0.3202  [mse=0.0221  v_opt=0.00303  v_mand=0.00000  ptv=0.0088  smooth=0.0506]
+13:19:56    Step 16/16  Loss=0.2763  [mse=0.0186  v_opt=0.00074  v_mand=0.00001  ptv=0.0084  smooth=0.0489]
+13:20:05    --> Epoch 68 Summary:  Train=0.3988  Val=3.3718
+13:20:05        Clinical:  PTV D95=59.49 Gy  Bladder Mean=28.54 Gy  Rectum Mean=34.09 Gy
+13:20:05  
+Epoch 69/100  (lr=2.40e-05)
+13:20:12    Step 5/16  Loss=0.9725  [mse=0.0899  v_opt=0.00041  v_mand=0.00000  ptv=0.0068  smooth=0.0484]
+13:20:17    Step 10/16  Loss=0.7648  [mse=0.0685  v_opt=0.00104  v_mand=0.00000  ptv=0.0072  smooth=0.0492]
+13:20:23    Step 15/16  Loss=0.2945  [mse=0.0162  v_opt=0.00181  v_mand=0.00000  ptv=0.0124  smooth=0.0487]
+13:20:23    Step 16/16  Loss=0.3980  [mse=0.0187  v_opt=0.00000  v_mand=0.00000  ptv=0.0206  smooth=0.0538]
+13:20:32    --> Epoch 69 Summary:  Train=0.3625  Val=3.3836
+13:20:32        Clinical:  PTV D95=58.83 Gy  Bladder Mean=29.57 Gy  Rectum Mean=33.38 Gy
+13:20:32  
+Epoch 70/100  (lr=2.27e-05)
+13:20:39    Step 5/16  Loss=0.4001  [mse=0.0248  v_opt=0.00141  v_mand=0.00000  ptv=0.0144  smooth=0.0570]
+13:20:43    Step 10/16  Loss=0.2547  [mse=0.0177  v_opt=0.00029  v_mand=0.00000  ptv=0.0072  smooth=0.0482]
+13:20:50    Step 15/16  Loss=0.2749  [mse=0.0189  v_opt=0.00210  v_mand=0.00003  ptv=0.0077  smooth=0.0474]
+13:20:50    Step 16/16  Loss=0.2928  [mse=0.0191  v_opt=0.00002  v_mand=0.00000  ptv=0.0097  smooth=0.0523]
+13:21:00    --> Epoch 70 Summary:  Train=0.3628  Val=4.0193
+13:21:00        Clinical:  PTV D95=61.23 Gy  Bladder Mean=30.53 Gy  Rectum Mean=35.92 Gy
+13:21:00  
+Epoch 71/100  (lr=2.14e-05)
+13:21:06    Step 5/16  Loss=0.2906  [mse=0.0193  v_opt=0.00181  v_mand=0.00000  ptv=0.0089  smooth=0.0510]
+13:21:10    Step 10/16  Loss=0.3463  [mse=0.0220  v_opt=0.00000  v_mand=0.00000  ptv=0.0121  smooth=0.0478]
+13:21:17    Step 15/16  Loss=0.3626  [mse=0.0222  v_opt=0.00065  v_mand=0.00003  ptv=0.0133  smooth=0.0555]
+13:21:17    Step 16/16  Loss=0.8333  [mse=0.0739  v_opt=0.00006  v_mand=0.00000  ptv=0.0089  smooth=0.0511]
+13:21:27    --> Epoch 71 Summary:  Train=0.3925  Val=3.2981
+13:21:27        Clinical:  PTV D95=60.98 Gy  Bladder Mean=28.08 Gy  Rectum Mean=34.91 Gy
+13:21:27  
+Epoch 72/100  (lr=2.02e-05)
+13:21:33    Step 5/16  Loss=0.2981  [mse=0.0218  v_opt=0.00001  v_mand=0.00000  ptv=0.0075  smooth=0.0483]
+13:21:37    Step 10/16  Loss=0.9303  [mse=0.0166  v_opt=0.06581  v_mand=0.01920  ptv=0.0148  smooth=0.0536]
+13:21:44    Step 15/16  Loss=0.7286  [mse=0.0651  v_opt=0.00081  v_mand=0.00000  ptv=0.0072  smooth=0.0458]
+13:21:44    Step 16/16  Loss=0.2744  [mse=0.0166  v_opt=0.00050  v_mand=0.00000  ptv=0.0102  smooth=0.0514]
+13:21:54    --> Epoch 72 Summary:  Train=0.4196  Val=3.6956
+13:21:54        Clinical:  PTV D95=60.54 Gy  Bladder Mean=29.38 Gy  Rectum Mean=35.56 Gy
+13:21:54  
+Epoch 73/100  (lr=1.89e-05)
+13:22:00    Step 5/16  Loss=0.2989  [mse=0.0180  v_opt=0.00696  v_mand=0.00060  ptv=0.0085  smooth=0.0501]
+13:22:05    Step 10/16  Loss=0.9620  [mse=0.0875  v_opt=0.00144  v_mand=0.00000  ptv=0.0079  smooth=0.0463]
+13:22:11    Step 15/16  Loss=0.2818  [mse=0.0159  v_opt=0.00472  v_mand=0.00000  ptv=0.0109  smooth=0.0455]
+13:22:11    Step 16/16  Loss=0.3076  [mse=0.0208  v_opt=0.00114  v_mand=0.00000  ptv=0.0092  smooth=0.0492]
+13:22:21    --> Epoch 73 Summary:  Train=0.3659  Val=3.4037
+13:22:21        Clinical:  PTV D95=60.04 Gy  Bladder Mean=30.14 Gy  Rectum Mean=32.89 Gy
+13:22:21    --> [CLINICAL] Saved best CLINICAL model  Score=32.895  PTV_D95=60.04 Gy  Bladder=30.14 Gy  Rectum=32.89 Gy
+13:22:21  
+Epoch 74/100  (lr=1.78e-05)
+13:22:27    Step 5/16  Loss=0.2511  [mse=0.0157  v_opt=0.00002  v_mand=0.00000  ptv=0.0089  smooth=0.0486]
+13:22:32    Step 10/16  Loss=0.3161  [mse=0.0210  v_opt=0.00001  v_mand=0.00000  ptv=0.0101  smooth=0.0457]
+13:22:38    Step 15/16  Loss=0.3220  [mse=0.0206  v_opt=0.00118  v_mand=0.00003  ptv=0.0108  smooth=0.0479]
+13:22:38    Step 16/16  Loss=0.2562  [mse=0.0182  v_opt=0.00000  v_mand=0.00000  ptv=0.0069  smooth=0.0463]
+13:22:48    --> Epoch 74 Summary:  Train=0.4108  Val=3.3637
+13:22:48        Clinical:  PTV D95=60.29 Gy  Bladder Mean=29.45 Gy  Rectum Mean=33.52 Gy
+13:22:48  
+Epoch 75/100  (lr=1.66e-05)
+13:22:55    Step 5/16  Loss=0.2903  [mse=0.0204  v_opt=0.00000  v_mand=0.00000  ptv=0.0081  smooth=0.0458]
+13:23:00    Step 10/16  Loss=0.2358  [mse=0.0148  v_opt=0.00054  v_mand=0.00000  ptv=0.0082  smooth=0.0464]
+13:23:06    Step 15/16  Loss=0.3975  [mse=0.0238  v_opt=0.01247  v_mand=0.00064  ptv=0.0114  smooth=0.0494]
+13:23:06    Step 16/16  Loss=0.2914  [mse=0.0201  v_opt=0.00295  v_mand=0.00003  ptv=0.0079  smooth=0.0490]
+13:23:16    --> Epoch 75 Summary:  Train=0.3673  Val=3.3936
+13:23:16        Clinical:  PTV D95=60.35 Gy  Bladder Mean=29.08 Gy  Rectum Mean=34.67 Gy
+13:23:16  
+Epoch 76/100  (lr=1.55e-05)
+13:23:22    Step 5/16  Loss=0.2755  [mse=0.0179  v_opt=0.00187  v_mand=0.00053  ptv=0.0075  smooth=0.0468]
+13:23:27    Step 10/16  Loss=0.2604  [mse=0.0156  v_opt=0.00475  v_mand=0.00025  ptv=0.0084  smooth=0.0467]
+13:23:33    Step 15/16  Loss=0.8824  [mse=0.0815  v_opt=0.00076  v_mand=0.00000  ptv=0.0062  smooth=0.0444]
+13:23:33    Step 16/16  Loss=0.2942  [mse=0.0184  v_opt=0.00038  v_mand=0.00000  ptv=0.0105  smooth=0.0455]
+13:23:43    --> Epoch 76 Summary:  Train=0.3677  Val=3.2656
+13:23:43        Clinical:  PTV D95=59.95 Gy  Bladder Mean=29.79 Gy  Rectum Mean=32.91 Gy
+13:23:43  
+Epoch 77/100  (lr=1.44e-05)
+13:23:49    Step 5/16  Loss=0.2142  [mse=0.0143  v_opt=0.00041  v_mand=0.00000  ptv=0.0066  smooth=0.0434]
+13:23:54    Step 10/16  Loss=0.2327  [mse=0.0157  v_opt=0.00017  v_mand=0.00000  ptv=0.0071  smooth=0.0442]
+13:24:00    Step 15/16  Loss=0.3265  [mse=0.0193  v_opt=0.01054  v_mand=0.00000  ptv=0.0108  smooth=0.0452]
+13:24:01    Step 16/16  Loss=0.3036  [mse=0.0185  v_opt=0.00001  v_mand=0.00000  ptv=0.0114  smooth=0.0478]
+13:24:10    --> Epoch 77 Summary:  Train=0.3613  Val=3.2243
+13:24:10        Clinical:  PTV D95=59.51 Gy  Bladder Mean=28.48 Gy  Rectum Mean=34.27 Gy
+13:24:10  
+Epoch 78/100  (lr=1.34e-05)
+13:24:17    Step 5/16  Loss=0.2165  [mse=0.0140  v_opt=0.00012  v_mand=0.00000  ptv=0.0072  smooth=0.0451]
+13:24:21    Step 10/16  Loss=0.7934  [mse=0.0718  v_opt=0.00004  v_mand=0.00000  ptv=0.0070  smooth=0.0470]
+13:24:27    Step 15/16  Loss=0.3230  [mse=0.0171  v_opt=0.00446  v_mand=0.00000  ptv=0.0138  smooth=0.0496]
+13:24:27    Step 16/16  Loss=0.9244  [mse=0.0852  v_opt=0.00049  v_mand=0.00000  ptv=0.0067  smooth=0.0444]
+13:24:37    --> Epoch 78 Summary:  Train=0.3601  Val=3.1650
+13:24:37        Clinical:  PTV D95=60.38 Gy  Bladder Mean=29.20 Gy  Rectum Mean=33.46 Gy
+13:24:37  
+Epoch 79/100  (lr=1.24e-05)
+13:24:43    Step 5/16  Loss=0.9331  [mse=0.0856  v_opt=0.00067  v_mand=0.00000  ptv=0.0071  smooth=0.0452]
+13:24:48    Step 10/16  Loss=0.2674  [mse=0.0178  v_opt=0.00024  v_mand=0.00000  ptv=0.0084  smooth=0.0483]
+13:24:54    Step 15/16  Loss=0.2954  [mse=0.0213  v_opt=0.00362  v_mand=0.00000  ptv=0.0071  smooth=0.0459]
+13:24:55    Step 16/16  Loss=0.2988  [mse=0.0199  v_opt=0.00281  v_mand=0.00006  ptv=0.0088  smooth=0.0459]
+13:25:04    --> Epoch 79 Summary:  Train=0.3566  Val=3.2722
+13:25:04        Clinical:  PTV D95=59.43 Gy  Bladder Mean=29.37 Gy  Rectum Mean=34.04 Gy
+13:25:04  
+Epoch 80/100  (lr=1.14e-05)
+13:25:11    Step 5/16  Loss=0.2651  [mse=0.0182  v_opt=0.00116  v_mand=0.00000  ptv=0.0076  smooth=0.0468]
+13:25:15    Step 10/16  Loss=0.2765  [mse=0.0175  v_opt=0.00490  v_mand=0.00032  ptv=0.0080  smooth=0.0435]
+13:25:21    Step 15/16  Loss=0.3274  [mse=0.0203  v_opt=0.01111  v_mand=0.00033  ptv=0.0089  smooth=0.0486]
+13:25:22    Step 16/16  Loss=0.2919  [mse=0.0175  v_opt=0.00004  v_mand=0.00000  ptv=0.0112  smooth=0.0460]
+13:25:31    --> Epoch 80 Summary:  Train=0.3511  Val=3.1357
+13:25:31        Clinical:  PTV D95=58.78 Gy  Bladder Mean=28.70 Gy  Rectum Mean=33.96 Gy
+13:25:31  
+Epoch 81/100  (lr=1.05e-05)
+13:25:38    Step 5/16  Loss=0.2428  [mse=0.0156  v_opt=0.00001  v_mand=0.00000  ptv=0.0082  smooth=0.0436]
+13:25:42    Step 10/16  Loss=0.9497  [mse=0.0876  v_opt=0.00091  v_mand=0.00000  ptv=0.0068  smooth=0.0459]
+13:25:48    Step 15/16  Loss=0.2501  [mse=0.0166  v_opt=0.00040  v_mand=0.00000  ptv=0.0079  smooth=0.0452]
+13:25:48    Step 16/16  Loss=0.2916  [mse=0.0197  v_opt=0.00011  v_mand=0.00000  ptv=0.0090  smooth=0.0460]
+13:25:58    --> Epoch 81 Summary:  Train=0.3681  Val=3.0747
+13:25:58        Clinical:  PTV D95=59.84 Gy  Bladder Mean=29.19 Gy  Rectum Mean=32.95 Gy
+13:25:58  
+Epoch 82/100  (lr=9.56e-06)
+13:26:05    Step 5/16  Loss=0.3248  [mse=0.0231  v_opt=0.00000  v_mand=0.00000  ptv=0.0089  smooth=0.0436]
+13:26:09    Step 10/16  Loss=0.2422  [mse=0.0166  v_opt=0.00003  v_mand=0.00000  ptv=0.0072  smooth=0.0445]
+13:26:15    Step 15/16  Loss=0.4276  [mse=0.0232  v_opt=0.02719  v_mand=0.00171  ptv=0.0094  smooth=0.0441]
+13:26:15    Step 16/16  Loss=0.3720  [mse=0.0197  v_opt=0.01981  v_mand=0.00085  ptv=0.0110  smooth=0.0417]
+13:26:25    --> Epoch 82 Summary:  Train=0.3674  Val=3.3713
+13:26:25        Clinical:  PTV D95=60.83 Gy  Bladder Mean=29.16 Gy  Rectum Mean=35.20 Gy
+13:26:25  
+Epoch 83/100  (lr=8.71e-06)
+13:26:32    Step 5/16  Loss=0.2578  [mse=0.0171  v_opt=0.00054  v_mand=0.00000  ptv=0.0081  smooth=0.0447]
+13:26:36    Step 10/16  Loss=0.2395  [mse=0.0160  v_opt=0.00195  v_mand=0.00000  ptv=0.0071  smooth=0.0436]
+13:26:43    Step 15/16  Loss=0.2964  [mse=0.0199  v_opt=0.00036  v_mand=0.00000  ptv=0.0092  smooth=0.0463]
+13:26:43    Step 16/16  Loss=0.2446  [mse=0.0163  v_opt=0.00103  v_mand=0.00000  ptv=0.0075  smooth=0.0455]
+13:26:53    --> Epoch 83 Summary:  Train=0.3571  Val=3.0733
+13:26:53        Clinical:  PTV D95=59.41 Gy  Bladder Mean=29.37 Gy  Rectum Mean=33.00 Gy
+13:26:53  
+Epoch 84/100  (lr=7.89e-06)
+13:27:00    Step 5/16  Loss=0.2323  [mse=0.0150  v_opt=0.00004  v_mand=0.00000  ptv=0.0078  smooth=0.0444]
+13:27:04    Step 10/16  Loss=0.2588  [mse=0.0186  v_opt=0.00000  v_mand=0.00000  ptv=0.0069  smooth=0.0445]
+13:27:10    Step 15/16  Loss=0.2539  [mse=0.0158  v_opt=0.00009  v_mand=0.00000  ptv=0.0091  smooth=0.0488]
+13:27:10    Step 16/16  Loss=0.2410  [mse=0.0159  v_opt=0.00034  v_mand=0.00000  ptv=0.0077  smooth=0.0446]
+13:27:20    --> Epoch 84 Summary:  Train=0.3433  Val=3.0612
+13:27:20        Clinical:  PTV D95=59.41 Gy  Bladder Mean=29.11 Gy  Rectum Mean=33.57 Gy
+13:27:20  
+Epoch 85/100  (lr=7.12e-06)
+13:27:26    Step 5/16  Loss=0.2980  [mse=0.0221  v_opt=0.00122  v_mand=0.00000  ptv=0.0070  smooth=0.0448]
+13:27:30    Step 10/16  Loss=1.0012  [mse=0.0851  v_opt=0.00116  v_mand=0.00009  ptv=0.0142  smooth=0.0429]
+13:27:37    Step 15/16  Loss=0.2691  [mse=0.0186  v_opt=0.00039  v_mand=0.00000  ptv=0.0078  smooth=0.0469]
+13:27:37    Step 16/16  Loss=0.3212  [mse=0.0183  v_opt=0.00141  v_mand=0.00000  ptv=0.0131  smooth=0.0429]
+13:27:47    --> Epoch 85 Summary:  Train=0.3429  Val=3.0596
+13:27:47        Clinical:  PTV D95=59.53 Gy  Bladder Mean=29.13 Gy  Rectum Mean=33.22 Gy
+13:27:47  
+Epoch 86/100  (lr=6.40e-06)
+13:27:54    Step 5/16  Loss=0.2358  [mse=0.0159  v_opt=0.00000  v_mand=0.00000  ptv=0.0072  smooth=0.0441]
+13:27:58    Step 10/16  Loss=0.2226  [mse=0.0146  v_opt=0.00013  v_mand=0.00000  ptv=0.0072  smooth=0.0442]
+13:28:04    Step 15/16  Loss=0.2622  [mse=0.0183  v_opt=0.00091  v_mand=0.00000  ptv=0.0073  smooth=0.0479]
+13:28:04    Step 16/16  Loss=0.9801  [mse=0.0912  v_opt=0.00128  v_mand=0.00000  ptv=0.0061  smooth=0.0451]
+13:28:14    --> Epoch 86 Summary:  Train=0.3455  Val=3.3076
+13:28:14        Clinical:  PTV D95=60.14 Gy  Bladder Mean=29.20 Gy  Rectum Mean=34.88 Gy
+13:28:14  
+Epoch 87/100  (lr=5.71e-06)
+13:28:20    Step 5/16  Loss=0.9720  [mse=0.0901  v_opt=0.00065  v_mand=0.00000  ptv=0.0066  smooth=0.0458]
+13:28:25    Step 10/16  Loss=0.2588  [mse=0.0183  v_opt=0.00089  v_mand=0.00005  ptv=0.0068  smooth=0.0441]
+13:28:31    Step 15/16  Loss=0.2756  [mse=0.0204  v_opt=0.00001  v_mand=0.00000  ptv=0.0067  smooth=0.0441]
+13:28:31    Step 16/16  Loss=0.2281  [mse=0.0148  v_opt=0.00006  v_mand=0.00000  ptv=0.0075  smooth=0.0436]
+13:28:41    --> Epoch 87 Summary:  Train=0.3323  Val=3.2127
+13:28:41        Clinical:  PTV D95=59.41 Gy  Bladder Mean=29.66 Gy  Rectum Mean=33.50 Gy
+13:28:41  
+Epoch 88/100  (lr=5.07e-06)
+13:28:47    Step 5/16  Loss=0.7567  [mse=0.0686  v_opt=0.00011  v_mand=0.00000  ptv=0.0066  smooth=0.0435]
+13:28:52    Step 10/16  Loss=0.3472  [mse=0.0192  v_opt=0.00004  v_mand=0.00000  ptv=0.0150  smooth=0.0485]
+13:28:58    Step 15/16  Loss=0.3073  [mse=0.0212  v_opt=0.00241  v_mand=0.00000  ptv=0.0086  smooth=0.0493]
+13:28:58    Step 16/16  Loss=0.2433  [mse=0.0160  v_opt=0.00028  v_mand=0.00000  ptv=0.0078  smooth=0.0449]
+13:29:08    --> Epoch 88 Summary:  Train=0.3345  Val=3.2154
+13:29:08        Clinical:  PTV D95=59.64 Gy  Bladder Mean=29.24 Gy  Rectum Mean=34.29 Gy
+13:29:08  
+Epoch 89/100  (lr=4.48e-06)
+13:29:14    Step 5/16  Loss=1.0029  [mse=0.0930  v_opt=0.00065  v_mand=0.00000  ptv=0.0067  smooth=0.0452]
+13:29:19    Step 10/16  Loss=0.4206  [mse=0.0204  v_opt=0.00000  v_mand=0.00000  ptv=0.0212  smooth=0.0466]
+13:29:25    Step 15/16  Loss=0.2235  [mse=0.0148  v_opt=0.00067  v_mand=0.00001  ptv=0.0070  smooth=0.0427]
+13:29:26    Step 16/16  Loss=0.2250  [mse=0.0146  v_opt=0.00042  v_mand=0.00000  ptv=0.0074  smooth=0.0434]
+13:29:35    --> Epoch 89 Summary:  Train=0.3408  Val=3.2030
+13:29:35        Clinical:  PTV D95=60.06 Gy  Bladder Mean=29.24 Gy  Rectum Mean=34.13 Gy
+13:29:35  
+Epoch 90/100  (lr=3.93e-06)
+13:29:42    Step 5/16  Loss=0.2587  [mse=0.0162  v_opt=0.00340  v_mand=0.00024  ptv=0.0079  smooth=0.0439]
+13:29:46    Step 10/16  Loss=0.2788  [mse=0.0186  v_opt=0.00058  v_mand=0.00000  ptv=0.0087  smooth=0.0493]
+13:29:52    Step 15/16  Loss=0.9656  [mse=0.0897  v_opt=0.00032  v_mand=0.00000  ptv=0.0064  smooth=0.0444]
+13:29:52    Step 16/16  Loss=0.2848  [mse=0.0190  v_opt=0.00410  v_mand=0.00001  ptv=0.0082  smooth=0.0421]
+13:30:02    --> Epoch 90 Summary:  Train=0.3452  Val=3.1614
+13:30:02        Clinical:  PTV D95=59.61 Gy  Bladder Mean=29.27 Gy  Rectum Mean=33.89 Gy
+13:30:02  
+Epoch 91/100  (lr=3.42e-06)
+13:30:09    Step 5/16  Loss=0.3121  [mse=0.0239  v_opt=0.00000  v_mand=0.00000  ptv=0.0068  smooth=0.0436]
+13:30:14    Step 10/16  Loss=0.2660  [mse=0.0173  v_opt=0.00337  v_mand=0.00000  ptv=0.0082  smooth=0.0419]
+13:30:20    Step 15/16  Loss=0.2172  [mse=0.0140  v_opt=0.00079  v_mand=0.00001  ptv=0.0071  smooth=0.0423]
+13:30:20    Step 16/16  Loss=0.2492  [mse=0.0162  v_opt=0.00044  v_mand=0.00000  ptv=0.0082  smooth=0.0452]
+13:30:30    --> Epoch 91 Summary:  Train=0.3358  Val=3.2650
+13:30:30        Clinical:  PTV D95=59.93 Gy  Bladder Mean=29.33 Gy  Rectum Mean=34.40 Gy
+13:30:30  
+Epoch 92/100  (lr=2.97e-06)
+13:30:36    Step 5/16  Loss=0.3813  [mse=0.0191  v_opt=0.00001  v_mand=0.00000  ptv=0.0186  smooth=0.0446]
+13:30:41    Step 10/16  Loss=0.2582  [mse=0.0176  v_opt=0.00263  v_mand=0.00000  ptv=0.0073  smooth=0.0448]
+13:30:47    Step 15/16  Loss=0.2656  [mse=0.0185  v_opt=0.00088  v_mand=0.00000  ptv=0.0074  smooth=0.0472]
+13:30:47    Step 16/16  Loss=0.2455  [mse=0.0163  v_opt=0.00005  v_mand=0.00000  ptv=0.0078  smooth=0.0429]
+13:30:57    --> Epoch 92 Summary:  Train=0.3376  Val=3.1875
+13:30:57        Clinical:  PTV D95=59.27 Gy  Bladder Mean=28.91 Gy  Rectum Mean=34.22 Gy
+13:30:57  
+Epoch 93/100  (lr=2.56e-06)
+13:31:04    Step 5/16  Loss=0.2344  [mse=0.0161  v_opt=0.00000  v_mand=0.00000  ptv=0.0069  smooth=0.0444]
+13:31:08    Step 10/16  Loss=0.9503  [mse=0.0879  v_opt=0.00016  v_mand=0.00000  ptv=0.0067  smooth=0.0443]
+13:31:14    Step 15/16  Loss=0.2677  [mse=0.0188  v_opt=0.00002  v_mand=0.00000  ptv=0.0075  smooth=0.0447]
+13:31:14    Step 16/16  Loss=0.3405  [mse=0.0166  v_opt=0.00000  v_mand=0.00000  ptv=0.0169  smooth=0.0472]
+13:31:24    --> Epoch 93 Summary:  Train=0.3392  Val=3.1957
+13:31:24        Clinical:  PTV D95=59.94 Gy  Bladder Mean=29.16 Gy  Rectum Mean=34.19 Gy
+13:31:24  
+Epoch 94/100  (lr=2.19e-06)
+13:31:31    Step 5/16  Loss=0.2793  [mse=0.0192  v_opt=0.00016  v_mand=0.00000  ptv=0.0083  smooth=0.0456]
+13:31:35    Step 10/16  Loss=0.2367  [mse=0.0165  v_opt=0.00094  v_mand=0.00000  ptv=0.0066  smooth=0.0424]
+13:31:41    Step 15/16  Loss=0.2409  [mse=0.0172  v_opt=0.00001  v_mand=0.00000  ptv=0.0065  smooth=0.0427]
+13:31:41    Step 16/16  Loss=0.2223  [mse=0.0135  v_opt=0.00284  v_mand=0.00004  ptv=0.0076  smooth=0.0449]
+13:31:51    --> Epoch 94 Summary:  Train=0.3355  Val=3.2701
+13:31:51        Clinical:  PTV D95=59.76 Gy  Bladder Mean=29.39 Gy  Rectum Mean=34.33 Gy
+13:31:51  
+Epoch 95/100  (lr=1.88e-06)
+13:31:58    Step 5/16  Loss=0.9277  [mse=0.0216  v_opt=0.06537  v_mand=0.01821  ptv=0.0121  smooth=0.0444]
+13:32:03    Step 10/16  Loss=0.9399  [mse=0.0872  v_opt=0.00022  v_mand=0.00000  ptv=0.0063  smooth=0.0431]
+13:32:09    Step 15/16  Loss=0.2306  [mse=0.0151  v_opt=0.00018  v_mand=0.00000  ptv=0.0075  smooth=0.0440]
+13:32:09    Step 16/16  Loss=0.2360  [mse=0.0152  v_opt=0.00011  v_mand=0.00000  ptv=0.0079  smooth=0.0442]
+13:32:18    --> Epoch 95 Summary:  Train=0.3740  Val=3.2052
+13:32:18        Clinical:  PTV D95=59.60 Gy  Bladder Mean=28.94 Gy  Rectum Mean=34.45 Gy
+13:32:18  
+Epoch 96/100  (lr=1.61e-06)
+13:32:25    Step 5/16  Loss=0.2333  [mse=0.0160  v_opt=0.00012  v_mand=0.00000  ptv=0.0068  smooth=0.0454]
+13:32:29    Step 10/16  Loss=0.2013  [mse=0.0135  v_opt=0.00010  v_mand=0.00000  ptv=0.0062  smooth=0.0421]
+13:32:35    Step 15/16  Loss=0.2206  [mse=0.0138  v_opt=0.00094  v_mand=0.00000  ptv=0.0077  smooth=0.0406]
+13:32:36    Step 16/16  Loss=0.2555  [mse=0.0162  v_opt=0.00544  v_mand=0.00010  ptv=0.0076  smooth=0.0432]
+13:32:45    --> Epoch 96 Summary:  Train=0.3351  Val=3.1831
+13:32:45        Clinical:  PTV D95=59.67 Gy  Bladder Mean=29.37 Gy  Rectum Mean=33.96 Gy
+13:32:45  
+Epoch 97/100  (lr=1.39e-06)
+13:32:52    Step 5/16  Loss=0.2314  [mse=0.0161  v_opt=0.00005  v_mand=0.00000  ptv=0.0066  smooth=0.0419]
+13:32:57    Step 10/16  Loss=0.2494  [mse=0.0168  v_opt=0.00129  v_mand=0.00000  ptv=0.0075  smooth=0.0428]
+13:33:03    Step 15/16  Loss=0.2892  [mse=0.0162  v_opt=0.00245  v_mand=0.00037  ptv=0.0109  smooth=0.0421]
+13:33:03    Step 16/16  Loss=0.2273  [mse=0.0146  v_opt=0.00020  v_mand=0.00000  ptv=0.0076  smooth=0.0433]
+13:33:13    --> Epoch 97 Summary:  Train=0.3318  Val=3.1922
+13:33:13        Clinical:  PTV D95=59.72 Gy  Bladder Mean=29.54 Gy  Rectum Mean=33.98 Gy
+13:33:13  
+Epoch 98/100  (lr=1.22e-06)
+13:33:19    Step 5/16  Loss=0.2571  [mse=0.0186  v_opt=0.00138  v_mand=0.00000  ptv=0.0064  smooth=0.0449]
+13:33:24    Step 10/16  Loss=0.2018  [mse=0.0132  v_opt=0.00000  v_mand=0.00000  ptv=0.0066  smooth=0.0411]
+13:33:30    Step 15/16  Loss=0.2643  [mse=0.0172  v_opt=0.00052  v_mand=0.00000  ptv=0.0086  smooth=0.0442]
+13:33:30    Step 16/16  Loss=0.8878  [mse=0.0825  v_opt=0.00020  v_mand=0.00000  ptv=0.0058  smooth=0.0408]
+13:33:40    --> Epoch 98 Summary:  Train=0.3265  Val=3.2102
+13:33:40        Clinical:  PTV D95=59.76 Gy  Bladder Mean=29.52 Gy  Rectum Mean=34.16 Gy
+13:33:40  
+Epoch 99/100  (lr=1.10e-06)
+13:33:46    Step 5/16  Loss=0.2735  [mse=0.0198  v_opt=0.00263  v_mand=0.00000  ptv=0.0065  smooth=0.0440]
+13:33:51    Step 10/16  Loss=0.2371  [mse=0.0162  v_opt=0.00033  v_mand=0.00000  ptv=0.0071  smooth=0.0421]
+13:33:57    Step 15/16  Loss=0.3567  [mse=0.0195  v_opt=0.00000  v_mand=0.00000  ptv=0.0157  smooth=0.0462]
+13:33:57    Step 16/16  Loss=0.9300  [mse=0.0862  v_opt=0.00043  v_mand=0.00000  ptv=0.0063  smooth=0.0424]
+13:34:07    --> Epoch 99 Summary:  Train=0.3371  Val=3.1906
+13:34:07        Clinical:  PTV D95=59.73 Gy  Bladder Mean=29.37 Gy  Rectum Mean=34.21 Gy
+13:34:07  
+Epoch 100/100  (lr=1.02e-06)
+13:34:14    Step 5/16  Loss=0.2748  [mse=0.0181  v_opt=0.00031  v_mand=0.00000  ptv=0.0088  smooth=0.0469]
+13:34:18    Step 10/16  Loss=0.2522  [mse=0.0170  v_opt=0.00121  v_mand=0.00000  ptv=0.0076  smooth=0.0429]
+13:34:24    Step 15/16  Loss=0.7418  [mse=0.0669  v_opt=0.00006  v_mand=0.00000  ptv=0.0068  smooth=0.0423]
+13:34:25    Step 16/16  Loss=0.2221  [mse=0.0144  v_opt=0.00211  v_mand=0.00003  ptv=0.0068  smooth=0.0436]
+13:34:34    --> Epoch 100 Summary:  Train=0.3481  Val=3.1454
+13:34:34        Clinical:  PTV D95=59.58 Gy  Bladder Mean=29.20 Gy  Rectum Mean=34.08 Gy
+13:34:34  
+Training complete.  Best val loss: 3.0590  Best clinical score: 32.8945
+13:34:34  
+====================================================================
+13:34:34  FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)
+13:34:34  ====================================================================
+13:34:34  
+--- Evaluating: best_dose_model_physics.pth -> validation_physics_summary.csv ---
+13:34:34    Loaded weights from 'best_dose_model_physics.pth'
+13:34:37    [1/4] prostate_017  PTV D95=64.01 Gy  Bladder Mean=22.92 Gy  Rectum Mean=27.51 Gy
+13:34:39    [2/4] prostate_018  PTV D95=53.83 Gy  Bladder Mean=24.47 Gy  Rectum Mean=29.20 Gy
+13:34:40    [3/4] prostate_019  PTV D95=52.10 Gy  Bladder Mean=34.71 Gy  Rectum Mean=37.17 Gy
+13:34:43    [4/4] prostate_020  PTV D95=61.91 Gy  Bladder Mean=28.24 Gy  Rectum Mean=30.79 Gy
+13:34:43  
+  Saved 'validation_physics_summary.csv'
+13:34:43    Patient_ID  PTV_D99 (Gy)  PTV_D98 (Gy)  PTV_D95 (Gy)  PTV_D50 (Gy)  PTV_D2 (Gy)  PTV_Mean (Gy)  PTV_Max (Gy)  Bladder_Mean (Gy)  Bladder_Max (Gy)  Bladder_V60.4Gy (%)  Bladder_V56.0Gy (%)  Bladder_V47.0Gy (%)  Bladder_V38.0Gy (%)  Bladder_V28.6Gy (%)  Rectum_Mean (Gy)  Rectum_Max (Gy)  Rectum_V60.4Gy (%)  Rectum_V56.0Gy (%)  Rectum_V47.0Gy (%)  Rectum_V38.0Gy (%)  Rectum_V28.6Gy (%)
+prostate_017         61.12         62.33         64.01         70.00         70.0          68.59          70.0              22.92              70.0                 0.95                 1.58                 3.56                 7.58                18.83             27.51            70.00                1.25                3.15                8.17               19.69               44.39
+prostate_018         46.11         49.36         53.83         66.91         70.0          65.24          70.0              24.47              70.0                 1.71                 2.76                 5.66                11.06                23.33             29.20            70.00                1.04                2.55                9.47               22.85               46.36
+prostate_019         47.33         49.22         52.10         64.60         70.0          63.43          70.0              34.71              70.0                 1.00                 2.99                12.22                33.23                71.81             37.17            69.84                1.27                3.84               16.21               43.56               80.94
+prostate_020         52.96         55.97         61.91         70.00         70.0          68.74          70.0              28.24              70.0                 1.49                 2.20                 5.51                16.02                43.99             30.79            70.00                2.52                5.30               13.75               29.24               53.69
+13:34:43  
+--- Evaluating: best_dose_model_clinical.pth -> validation_clinical_summary.csv ---
+13:34:43    Loaded weights from 'best_dose_model_clinical.pth'
+13:34:46    [1/4] prostate_017  PTV D95=65.42 Gy  Bladder Mean=26.11 Gy  Rectum Mean=29.71 Gy
+13:34:48    [2/4] prostate_018  PTV D95=55.65 Gy  Bladder Mean=27.73 Gy  Rectum Mean=31.53 Gy
+13:34:49    [3/4] prostate_019  PTV D95=56.43 Gy  Bladder Mean=36.60 Gy  Rectum Mean=38.36 Gy
+13:34:51    [4/4] prostate_020  PTV D95=62.66 Gy  Bladder Mean=30.10 Gy  Rectum Mean=31.99 Gy
+13:34:52  
+  Saved 'validation_clinical_summary.csv'
+13:34:52    Patient_ID  PTV_D99 (Gy)  PTV_D98 (Gy)  PTV_D95 (Gy)  PTV_D50 (Gy)  PTV_D2 (Gy)  PTV_Mean (Gy)  PTV_Max (Gy)  Bladder_Mean (Gy)  Bladder_Max (Gy)  Bladder_V60.4Gy (%)  Bladder_V56.0Gy (%)  Bladder_V47.0Gy (%)  Bladder_V38.0Gy (%)  Bladder_V28.6Gy (%)  Rectum_Mean (Gy)  Rectum_Max (Gy)  Rectum_V60.4Gy (%)  Rectum_V56.0Gy (%)  Rectum_V47.0Gy (%)  Rectum_V38.0Gy (%)  Rectum_V28.6Gy (%)
+prostate_017         62.81         63.87         65.42         70.00         70.0          69.20          70.0              26.11              70.0                 1.67                 2.59                 4.94                 9.77                24.83             29.71             70.0                2.67                4.97               10.50               22.73               50.81
+prostate_018         49.11         51.67         55.65         67.93         70.0          66.15          70.0              27.73              70.0                 2.90                 4.36                 8.21                14.48                30.00             31.53             70.0                1.81                4.01               12.92               27.76               53.12
+prostate_019         51.11         53.02         56.43         66.82         70.0          65.74          70.0              36.60              70.0                 3.19                 6.36                16.96                39.62                74.93             38.36             70.0                2.43                5.62               20.16               48.34               82.78
+prostate_020         53.03         55.99         62.66         70.00         70.0          68.75          70.0              30.10              70.0                 2.09                 2.95                 6.50                18.06                48.00             31.99             70.0                2.69                5.39               14.56               33.03               57.92
