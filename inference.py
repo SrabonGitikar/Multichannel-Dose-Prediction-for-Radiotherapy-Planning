@@ -104,7 +104,23 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     
     batch = next(iter(loader))
     inputs = batch["image"].to(device)
-    
+
+    # Capture spatial metadata from the resampled CT (channel 0) for NIfTI alignment
+    ct_sitk = sitk.ReadImage(pt_dict["ch_0"])
+    ct_resampled = sitk.Resample(
+        ct_sitk,
+        [int(round(ct_sitk.GetSize()[i] * ct_sitk.GetSpacing()[i] / TARGET_SPACING[i])) for i in range(3)],
+        sitk.Transform(),
+        sitk.sitkLinear,
+        ct_sitk.GetOrigin(),
+        TARGET_SPACING,
+        ct_sitk.GetDirection(),
+        0.0,
+        ct_sitk.GetPixelID(),
+    )
+    grid_origin    = ct_resampled.GetOrigin()
+    grid_direction = ct_resampled.GetDirection()
+
     print(f"Input tensor shape: {inputs.shape}")  # [1, 4, D, H, W]
     
     # Run inference with mixed precision if on GPU
@@ -113,9 +129,10 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
             outputs = sliding_window_inference(
                 inputs=inputs, 
                 roi_size=PATCH_SIZE, 
-                sw_batch_size=4, 
+                sw_batch_size=2, 
                 predictor=model,
-                overlap=0.25
+                overlap=0.5,
+                mode="gaussian",
             )
     
     # outputs shape: [1, 1, H, W, D] (MONAI spatial order after Spacingd)
@@ -135,6 +152,8 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
         
         sitk_img = sitk.GetImageFromArray(pred_dose.astype(np.float32))
         sitk_img.SetSpacing(TARGET_SPACING)
+        sitk_img.SetOrigin(grid_origin)
+        sitk_img.SetDirection(grid_direction)
         sitk.WriteImage(sitk_img, out_file)
         
         print(f"Saved predicted dose to: {out_file}")
@@ -142,6 +161,8 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     metadata = {
         "patient_id": patient_id,
         "spacing": TARGET_SPACING,
+        "origin": grid_origin,
+        "direction": grid_direction,
         "shape": pred_dose.shape,
         "dose_min": float(pred_dose.min()),
         "dose_max": float(pred_dose.max()),
@@ -166,9 +187,11 @@ def main():
     
     try:
         pred_dose, metadata = run_inference(args.patient, args.output_dir)
-        print("\n=== Inference Summary ===")
-        print(f"Patient: {metadata['patient_id']}")
-        print(f"Output shape: {metadata['shape']}")
+        print("\n=== Dose Grid Summary ===")
+        print(f"Patient:   {metadata['patient_id']}")
+        print(f"Shape:     {metadata['shape']}  (Z, Y, X voxels)")
+        print(f"Spacing:   {metadata['spacing']} mm")
+        print(f"Origin:    {tuple(round(v,2) for v in metadata['origin'])} mm")
         print(f"Dose range: [{metadata['dose_min']:.2f}, {metadata['dose_max']:.2f}] Gy")
         print("=========================")
     except Exception as e:
