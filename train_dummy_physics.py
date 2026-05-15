@@ -58,7 +58,7 @@ CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum S
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (96, 96, 96)
 
-PRESCRIPTION_DOSE_GY = 70.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
+PRESCRIPTION_DOSE_GY = 75.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
 CONSTRAINT_CSV = os.environ.get(
     "CONSTRAINT_CSV", "./prostate_prime_constraints_v2.csv"
 )
@@ -94,7 +94,7 @@ def load_clinical_constraints(csv_path, patient_class="N0"):
         "d_type"  -> {"PTV_max_dose_gy": float or None,
                       "PTV_coverage": [...]}
     All V-Type dose thresholds are normalised to [0, 1] by dividing
-    by PRESCRIPTION_DOSE_GY (70 Gy).
+    by PRESCRIPTION_DOSE_GY (75 Gy).
     """
     # Accumulate Optimal and Mandatory rows separately, then merge per dose level.
     # Key: (organ_canonical, dose_gy)  Value: {"optimal_v": ..., "mandatory_v": ...}
@@ -224,8 +224,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         constraints_dict,
         lambda_mse=10.0,        # Anchors the dose to the human ground truth
         lambda_optimal=2.0,     # A gentle nudge to keep OARs as low as possible
-        lambda_mandatory=50.0,  # A strict brick wall to protect the organs
-        lambda_ptv=50.0,        # Fiercely forces the model to hit the 57+ Gy target
+        lambda_mandatory=10.0,  # A strict brick wall to protect the organs
+        lambda_ptv=10.0,        # Fiercely forces the model to hit the 57+ Gy target
         lambda_smooth=0.1,      # Prevents jagged isodose lines
         k_steepness=50.0,       # Perfect for [0, 1] normalized space
     ):
@@ -513,15 +513,15 @@ def main():
         constraints_dict=constraints,
         lambda_mse=10.0,        
         lambda_optimal=2.0,     
-        lambda_mandatory=50.0,  
-        lambda_ptv=50.0,       
+        lambda_mandatory=25.0,  
+        lambda_ptv=10.0,       
         lambda_smooth=0.1,      
         k_steepness=50.0,
     )
 
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-    epochs = 300
+    epochs = 100
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=epochs, eta_min=1e-6
     )
@@ -533,7 +533,8 @@ def main():
           f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
 
     # ---- Training --------------------------------------------------
-    best_val_loss = float("inf")
+    best_val_loss      = float("inf")   # tracks physics (loss) optimum
+    best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
         print(f"\nEpoch {epoch + 1}/{epochs}  "
@@ -575,6 +576,12 @@ def main():
                 )
 
             scaler.scale(loss).backward()
+            
+            # Unscale gradients before clipping for mixed precision
+            scaler.unscale_(optimizer)
+            # Clip gradients to prevent exploding gradients from custom physics loss
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            
             scaler.step(optimizer)
             scaler.update()
 
@@ -665,12 +672,154 @@ def main():
             f"Rectum Mean={avg_rectum:.2f} Gy"
         )
 
+        # -- Physics checkpoint: best validation loss --------------------
         if val_loss_avg < best_val_loss:
             best_val_loss = val_loss_avg
             torch.save(model.state_dict(), "best_dose_model_physics.pth")
-            print("  --> Saved new best model!")
+            print(f"  --> [PHYSICS]  Saved best PHYSICS model  "
+                  f"(val_loss={best_val_loss:.4f})")
 
-    print(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}")
+        # -- Clinical checkpoint: soft-margin exchange-rate score --------
+        # Penalises OAR toxicity AND PTV underdose simultaneously.
+        # Exchange rate: 1 Gy PTV deficit = 3 Gy penalty.
+        current_worst_oar = max(avg_bladder, avg_rectum)
+        ptv_deficit       = max(0.0, 60.0 - avg_d95)      # deficit below 60 Gy ideal
+        clinical_score    = current_worst_oar + (ptv_deficit * 3.0)
+
+        if clinical_score < best_clinical_score:
+            best_clinical_score = clinical_score
+            torch.save(model.state_dict(), "best_dose_model_clinical.pth")
+            print(f"  --> [CLINICAL] Saved best CLINICAL model  "
+                  f"Score={clinical_score:.3f}  "
+                  f"PTV_D95={avg_d95:.2f} Gy  "
+                  f"Bladder={avg_bladder:.2f} Gy  "
+                  f"Rectum={avg_rectum:.2f} Gy")
+
+    print(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
+          f"Best clinical score: {best_clinical_score:.4f}")
+
+    # ====================================================================
+    # FINAL CLINICAL EVALUATION BLOCK
+    # Iterates over both saved checkpoints (Physics + Clinical) and
+    # produces a separate patient-by-patient DVH summary CSV for each.
+    # ====================================================================
+    print("\n" + "=" * 68)
+    print("FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)")
+    print("=" * 68)
+
+    # ---- Imports needed only for this block ----------------------------
+    import pandas as pd  # pyrefly: ignore [missing-import]
+
+    # ---- Physical dose ceiling (Gy) — hard clinical constraint ---------
+    PHYSICAL_MAX_GY = 70.0   # no voxel can receive more than this
+
+    # ---- DVH helpers ---------------------------------------------------
+    def quantile_dose(dose_1d: torch.Tensor, pct: float) -> float:
+        """
+        Return the dose (Gy) exceeded by `pct`% of the volume.
+        D95 = dose exceeded by 95% of voxels  ->  quantile at 0.05 tail.
+        """
+        if dose_1d.numel() == 0:
+            return float("nan")
+        q = 1.0 - pct / 100.0
+        return torch.quantile(dose_1d.float(), q).item()
+
+    def v_metric(dose_1d: torch.Tensor, threshold_gy: float) -> float:
+        """
+        Volume fraction (%) of organ receiving > threshold_gy Gy.
+        """
+        if dose_1d.numel() == 0:
+            return float("nan")
+        return ((dose_1d > threshold_gy).float().mean() * 100.0).item()
+
+    # ---- Dual-model evaluation loop ------------------------------------
+    for model_path, csv_name in [
+        ("best_dose_model_physics.pth",  "validation_physics_summary.csv"),
+        ("best_dose_model_clinical.pth", "validation_clinical_summary.csv"),
+    ]:
+        print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
+
+        # Load checkpoint
+        if os.path.isfile(model_path):
+            model.load_state_dict(torch.load(model_path, map_location=device))
+            print(f"  Loaded weights from '{model_path}'")
+        else:
+            print(f"  WARNING: '{model_path}' not found — skipping.")
+            continue
+
+        model.eval()
+        records = []
+
+        with torch.no_grad():
+            for idx, batch in enumerate(val_loader):
+                inputs  = batch["image"].to(device)
+                targets = batch["dose_label"].to(device)
+
+                # Sliding-window inference in AMP
+                with torch.amp.autocast(
+                    "cuda",
+                    enabled=torch.cuda.is_available(),
+                    dtype=torch.float16,
+                ):
+                    outputs = sliding_window_inference(
+                        inputs=inputs,
+                        roi_size=PATCH_SIZE,
+                        sw_batch_size=1,
+                        predictor=model,
+                        overlap=0.25,
+                    )
+
+                # Denormalise -> physically clamp
+                outputs_gy = outputs.float() * PRESCRIPTION_DOSE_GY
+                outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
+
+                # Binary masks
+                ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
+
+                ptv_dose     = outputs_gy[ptv_mask.bool()].cpu()
+                bladder_dose = outputs_gy[bladder_mask.bool()].cpu()
+                rectum_dose  = outputs_gy[rectum_mask.bool()].cpu()
+
+                # Patient ID
+                try:
+                    label_path = val_files[idx]["dose_label"]
+                    patient_id = os.path.basename(label_path).replace(".nii.gz", "")
+                except (IndexError, KeyError):
+                    patient_id = f"patient_{idx:03d}"
+
+                # Metrics
+                row = {"Patient_ID": patient_id}
+
+                for pct in (99, 98, 95, 50, 2):
+                    row[f"PTV_D{pct} (Gy)"] = quantile_dose(ptv_dose, pct)
+                row["PTV_Mean (Gy)"] = ptv_dose.mean().item() if ptv_dose.numel() else float("nan")
+                row["PTV_Max (Gy)"]  = ptv_dose.max().item()  if ptv_dose.numel() else float("nan")
+
+                row["Bladder_Mean (Gy)"] = bladder_dose.mean().item() if bladder_dose.numel() else float("nan")
+                row["Bladder_Max (Gy)"]  = bladder_dose.max().item()  if bladder_dose.numel() else float("nan")
+                for thresh in (60.4, 56.0, 47.0, 38.0, 28.6):
+                    row[f"Bladder_V{thresh}Gy (%)"] = v_metric(bladder_dose, thresh)
+
+                row["Rectum_Mean (Gy)"] = rectum_dose.mean().item() if rectum_dose.numel() else float("nan")
+                row["Rectum_Max (Gy)"]  = rectum_dose.max().item()  if rectum_dose.numel() else float("nan")
+                for thresh in (60.4, 56.0, 47.0, 38.0, 28.6):
+                    row[f"Rectum_V{thresh}Gy (%)"] = v_metric(rectum_dose, thresh)
+
+                records.append(row)
+                print(
+                    f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
+                    f"PTV D95={row['PTV_D95 (Gy)']:.2f} Gy  "
+                    f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
+                    f"Rectum Mean={row['Rectum_Mean (Gy)']:.2f} Gy"
+                )
+
+        # Export CSV
+        df = pd.DataFrame(records)
+        float_cols = [c for c in df.columns if c != "Patient_ID"]
+        df[float_cols] = df[float_cols].round(2)
+        df.to_csv(csv_name, index=False)
+        print(f"\n  Saved '{csv_name}'")
+        print(df.to_string(index=False))
 
 
 if __name__ == "__main__":
