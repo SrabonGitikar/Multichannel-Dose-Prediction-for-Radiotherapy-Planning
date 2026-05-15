@@ -16,8 +16,6 @@ import os
 import glob
 import math
 import csv
-import logging
-import datetime
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -25,6 +23,8 @@ import numpy as np
 import torch
 # pyrefly: ignore [missing-import]
 import torch.nn as nn
+# pyrefly: ignore [missing-import]
+import torch.nn.functional as F
 # pyrefly: ignore [missing-import]
 import torch.optim as optim
 # pyrefly: ignore [missing-import]
@@ -473,31 +473,26 @@ def main():
                   f"opt={r['optimal_v']:.2f}  mand={r['mandatory_v']:.2f}  "
                   f"norm_thresh={r['norm_dose']:.4f}")
 
-    # ---- Logging setup -----------------------------------------
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
-    os.makedirs(log_dir, exist_ok=True)
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"train_physics_{timestamp}.log")
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s  %(message)s",
-        datefmt="%H:%M:%S",
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(),
-        ],
-    )
-    log = logging.getLogger()
-    log.info(f"Log file: {log_file}")
-
-    # ---- Dataset ---------------------------------------------------
-    log.info("\nFinding data...")
+    # ---- Dataset split (ratio-based, env-var overrideable) ----------
+    print("\nFinding data...")
     data_dicts = get_data_dicts()
-    log.info(f"Found {len(data_dicts)} patients.")
+    n_total = len(data_dicts)
+    print(f"Found {n_total} patients.")
 
-    train_files = data_dicts[:16]
-    val_files = data_dicts[16:]
+    # 80/20 split by default; override with VAL_SPLIT env var (e.g. 0.15)
+    val_frac   = float(os.environ.get("VAL_SPLIT", "0.20"))
+    n_val      = max(1, round(n_total * val_frac))
+    n_train    = n_total - n_val
+    train_files = data_dicts[:n_train]
+    val_files   = data_dicts[n_train:]
+    print(f"Split: {n_train} train  /  {n_val} val  (val_frac={val_frac:.0%})")
+
+    # ---- Batch size and workers (env-var overrideable) ---------------
+    # BATCH_SIZE=2 doubles VRAM usage (each sample = 4 crops of 96³).
+    # For a 24 GB GPU, BATCH_SIZE=1 is safe; BATCH_SIZE=2 may work.
+    batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
+    num_workers  = min(os.cpu_count() or 4, 8)
+    print(f"Batch size={batch_size}  num_workers={num_workers}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
     os.makedirs(cache_dir, exist_ok=True)
@@ -506,17 +501,27 @@ def main():
         data=train_files, transform=train_transforms, cache_dir=cache_dir
     )
     train_loader = DataLoader(
-        train_ds, batch_size=1, shuffle=True, num_workers=2,
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
         collate_fn=list_data_collate,
     )
 
     val_ds = PersistentDataset(
         data=val_files, transform=val_transforms, cache_dir=cache_dir
     )
-    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=1)
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=1,              # always 1 for val — sliding window handles the patch
+        shuffle=False,
+        num_workers=min(num_workers, 4),
+        pin_memory=torch.cuda.is_available(),
+    )
 
     # ---- Model -----------------------------------------------------
-    log.info("Building 3D U-Net...")
+    print("Building 3D U-Net...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = UNet(
@@ -548,17 +553,17 @@ def main():
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
 
-    log.info(f"Model and dataloaders ready on {device}!")
-    log.info(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
-             f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
+    print(f"Model and dataloaders ready on {device}!")
+    print(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
+          f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
 
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
-        log.info(f"\nEpoch {epoch + 1}/{epochs}  "
-                 f"(lr={optimizer.param_groups[0]['lr']:.2e})")
+        print(f"\nEpoch {epoch + 1}/{epochs}  "
+              f"(lr={optimizer.param_groups[0]['lr']:.2e})")
 
         # ---- Train -------------------------------------------------
         model.train()
@@ -585,15 +590,21 @@ def main():
             ):
                 outputs = model(inputs)
 
-                # Physics loss computed in float32 for numerical stability
-                # of the sigmoid DVH approximation
-                loss, components = loss_function(
-                    outputs.float(),
-                    normalized_targets.float(),
-                    bladder_mask.float(),
-                    rectum_mask.float(),
-                    ptv_mask.float(),
-                )
+            # Apply Softplus OUTSIDE autocast in float32.
+            # Reason: float16 saturates at ~65504 — applying Softplus inside AMP
+            # could silently overflow and reproduce the 350 Gy explosion.
+            # Softplus ensures all voxel predictions are physically positive (> 0)
+            # while maintaining full gradient flow, unlike Sigmoid which saturates.
+            outputs_activated = F.softplus(outputs.float())
+
+            # Physics loss receives the Softplus-activated, float32 output
+            loss, components = loss_function(
+                outputs_activated,
+                normalized_targets.float(),
+                bladder_mask.float(),
+                rectum_mask.float(),
+                ptv_mask.float(),
+            )
 
             scaler.scale(loss).backward()
             
@@ -607,7 +618,7 @@ def main():
 
             train_loss_sum += loss.item()
             if step % 5 == 0 or step == len(train_loader):
-                log.info(
+                print(
                     f"  Step {step}/{len(train_loader)}  "
                     f"Loss={loss.item():.4f}  "
                     f"[mse={components['mse']:.4f}  "
@@ -648,11 +659,14 @@ def main():
                         overlap=0.25,
                     )
 
+                # Softplus in float32, outside AMP (same reason as training loop)
+                outputs_activated = F.softplus(outputs.float())
+
                 normalized_targets = targets / PRESCRIPTION_DOSE_GY
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
 
                 loss, _ = loss_function(
-                    outputs.float(),
+                    outputs_activated,
                     normalized_targets.float(),
                     bladder_mask.float(),
                     rectum_mask.float(),
@@ -660,8 +674,8 @@ def main():
                 )
                 val_loss_sum += loss.item()
 
-                # ---- Clinical metrics (in Gy) ----------------------
-                outputs_gy = outputs.float() * PRESCRIPTION_DOSE_GY
+                # Clinical metrics — denormalise the Softplus-activated output
+                outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
 
                 ptv_dose = outputs_gy[ptv_mask.bool()]
                 if len(ptv_dose) > 0:
@@ -682,11 +696,11 @@ def main():
         avg_bladder = val_bladder_mean_sum / max(n_val, 1)
         avg_rectum = val_rectum_mean_sum / max(n_val, 1)
 
-        log.info(
+        print(
             f"  --> Epoch {epoch + 1} Summary:  "
             f"Train={train_loss_avg:.4f}  Val={val_loss_avg:.4f}"
         )
-        log.info(
+        print(
             f"      Clinical:  PTV D95={avg_d95:.2f} Gy  "
             f"Bladder Mean={avg_bladder:.2f} Gy  "
             f"Rectum Mean={avg_rectum:.2f} Gy"
@@ -696,36 +710,36 @@ def main():
         if val_loss_avg < best_val_loss:
             best_val_loss = val_loss_avg
             torch.save(model.state_dict(), "best_dose_model_physics.pth")
-            log.info(f"  --> [PHYSICS]  Saved best PHYSICS model  "
-                     f"(val_loss={best_val_loss:.4f})")
+            print(f"  --> [PHYSICS]  Saved best PHYSICS model  "
+                  f"(val_loss={best_val_loss:.4f})")
 
         # -- Clinical checkpoint: soft-margin exchange-rate score --------
         # Penalises OAR toxicity AND PTV underdose simultaneously.
         # Exchange rate: 1 Gy PTV deficit = 3 Gy penalty.
         current_worst_oar = max(avg_bladder, avg_rectum)
-        ptv_deficit       = max(0.0, 60.0 - avg_d95)      # deficit below 60 Gy ideal
+        ptv_deficit       = max(0.0, 62.4 - avg_d95)      # deficit below 62.4 Gy ideal
         clinical_score    = current_worst_oar + (ptv_deficit * 3.0)
 
         if clinical_score < best_clinical_score:
             best_clinical_score = clinical_score
             torch.save(model.state_dict(), "best_dose_model_clinical.pth")
-            log.info(f"  --> [CLINICAL] Saved best CLINICAL model  "
-                     f"Score={clinical_score:.3f}  "
-                     f"PTV_D95={avg_d95:.2f} Gy  "
-                     f"Bladder={avg_bladder:.2f} Gy  "
-                     f"Rectum={avg_rectum:.2f} Gy")
+            print(f"  --> [CLINICAL] Saved best CLINICAL model  "
+                  f"Score={clinical_score:.3f}  "
+                  f"PTV_D95={avg_d95:.2f} Gy  "
+                  f"Bladder={avg_bladder:.2f} Gy  "
+                  f"Rectum={avg_rectum:.2f} Gy")
 
-    log.info(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
-             f"Best clinical score: {best_clinical_score:.4f}")
+    print(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
+          f"Best clinical score: {best_clinical_score:.4f}")
 
     # ====================================================================
     # FINAL CLINICAL EVALUATION BLOCK
     # Iterates over both saved checkpoints (Physics + Clinical) and
     # produces a separate patient-by-patient DVH summary CSV for each.
     # ====================================================================
-    log.info("\n" + "=" * 68)
-    log.info("FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)")
-    log.info("=" * 68)
+    print("\n" + "=" * 68)
+    print("FINAL CLINICAL EVALUATION  (Physics + Clinical checkpoints)")
+    print("=" * 68)
 
     # ---- Imports needed only for this block ----------------------------
     import pandas as pd  # pyrefly: ignore [missing-import]
@@ -757,14 +771,14 @@ def main():
         ("best_dose_model_physics.pth",  "validation_physics_summary.csv"),
         ("best_dose_model_clinical.pth", "validation_clinical_summary.csv"),
     ]:
-        log.info(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
+        print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
         # Load checkpoint
         if os.path.isfile(model_path):
             model.load_state_dict(torch.load(model_path, map_location=device))
-            log.info(f"  Loaded weights from '{model_path}'")
+            print(f"  Loaded weights from '{model_path}'")
         else:
-            log.warning(f"  WARNING: '{model_path}' not found — skipping.")
+            print(f"  WARNING: '{model_path}' not found — skipping.")
             continue
 
         model.eval()
@@ -789,8 +803,11 @@ def main():
                         overlap=0.25,
                     )
 
-                # Denormalise -> physically clamp
-                outputs_gy = outputs.float() * PRESCRIPTION_DOSE_GY
+                # Softplus in float32 outside AMP, then denormalise → clamp.
+                # 70.0 Gy clamp = clinical prescription ceiling (NOT the 75 Gy
+                # normalisation constant). Softplus handles training stability;
+                # clamp handles clinical reporting safety.
+                outputs_gy = F.softplus(outputs.float()) * PRESCRIPTION_DOSE_GY
                 outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
 
                 # Binary masks
@@ -826,7 +843,7 @@ def main():
                     row[f"Rectum_V{thresh}Gy (%)"] = v_metric(rectum_dose, thresh)
 
                 records.append(row)
-                log.info(
+                print(
                     f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
                     f"PTV D95={row['PTV_D95 (Gy)']:.2f} Gy  "
                     f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
@@ -838,8 +855,8 @@ def main():
         float_cols = [c for c in df.columns if c != "Patient_ID"]
         df[float_cols] = df[float_cols].round(2)
         df.to_csv(csv_name, index=False)
-        log.info(f"\n  Saved '{csv_name}'")
-        log.info(df.to_string(index=False))
+        print(f"\n  Saved '{csv_name}'")
+        print(df.to_string(index=False))
 
 
 if __name__ == "__main__":
