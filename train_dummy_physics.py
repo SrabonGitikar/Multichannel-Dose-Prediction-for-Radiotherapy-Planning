@@ -16,8 +16,6 @@ import os
 import glob
 import math
 import csv
-import logging
-import datetime
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -60,7 +58,7 @@ LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
 CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum SDM
 TARGET_SPACING = (1.27, 1.27, 2.5)
-PATCH_SIZE = (128, 128, 64)   # Larger XY footprint; shallower Z matches 2.5mm slice spacing
+PATCH_SIZE = (96, 96, 96)
 
 PRESCRIPTION_DOSE_GY = 75.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
 CONSTRAINT_CSV = os.environ.get(
@@ -231,6 +229,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_mandatory=10.0,  # A strict brick wall to protect the organs
         lambda_ptv=10.0,        # Fiercely forces the model to hit the 57+ Gy target
         lambda_smooth=0.1,      # Prevents jagged isodose lines
+        lambda_ring=15.0,       # Penalises hot-spots in the 5mm PTV falloff ring
         k_steepness=50.0,       # Perfect for [0, 1] normalized space
     ):
         super().__init__()
@@ -241,6 +240,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_mandatory = lambda_mandatory
         self.lambda_ptv = lambda_ptv
         self.lambda_smooth = lambda_smooth
+        self.lambda_ring = lambda_ring
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -266,7 +266,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         return volume_fraction
 
     # --- Forward pass ------------------------------------------------
-    def forward(self, pred_dose, true_dose, bladder_mask, rectum_mask, ptv_mask):
+    def forward(self, pred_dose, true_dose, bladder_mask, rectum_mask,
+                ptv_mask, ring_mask):
         """
         Parameters
         ----------
@@ -275,12 +276,13 @@ class PhysicsGuidedDoseLoss(nn.Module):
         bladder_mask: (B, 1, D, H, W)  — binary float
         rectum_mask : (B, 1, D, H, W)  — binary float
         ptv_mask    : (B, 1, D, H, W)  — binary float
+        ring_mask   : (B, 1, D, H, W)  — binary float, 5mm shell around PTV
         """
         # ------ 1. L_MSE  -------------------------------------------
         loss_mse = self.mse(pred_dose, true_dose)
 
         # ------ 2. L_V-Type (Dual-Tier DVH) -------------------------
-        loss_optimal = torch.tensor(0.0, device=pred_dose.device,
+        loss_optional = torch.tensor(0.0, device=pred_dose.device,
                                     dtype=pred_dose.dtype)
         loss_mandatory = torch.tensor(0.0, device=pred_dose.device,
                                       dtype=pred_dose.dtype)
@@ -298,25 +300,19 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 # Optimal tier
                 if not math.isnan(rule["optimal_v"]):
                     viol_opt = torch.relu(v_frac - rule["optimal_v"])
-                    loss_optimal = loss_optimal + viol_opt ** 2
+                    loss_optional = loss_optional + viol_opt ** 2
 
                 # Mandatory tier
                 viol_mand = torch.relu(v_frac - rule["mandatory_v"])
                 loss_mandatory = loss_mandatory + viol_mand ** 2
 
         # ------ 3. L_PTV  (D-Type coverage) -------------------------
-        #  Penalise underdose: max(0, C_k - D_PTV_pred)
-        #  C_k for D95 with fraction 0.95 means the dose inside PTV
-        #  should be >= 0.95 (in normalised space, i.e. 95% of Rx).
         loss_ptv = torch.tensor(0.0, device=pred_dose.device,
                                 dtype=pred_dose.dtype)
-
         ptv_n = ptv_mask.sum()
         if ptv_n > 0:
-            ptv_dose = pred_dose * ptv_mask
             for rule in self.constraints["d_type"]["PTV_coverage"]:
-                frac = rule["fraction"]  # e.g. 0.95 normalised
-                # Underdose penalty per voxel (only inside PTV)
+                frac = rule["fraction"]
                 underdose = torch.relu(frac - pred_dose) * ptv_mask
                 loss_ptv = loss_ptv + (underdose ** 2).sum() / ptv_n
 
@@ -328,25 +324,42 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 overdose = torch.relu(pred_dose - max_norm) * ptv_mask
                 loss_ptv = loss_ptv + (overdose ** 2).sum() / ptv_n
 
-        # ------ 5. L_smooth (Total Variation) -----------------------
+        # ------ 5. L_Ring (Falloff shell penalty) -------------------
+        # Any ring voxel exceeding 55% of prescription (41.25/75 Gy = 0.55
+        # in normalised space) is penalised with a squared hinge loss.
+        # This prevents the EBRT model from simulating an isotropic
+        # brachytherapy-like dose cloud that floods lateral healthy tissue.
+        RING_THRESH = 0.55  # = 41.25 Gy / 75 Gy
+        ring_n = ring_mask.sum()
+        if ring_n > 0:
+            ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
+            loss_ring = (ring_overdose ** 2).sum() / ring_n
+        else:
+            loss_ring = torch.tensor(0.0, device=pred_dose.device,
+                                     dtype=pred_dose.dtype)
+
+        # ------ 6. L_smooth (Total Variation) -----------------------
         gd = pred_dose[:, :, 1:, :, :] - pred_dose[:, :, :-1, :, :]
         gh = pred_dose[:, :, :, 1:, :] - pred_dose[:, :, :, :-1, :]
         gw = pred_dose[:, :, :, :, 1:] - pred_dose[:, :, :, :, :-1]
-        loss_smooth = torch.mean(gd ** 2) + torch.mean(gh ** 2) + torch.mean(gw ** 2)
+        loss_smooth = (torch.mean(gd ** 2) + torch.mean(gh ** 2)
+                       + torch.mean(gw ** 2))
 
         # ------ Total -----------------------------------------------
         total = (
-            self.lambda_mse * loss_mse
-            + self.lambda_optimal * loss_optimal
+            self.lambda_mse       * loss_mse
+            + self.lambda_optimal * loss_optional
             + self.lambda_mandatory * loss_mandatory
-            + self.lambda_ptv * loss_ptv
-            + self.lambda_smooth * loss_smooth
+            + self.lambda_ptv     * loss_ptv
+            + self.lambda_ring    * loss_ring
+            + self.lambda_smooth  * loss_smooth
         )
         return total, {
-            "mse": loss_mse.item(),
-            "v_opt": loss_optimal.item(),
+            "mse":    loss_mse.item(),
+            "v_opt":  loss_optional.item(),
             "v_mand": loss_mandatory.item(),
-            "ptv": loss_ptv.item(),
+            "ptv":    loss_ptv.item(),
+            "ring":   loss_ring.item(),
             "smooth": loss_smooth.item(),
         }
 
@@ -369,10 +382,96 @@ def get_data_dicts():
     return data_dicts
 
 
-class CreateBoundaryMaskd(MapTransform):
+class Create5ClassCropMaskd(MapTransform):
     """
-    Builds a 4-class crop_mask for RandCropByLabelClassesd.
-    0=Background, 1=PTV, 2=Bladder, 3=Rectum
+    Builds a 5-class label map for RandCropByLabelClassesd.
+
+    Must run BEFORE NormalizeIntensityd so ch_0 still holds raw HU values.
+
+    Class 0 — Air / Absolute Background : CT < body_thresh_hu (outside body)
+    Class 1 — Healthy Tissue            : inside body, not PTV/Bladder/Rectum
+    Class 2 — PTV                       : PTV channel >= 0.5
+    Class 3 — Bladder                   : Bladder SDM <= 0.0
+    Class 4 — Rectum                    : Rectum SDM <= 0.0
+
+    Precedence (last-write wins, highest priority last):
+      Air → Healthy → PTV → Bladder → Rectum
+
+    Sampling ratios in train_transforms: [0, 1, 1, 1, 1]
+      → Class 0 (Air): 0 %   (never waste compute on empty space)
+      → Classes 1-4  : 25 % each  (perfectly balanced with num_samples=4)
+    """
+
+    def __init__(self, keys, body_thresh_hu: float = -300.0,
+                 allow_missing_keys: bool = False):
+        super().__init__(keys, allow_missing_keys)
+        self.body_thresh_hu = body_thresh_hu
+
+    def __call__(self, data):
+        d = dict(data)
+        # ch_0 contains raw HU values at this point (before NormalizeIntensityd)
+        ct      = d["ch_0"]           # (1, D, H, W)
+        ptv     = d["ch_1"] >= 0.5    # PTV binary mask
+        bladder = d["ch_2"] <= 0.0    # Bladder SDM: inside = <= 0
+        rectum  = d["ch_3"] <= 0.0    # Rectum  SDM: inside = <= 0
+        body    = ct >= self.body_thresh_hu   # Patient body vs air
+
+        # Start with Class 0 (Air) everywhere
+        crop_mask = torch.zeros_like(ct, dtype=torch.float32)
+        # Layer up in priority order (later writes win)
+        crop_mask[body]    = 1.0   # Healthy tissue
+        crop_mask[ptv]     = 2.0   # PTV
+        crop_mask[bladder] = 3.0   # Bladder
+        crop_mask[rectum]  = 4.0   # Rectum
+
+        d["crop_mask"] = crop_mask
+        return d
+
+
+# ===================================================================
+# 4b. Falloff Ring: morphological dilation of PTV by ~5 mm
+# ===================================================================
+
+def compute_ring_mask(ptv_binary: torch.Tensor) -> torch.Tensor:
+    """
+    3-D morphological dilation of a binary PTV mask, then subtract the
+    original PTV to obtain a hollow 5 mm shell.
+
+    Uses F.max_pool3d — pure PyTorch, works on any device (CPU / CUDA).
+
+    Kernel (5, 9, 9) with padding (2, 4, 4):
+      Z-axis : 2 voxels × 2.5 mm/vox = 5.0 mm
+      XY-axes: 4 voxels × 1.27 mm/vox ≈ 5.1 mm
+
+    Args:
+        ptv_binary: float tensor, either (1,D,H,W) or (B,1,D,H,W).
+    Returns:
+        ring float tensor with same shape.
+    """
+    needs_batch = ptv_binary.ndim == 4          # (1,D,H,W) — add batch dim
+    if needs_batch:
+        ptv_binary = ptv_binary.unsqueeze(0)    # → (1,1,D,H,W)
+
+    dilated = F.max_pool3d(
+        ptv_binary.float(),
+        kernel_size=(5, 9, 9),
+        stride=1,
+        padding=(2, 4, 4),
+    )
+    ring = torch.clamp(dilated - ptv_binary.float(), min=0.0)
+
+    if needs_batch:
+        ring = ring.squeeze(0)                  # back to (1,D,H,W)
+    return ring
+
+
+class CreateFalloffRingd(MapTransform):
+    """
+    Generates the 5 mm falloff ring mask around the PTV.
+
+    Must run AFTER Spacingd (so ch_1 is at TARGET_SPACING).
+    Can run before or after NormalizeIntensityd (uses ch_1 only).
+    Stores result under the key `ring_mask` for RandCropByLabelClassesd.
     """
 
     def __init__(self, keys, allow_missing_keys=False):
@@ -380,14 +479,8 @@ class CreateBoundaryMaskd(MapTransform):
 
     def __call__(self, data):
         d = dict(data)
-        ptv = d["ch_1"] >= 0.5
-        bladder = d["ch_2"] <= 0.0
-        rectum = d["ch_3"] <= 0.0
-        crop_mask = torch.zeros_like(d["ch_1"])
-        crop_mask[rectum] = 3.0
-        crop_mask[bladder] = 2.0
-        crop_mask[ptv] = 1.0
-        d["crop_mask"] = crop_mask
+        ptv = (d["ch_1"] >= 0.5).float()   # (1, D, H, W) on CPU in transforms
+        d["ring_mask"] = compute_ring_mask(ptv)
         return d
 
 
@@ -402,18 +495,33 @@ train_transforms = Compose(
             pixdim=TARGET_SPACING,
             mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear"),
         ),
+        # ── Build 5-class crop mask BEFORE CT normalisation ──────────────
+        # ch_0 must still contain raw HU values here so the body/air
+        # threshold (-300 HU) correctly separates patient tissue from air.
+        # After this transform, NormalizeIntensityd z-scores ch_0.
+        Create5ClassCropMaskd(keys=["ch_0"], body_thresh_hu=-300.0),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        CreateBoundaryMaskd(keys=["ch_1"]),
+        # ── Falloff ring mask (5 mm PTV shell) ───────────────────────────
+        # Runs after Spacingd (ch_1 at TARGET_SPACING) and before cropping
+        # so ring_mask is cropped identically to the image patches.
+        # Uses F.max_pool3d — pure PyTorch, no CPU/GPU round-trip.
+        CreateFalloffRingd(keys=["ch_1"]),
+        # ── Balanced 5-class patch sampling ──────────────────────────────
+        # ratios=[0,1,1,1,1] → Air never sampled; 25% per active class.
+        # num_samples=4 → exactly 1 patch per active class per patient,
+        # preventing the model from ignoring healthy tissue (the "brachytherapy
+        # loophole" where unpenalised dose floods lateral hip tissue).
+        # If CUDA OOM occurs, reduce num_samples to 2 (stochastic 50/50).
         RandCropByLabelClassesd(
-            keys=ALL_KEYS,
+            keys=ALL_KEYS + ["ring_mask"],   # ring_mask must be cropped too
             label_key="crop_mask",
             spatial_size=PATCH_SIZE,
-            num_classes=4,
-            ratios=[0.0, 1.0, 1.0, 1.0],
-            num_samples=6,   # 6 crops/volume: more diversity per step on 62 GB RAM
+            num_classes=5,
+            ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
+            num_samples=4,
         ),
         ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
-        ToTensord(keys=["image", "dose_label"]),
+        ToTensord(keys=["image", "dose_label", "ring_mask"]),
     ]
 )
 
@@ -489,30 +597,12 @@ def main():
     val_files   = data_dicts[n_train:]
     print(f"Split: {n_train} train  /  {n_val} val  (val_frac={val_frac:.0%})")
 
-    # ---- Logging setup ----------------------------------------------------
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
-    os.makedirs(log_dir, exist_ok=True)
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file  = os.path.join(log_dir, f"train_physics_{timestamp}.log")
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s  %(message)s",
-        datefmt="%H:%M:%S",
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(),
-        ],
-    )
-    log = logging.getLogger()
-    log.info(f"Log file: {log_file}")
-
-    # ---- Batch size and workers (tuned for RTX 4070 12 GB + 62 GB RAM) ----
-    # num_workers=4: PersistentDataset + multiprocessing can deadlock at high
-    # worker counts due to file-handle contention on the cache directory.
-    # 4 workers is the safe sweet-spot for NVMe + 28-core system.
+    # ---- Batch size and workers (env-var overrideable) ---------------
+    # BATCH_SIZE=2 doubles VRAM usage (each sample = 4 crops of 96³).
+    # For a 24 GB GPU, BATCH_SIZE=1 is safe; BATCH_SIZE=2 may work.
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
-    num_workers  = int(os.environ.get("NUM_WORKERS", "4"))   # safe for PersistentDataset
-    log.info(f"Batch size={batch_size}  num_workers={num_workers}")
+    num_workers  = min(os.cpu_count() or 4, 8)
+    print(f"Batch size={batch_size}  num_workers={num_workers}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
     os.makedirs(cache_dir, exist_ok=True)
@@ -526,8 +616,6 @@ def main():
         shuffle=True,
         num_workers=num_workers,
         pin_memory=torch.cuda.is_available(),
-        persistent_workers=(num_workers > 0),   # keep workers alive between epochs
-        prefetch_factor=2 if num_workers > 0 else None,
         collate_fn=list_data_collate,
     )
 
@@ -536,57 +624,57 @@ def main():
     )
     val_loader = DataLoader(
         val_ds,
-        batch_size=1,
+        batch_size=1,              # always 1 for val — sliding window handles the patch
         shuffle=False,
-        num_workers=2,                          # val: 2 workers is enough
+        num_workers=min(num_workers, 4),
         pin_memory=torch.cuda.is_available(),
-        persistent_workers=True,
     )
 
     # ---- Model -----------------------------------------------------
-    log.info("Building 3D U-Net...")
+    print("Building 3D U-Net...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = UNet(
         spatial_dims=3,
         in_channels=4,
         out_channels=1,
-        channels=(32, 64, 128, 256, 512),  # 2x capacity — fits 12 GB at fp16
+        channels=(16, 32, 64, 128, 256),
         strides=(2, 2, 2, 2),
-        num_res_units=3,                   # deeper residual blocks
+        num_res_units=2,
     ).to(device)
 
     # ---- Loss / Optimizer / Scheduler ------------------------------
     loss_function = PhysicsGuidedDoseLoss(
         constraints_dict=constraints,
-        lambda_mse=10.0,        
-        lambda_optimal=2.0,     
-        lambda_mandatory=25.0,  
-        lambda_ptv=10.0,       
-        lambda_smooth=0.1,      
+        lambda_mse=10.0,
+        lambda_optimal=2.0,
+        lambda_mandatory=25.0,
+        lambda_ptv=10.0,
+        lambda_ring=15.0,       # falloff shell penalty
+        lambda_smooth=0.1,
         k_steepness=50.0,
     )
 
-    optimizer = optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-5)
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     epochs = 100
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer, T_0=50, T_mult=2, eta_min=1e-6
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=epochs, eta_min=1e-6
     )
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
 
-    log.info(f"Model and dataloaders ready on {device}!")
-    log.info(f"Epochs={epochs}  Scheduler=CosineAnnealingWarmRestarts  "
-             f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
+    print(f"Model and dataloaders ready on {device}!")
+    print(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
+          f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
 
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
-        log.info(f"\nEpoch {epoch + 1}/{epochs}  "
-                 f"(lr={optimizer.param_groups[0]['lr']:.2e})")
+        print(f"\nEpoch {epoch + 1}/{epochs}  "
+              f"(lr={optimizer.param_groups[0]['lr']:.2e})")
 
         # ---- Train -------------------------------------------------
         model.train()
@@ -595,13 +683,15 @@ def main():
 
         for batch in train_loader:
             step += 1
-            inputs = batch["image"].to(device)
+            inputs  = batch["image"].to(device)
             targets = batch["dose_label"].to(device)
+            # ring_mask is pre-cropped to the patch size by RandCropByLabelClassesd
+            ring_mask_batch = batch["ring_mask"].to(device)
 
             # Normalise dose targets to [0, 1]
             normalized_targets = targets / PRESCRIPTION_DOSE_GY
 
-            # SDM -> binary masks  (Step 3 cross-check)
+            # SDM -> binary masks
             ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
 
             optimizer.zero_grad()
@@ -627,6 +717,7 @@ def main():
                 bladder_mask.float(),
                 rectum_mask.float(),
                 ptv_mask.float(),
+                ring_mask_batch.float(),
             )
 
             scaler.scale(loss).backward()
@@ -641,13 +732,14 @@ def main():
 
             train_loss_sum += loss.item()
             if step % 5 == 0 or step == len(train_loader):
-                log.info(
+                print(
                     f"  Step {step}/{len(train_loader)}  "
                     f"Loss={loss.item():.4f}  "
                     f"[mse={components['mse']:.4f}  "
                     f"v_opt={components['v_opt']:.5f}  "
                     f"v_mand={components['v_mand']:.5f}  "
                     f"ptv={components['ptv']:.4f}  "
+                    f"ring={components['ring']:.5f}  "
                     f"smooth={components['smooth']:.4f}]"
                 )
 
@@ -688,12 +780,18 @@ def main():
                 normalized_targets = targets / PRESCRIPTION_DOSE_GY
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
 
+                # Ring mask computed on-the-fly for validation.
+                # val_transforms has no cropping, so the full-volume ptv_mask
+                # already matches the full-volume sliding-window outputs.
+                ring_mask_val = compute_ring_mask(ptv_mask)
+
                 loss, _ = loss_function(
                     outputs_activated,
                     normalized_targets.float(),
                     bladder_mask.float(),
                     rectum_mask.float(),
                     ptv_mask.float(),
+                    ring_mask_val.float(),
                 )
                 val_loss_sum += loss.item()
 
