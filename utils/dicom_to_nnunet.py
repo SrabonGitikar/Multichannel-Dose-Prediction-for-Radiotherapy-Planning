@@ -9,6 +9,7 @@ Input channels:
   1 = PTV binary mask (highest-dose target)
   2 = Bladder signed distance map (mm, negative inside organ)
   3 = Anorectum signed distance map (mm, negative inside organ)
+  4 = IMRT Beam Prior (binary mask, 50mm cylinders along gantry angles)
 
 Label:
   RTDose in Gy (continuous values for regression)
@@ -18,7 +19,6 @@ import os
 import re
 import json
 import glob
-from dotenv import load_dotenv
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
@@ -27,107 +27,86 @@ import pydicom
 import SimpleITK as sitk
 # pyrefly: ignore [missing-import]
 from scipy.ndimage import distance_transform_edt
-# pyrefly: ignore [missing-import]
 from skimage.draw import polygon
 
+# ===========================================================================
 # CONFIGURATION
+# ===========================================================================
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(script_dir)
-    
-def load_config(project_root):
-    """
-    Load configuration from .env file.
-    Returns DATA_DIR path or None if not configured properly.
-    """
-    env_path = os.path.join(project_root, ".env")
-    
-    if not os.path.exists(env_path):
-        print(f"ERROR: Config file not found at {env_path}")
-        print("Please create a .env file with DATA_DIR variable")
-        return None
-    
-    load_dotenv(env_path)
-    print(f"Loaded configuration from: {env_path}")
-    
-    data_dir = os.getenv("DATA_DIR")
-    
-    if not data_dir:
-        print("ERROR: DATA_DIR not set in .env file")
-        print("Add to .env: DATA_DIR=/full/path/to/patient/data")
-        return None
-    
-    return data_dir
-
-
-# Load configuration
-DATA_DIR = load_config(project_root)
-if DATA_DIR is None:
-    exit(1)
-
-
-# Output directory (relative to project root)
-OUTPUT_DIR = os.path.join(project_root, "nnUNet_raw", "Dataset001_ProstateDose")
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
-print(f"DATA_DIR: {DATA_DIR}")
-print(f"OUTPUT_DIR: {OUTPUT_DIR}")
-
 # Structure name matching patterns (case-insensitive, priority order)
-# Updated based on ROI audit from 12 patients
-# We try each pattern in order and use the FIRST match found.
 STRUCTURE_PATTERNS = {
-    "CTV": [
-        r"^CTV_62/20$", 
-        r"^CTV62$",
-        r"^CTV 62$",
+    "PTV": [
+        r"^CTVP$", r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$", 
+        r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36", 
+        r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25", 
+        r"^CTV 25", r"^PTV 25",
     ],
     "Bladder": [
-        r"^Bladder$", 
-        r"^BLADDER",
+        r"^Bladder$", r"^BLADDER$",
     ],
     "Anorectum": [
-        r"^Anorectum$",
-        r"^ANORECTUM$",
+        r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$",
     ],
 }
 
+# ===========================================================================
+# HELPER FUNCTIONS
+# ===========================================================================
 
 def find_dicom_subdir(patient_dir):
-    """
-    Patient folders contain a study-UID subfolder with the actual DICOMs.
-    This function finds that subfolder.
-    """
     subdirs = [d for d in os.listdir(patient_dir)
                if os.path.isdir(os.path.join(patient_dir, d))]
     if len(subdirs) == 1:
         return os.path.join(patient_dir, subdirs[0])
-    # If multiple subdirs or none, return the patient dir itself
     return patient_dir
 
-
-def find_correct_rtstruct(dicom_dir):
+def sort_dicom_files(dicom_dir):
     """
-    When multiple RTStruct files exist, pick the one referenced by the RTPlan.
-    Returns the path to the correct RTStruct file.
+    Safely opens all files in a directory and sorts them by DICOM Modality.
+    This ignores filenames completely and relies on the DICOM header.
     """
-    plan_files = glob.glob(os.path.join(dicom_dir, "*RTPLAN*"))
-    struct_files = glob.glob(os.path.join(dicom_dir, "*RTSTRUCT*"))
+    sorted_files = {
+        "RTSTRUCT": [],
+        "RTPLAN": [],
+        "RTDOSE": []
+    }
+    
+    for fname in os.listdir(dicom_dir):
+        fpath = os.path.join(dicom_dir, fname)
+        if not os.path.isfile(fpath):
+            continue
+            
+        try:
+            # stop_before_pixels=True makes this extremely fast
+            ds = pydicom.dcmread(fpath, stop_before_pixels=True, force=True)
+            if hasattr(ds, 'Modality') and ds.Modality in sorted_files:
+                sorted_files[ds.Modality].append(fpath)
+        except Exception:
+            # Skip files that aren't valid DICOMs
+            pass
+            
+    return sorted_files
 
+def find_correct_rtstruct(plan_files, struct_files):
+    if not struct_files:
+        raise FileNotFoundError("No RTStruct files found in directory!")
+        
     if len(struct_files) == 1:
         return struct_files[0]
-
+        
     if not plan_files:
-        print("    WARNING: No RTPlan found, using first RTStruct")
+        print("    WARNING: Multiple RTStructs, but no RTPlan found. Using first RTStruct.")
         return struct_files[0]
 
-    # Read the RTPlan to find the referenced RTStruct UID
     plan_ds = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
     ref_uid = None
     if hasattr(plan_ds, 'ReferencedStructureSetSequence'):
         ref_uid = plan_ds.ReferencedStructureSetSequence[0].ReferencedSOPInstanceUID
 
-    # Match against available RTStruct files
     for sf in struct_files:
         ds = pydicom.dcmread(sf, stop_before_pixels=True)
         if ds.SOPInstanceUID == ref_uid:
@@ -136,38 +115,18 @@ def find_correct_rtstruct(dicom_dir):
     print("    WARNING: No RTStruct matched RTPlan reference, using first one")
     return struct_files[0]
 
-
 def match_structure_name(roi_names, structure_type):
-    """
-    Given a list of ROI names and a structure type (PTV, Bladder, Anorectum),
-    find the best matching ROI name using the priority-ordered regex patterns.
-    Returns the matched ROI name, or None if no match.
-    
-    Note: Uses case-sensitive matching to match exact ROI names only.
-    """
     patterns = STRUCTURE_PATTERNS[structure_type]
     for pattern in patterns:
         for name in roi_names:
-            if re.match(pattern, name):  # Case-sensitive exact match
+            if re.match(pattern, name, re.IGNORECASE):
                 return name
     return None
 
-
 def rtstruct_contour_to_mask(rs_ds, roi_name, ct_image):
-    """
-    Convert an RTStruct contour (identified by roi_name) into a 3D binary mask
-    aligned to the CT image grid.
-
-    How it works:
-    1. RTStruct stores organ boundaries as sequences of (x,y,z) points (contours)
-       on each CT slice.
-    2. We convert these physical coordinates to pixel indices on the CT grid.
-    3. We fill each polygon to create a binary mask slice-by-slice.
-    """
     ct_array = sitk.GetArrayFromImage(ct_image)
     mask = np.zeros(ct_array.shape, dtype=np.uint8)
 
-    # Find the ROI number for this name
     roi_number = None
     for roi in rs_ds.StructureSetROISequence:
         if roi.ROIName == roi_name:
@@ -175,10 +134,8 @@ def rtstruct_contour_to_mask(rs_ds, roi_name, ct_image):
             break
 
     if roi_number is None:
-        print(f"    WARNING: ROI '{roi_name}' not found in StructureSetROISequence")
         return mask
 
-    # Find the contour data for this ROI
     contour_seq = None
     for roi_contour in rs_ds.ROIContourSequence:
         if roi_contour.ReferencedROINumber == roi_number:
@@ -186,31 +143,19 @@ def rtstruct_contour_to_mask(rs_ds, roi_name, ct_image):
             break
 
     if contour_seq is None or not hasattr(contour_seq, 'ContourSequence'):
-        print(f"    WARNING: No contour data for ROI '{roi_name}'")
         return mask
 
-    # Process each contour (one per CT slice)
     for contour in contour_seq.ContourSequence:
-        # Get the 3D points: [x1, y1, z1, x2, y2, z2, ...]
         points = np.array(contour.ContourData, dtype=np.float64).reshape(-1, 3)
-
-        # Convert physical (x, y, z) to continuous pixel indices
-        # SimpleITK: index = image.TransformPhysicalPointToContinuousIndex((x, y, z))
         pixel_coords = []
         for pt in points:
-            idx = ct_image.TransformPhysicalPointToContinuousIndex(
-                (float(pt[0]), float(pt[1]), float(pt[2]))
-            )
+            idx = ct_image.TransformPhysicalPointToContinuousIndex((float(pt[0]), float(pt[1]), float(pt[2])))
             pixel_coords.append(idx)
 
         pixel_coords = np.array(pixel_coords)
-
-        # The Z index tells us which slice this contour belongs to
         slice_idx = int(round(pixel_coords[0, 2]))
 
         if 0 <= slice_idx < mask.shape[0]:
-            # Fill the polygon on this slice
-            # skimage.draw.polygon expects (row, col) = (Y_index, X_index)
             rows = pixel_coords[:, 1]
             cols = pixel_coords[:, 0]
             rr, cc = polygon(rows, cols, shape=mask.shape[1:])
@@ -218,119 +163,129 @@ def rtstruct_contour_to_mask(rs_ds, roi_name, ct_image):
 
     return mask
 
-
 def compute_signed_distance_map(binary_mask, spacing_mm):
-    """
-    Compute a signed distance map from a binary mask.
-
-    - Negative values = INSIDE the organ (danger zone)
-    - Positive values = OUTSIDE the organ (safer)
-    - Units: millimeters
-
-    The model learns: "the more negative, the deeper inside the organ;
-    the more positive, the further away and safer."
-    """
     if binary_mask.sum() == 0:
-        # If no mask, return all positive (far from any organ)
-        print("    WARNING: Empty mask, returning large positive distance")
         return np.ones_like(binary_mask, dtype=np.float32) * 100.0
-
-    # Distance from outside to the nearest organ surface
     dist_outside = distance_transform_edt(binary_mask == 0, sampling=spacing_mm)
-
-    # Distance from inside to the nearest organ surface
     dist_inside = distance_transform_edt(binary_mask == 1, sampling=spacing_mm)
+    return (dist_outside - dist_inside).astype(np.float32)
 
-    # Signed: negative inside, positive outside
-    signed_dist = dist_outside - dist_inside
-
-    return signed_dist.astype(np.float32)
-
-
-def load_rtdose_as_sitk(dicom_dir, ct_image):
-    """
-    Load the RTDose DICOM file and resample it onto the CT grid.
-
-    RTDose grids are typically coarser than CT and may cover a different region.
-    We resample to match the CT exactly so all channels are aligned.
-    """
-    dose_files = glob.glob(os.path.join(dicom_dir, "*RTDOSE*"))
+def load_rtdose_as_sitk(dose_files, ct_image):
     if not dose_files:
         raise FileNotFoundError("No RTDose file found!")
 
     ds = pydicom.dcmread(dose_files[0])
-
-    # Build the dose array in Gy
     dose_array = ds.pixel_array.astype(np.float64) * float(ds.DoseGridScaling)
-
-    # Construct a SimpleITK image from the dose array
     dose_image = sitk.GetImageFromArray(dose_array)
 
-    # Set the spatial metadata from the DICOM headers
     dose_origin = [float(x) for x in ds.ImagePositionPatient]
-    dose_spacing = [float(ds.PixelSpacing[1]),  # column spacing = X
-                    float(ds.PixelSpacing[0]),  # row spacing = Y
-                    float(ds.GridFrameOffsetVector[1]) - float(ds.GridFrameOffsetVector[0])]  # Z spacing
+    dose_spacing = [float(ds.PixelSpacing[1]), float(ds.PixelSpacing[0]), 
+                    float(ds.GridFrameOffsetVector[1]) - float(ds.GridFrameOffsetVector[0])]
     dose_image.SetOrigin(dose_origin)
     dose_image.SetSpacing(dose_spacing)
-    dose_image.SetDirection(ct_image.GetDirection())  # Assume same orientation as CT
+    dose_image.SetDirection(ct_image.GetDirection()) 
 
-    # Resample dose onto the CT grid
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(ct_image)
     resampler.SetInterpolator(sitk.sitkLinear)
     resampler.SetDefaultPixelValue(0.0)
-    dose_resampled = resampler.Execute(dose_image)
-
-    return dose_resampled
-
-
-def load_rtplan_prescription(dicom_dir):
-    """
-    Extract the prescribed dose (Gy) from the RTPlan DICOM.
-    """
-    plan_files = glob.glob(os.path.join(dicom_dir, "*RTPLAN*"))
-    if not plan_files:
-        return None
-
-    ds = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
-    if hasattr(ds, 'DoseReferenceSequence'):
-        for dr in ds.DoseReferenceSequence:
-            rx_dose = getattr(dr, 'TargetPrescriptionDose', None)
-            if rx_dose is not None:
-                return float(rx_dose)
-    return None
-
+    return resampler.Execute(dose_image)
 
 def numpy_to_sitk(array, reference_image):
-    """
-    Convert a NumPy array to a SimpleITK image, copying spatial metadata
-    from a reference image (the CT). This ensures all channels are aligned.
-    """
     sitk_image = sitk.GetImageFromArray(array)
     sitk_image.SetOrigin(reference_image.GetOrigin())
     sitk_image.SetSpacing(reference_image.GetSpacing())
     sitk_image.SetDirection(reference_image.GetDirection())
     return sitk_image
 
-# MAIN CONVERTER
+# ===========================================================================
+# IMRT BEAM PRIOR GENERATION (Channel 5)
+# ===========================================================================
+
+def generate_beam_mask(plan_files, ct_image, cylinder_radius_mm=50.0):
+    if not plan_files:
+        print("         WARNING: No RTPlan found for beam mask generation. Outputting empty mask.")
+        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
+
+    plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
+
+    isocenter_mm = None
+    gantry_angles_deg = []
+
+    if hasattr(plan, 'BeamSequence'):
+        for beam in plan.BeamSequence:
+            b_type = getattr(beam, 'BeamType', '')
+            d_type = getattr(beam, 'TreatmentDeliveryType', '')
+            if b_type == "STATIC" or d_type == "TREATMENT":
+                if hasattr(beam, 'ControlPointSequence') and len(beam.ControlPointSequence) > 0:
+                    cp0 = beam.ControlPointSequence[0]
+                    if isocenter_mm is None and hasattr(cp0, 'IsocenterPosition'):
+                        isocenter_mm = np.array(cp0.IsocenterPosition)
+                    if hasattr(cp0, 'GantryAngle'):
+                        gantry_angles_deg.append(float(cp0.GantryAngle))
+
+    if isocenter_mm is None or not gantry_angles_deg:
+        print("         WARNING: Could not extract Isocenter or Gantry Angles. Outputting empty mask.")
+        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
+
+    print(f"         Isocenter (mm): {isocenter_mm}")
+    print(f"         Gantry Angles: {gantry_angles_deg}")
+
+    # Vectorized SimpleITK physical mapping
+    shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
+    shape_xyz = (shape_zyx[2], shape_zyx[1], shape_zyx[0])
+
+    spacing = np.array(ct_image.GetSpacing())
+    origin = np.array(ct_image.GetOrigin())
+    direction = np.array(ct_image.GetDirection()).reshape(3, 3)
+
+    x_idx = np.arange(shape_xyz[0])
+    y_idx = np.arange(shape_xyz[1])
+    z_idx = np.arange(shape_xyz[2])
+    X_idx, Y_idx, Z_idx = np.meshgrid(x_idx, y_idx, z_idx, indexing='ij')
+
+    indices = np.stack([X_idx.ravel(), Y_idx.ravel(), Z_idx.ravel()], axis=1)
+    scaled_indices = indices * spacing
+    physical_points = origin + np.dot(scaled_indices, direction.T)
+
+    beam_mask_flat = np.zeros(len(physical_points), dtype=np.float32)
+
+    for angle in gantry_angles_deg:
+        theta_rad = np.deg2rad(angle)
+        # IEC 61217 to Cartesian direction mapping
+        beam_dir = np.array([np.sin(theta_rad), -np.cos(theta_rad), 0.0])
+        beam_dir = beam_dir / np.linalg.norm(beam_dir)
+
+        vec_to_iso = physical_points - isocenter_mm
+        projection_length = np.sum(vec_to_iso * beam_dir, axis=1)
+        projection_vec = projection_length[:, np.newaxis] * beam_dir
+        perp_distance = np.linalg.norm(vec_to_iso - projection_vec, axis=1)
+
+        beam_mask_flat[perp_distance <= cylinder_radius_mm] = 1.0
+
+    beam_mask_xyz = beam_mask_flat.reshape(shape_xyz[0], shape_xyz[1], shape_xyz[2])
+    return np.transpose(beam_mask_xyz, (2, 1, 0)) # Return as ZYX for SimpleITK
+
+
+# ===========================================================================
+# MAIN CONVERTER LOOP
+# ===========================================================================
 
 def convert_patient(patient_dir, case_id, images_dir, labels_dir):
-    """
-    Convert a single patient from DICOM to nnU-Net format.
-    Returns True on success, False on failure.
-    """
     pid = os.path.basename(patient_dir)[:12]
     print(f"\n{'='*60}")
     print(f"  Converting: {pid}...  (case_id: prostate_{case_id:03d})")
     print(f"{'='*60}")
 
     dicom_dir = find_dicom_subdir(patient_dir)
+    
+    # Sort files by DICOM Modality instead of filename
+    dicom_files = sort_dicom_files(dicom_dir)
+    plan_files = dicom_files.get("RTPLAN", [])
+    struct_files = dicom_files.get("RTSTRUCT", [])
+    dose_files = dicom_files.get("RTDOSE", [])
 
-    # Step 1: Load CT
-    # NOTE: Some patient folders have RTDose DICOMs that SimpleITK picks up
-    # as a second series, causing a 4D read. We filter to only CT files first.
-    print("  [1/6] Loading CT volume...")
+    print("  [1/7] Loading CT volume...")
     reader = sitk.ImageSeriesReader()
     series_ids = reader.GetGDCMSeriesIDs(dicom_dir)
     
@@ -338,8 +293,6 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         print("  *** SKIPPING: No DICOM series found in directory ***")
         return False
         
-    # Pick the series with the most files (this will be the CT scan, 
-    # whereas RTSTRUCT/RTPLAN/RTDOSE are single or few files)
     best_series = None
     best_count = 0
     for sid in series_ids:
@@ -355,158 +308,100 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     spacing = ct_image.GetSpacing()
     print(f"         Shape: {ct_array.shape}, Spacing: {spacing}")
 
-    # Sanity check: CT must be 3D
     if ct_image.GetDimension() != 3:
         print(f"  *** SKIPPING: CT is {ct_image.GetDimension()}D, expected 3D ***")
         return False
 
-    # Step 2: Find and load correct RTStruct
-    print("  [2/6] Parsing RTStruct contours...")
-    rs_file = find_correct_rtstruct(dicom_dir)
+    print("  [2/7] Parsing RTStruct contours...")
+    rs_file = find_correct_rtstruct(plan_files, struct_files)
     rs_ds = pydicom.dcmread(rs_file)
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
-    print(f"         Total ROIs: {len(roi_names)}")
 
-    # Match structure names (priority order: first pattern match wins)
-    ctv_name = match_structure_name(roi_names, "CTV")
+    ptv_name = match_structure_name(roi_names, "PTV")
     bladder_name = match_structure_name(roi_names, "Bladder")
     anorectum_name = match_structure_name(roi_names, "Anorectum")
 
-    print(f"         CTV matched:       '{ctv_name}'")
-    print(f"         Bladder matched:   '{bladder_name}'")
-    print(f"         Anorectum matched: '{anorectum_name}'")
-
-    if not all([ctv_name, bladder_name, anorectum_name]):
+    if not all([ptv_name, bladder_name, anorectum_name]):
         print(f"  *** SKIPPING: Could not match all required structures ***")
-        print(f"      Available: {roi_names}")
         return False
 
-    # Step 3: Rasterize contours into binary masks 
-    print("  [3/6] Rasterizing contour masks...")
-    ctv_mask = rtstruct_contour_to_mask(rs_ds, ctv_name, ct_image)
+    print("  [3/7] Rasterizing contour masks...")
+    ptv_mask = rtstruct_contour_to_mask(rs_ds, ptv_name, ct_image)
     bladder_mask = rtstruct_contour_to_mask(rs_ds, bladder_name, ct_image)
     anorectum_mask = rtstruct_contour_to_mask(rs_ds, anorectum_name, ct_image)
 
-    print(f"         CTV voxels:       {ctv_mask.sum():,}")
-    print(f"         Bladder voxels:   {bladder_mask.sum():,}")
-    print(f"         Anorectum voxels: {anorectum_mask.sum():,}")
-
-    if ctv_mask.sum() == 0:
-        print(f"  *** SKIPPING: CTV mask is empty ***")
+    if ptv_mask.sum() == 0:
+        print(f"  *** SKIPPING: PTV mask is empty ***")
         return False
 
-    # Step 4: Compute signed distance maps for OARs
-    print("  [4/6] Computing signed distance maps...")
-    # Spacing in (Z, Y, X) order for numpy arrays
+    print("  [4/7] Computing signed distance maps...")
     spacing_zyx = (spacing[2], spacing[1], spacing[0])
     bladder_sdm = compute_signed_distance_map(bladder_mask, spacing_zyx)
     anorectum_sdm = compute_signed_distance_map(anorectum_mask, spacing_zyx)
 
-    print(f"         Bladder SDM range:   [{bladder_sdm.min():.1f}, {bladder_sdm.max():.1f}] mm")
-    print(f"         Anorectum SDM range: [{anorectum_sdm.min():.1f}, {anorectum_sdm.max():.1f}] mm")
-
-    # Step 5: Load and resample RTDose 
-    print("  [5/6] Loading and resampling RTDose...")
-    dose_image = load_rtdose_as_sitk(dicom_dir, ct_image)
+    print("  [5/7] Loading and resampling RTDose...")
+    dose_image = load_rtdose_as_sitk(dose_files, ct_image)
     dose_array = sitk.GetArrayFromImage(dose_image)
-    rx_dose = load_rtplan_prescription(dicom_dir)
 
-    print(f"         Dose range: [{dose_array.min():.2f}, {dose_array.max():.2f}] Gy")
-    print(f"         Prescription: {rx_dose} Gy")
+    print("  [6/7] Generating IMRT Beam Prior (Channel 5)...")
+    beam_mask = generate_beam_mask(plan_files, ct_image, cylinder_radius_mm=50.0)
+    print(f"         Beam Prior Voxels: {beam_mask.sum():,}")
 
-    # Step 6: Save as NIfTI 
-    print("  [6/6] Saving NIfTI files...")
+    print("  [7/7] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
 
-    # Channel 0: CT (float32, raw HU)
-    ct_f32 = ct_array.astype(np.float32)
-    sitk.WriteImage(
-        numpy_to_sitk(ct_f32, ct_image),
-        os.path.join(images_dir, f"{case_name}_0000.nii.gz")
-    )
+    sitk.WriteImage(numpy_to_sitk(ct_array.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_0000.nii.gz"))
+    
+    sitk.WriteImage(numpy_to_sitk(ptv_mask.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_0001.nii.gz"))
+    
+    sitk.WriteImage(numpy_to_sitk(bladder_sdm, ct_image),
+                    os.path.join(images_dir, f"{case_name}_0002.nii.gz"))
+    
+    sitk.WriteImage(numpy_to_sitk(anorectum_sdm, ct_image),
+                    os.path.join(images_dir, f"{case_name}_0003.nii.gz"))
 
-    # Channel 1: CTV binary mask (float32, 0/1)
-    sitk.WriteImage(
-        numpy_to_sitk(ctv_mask.astype(np.float32), ct_image),
-        os.path.join(images_dir, f"{case_name}_0001.nii.gz")
-    )
+    # Channel 4: IMRT Beam Prior
+    sitk.WriteImage(numpy_to_sitk(beam_mask.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_0004.nii.gz"))
 
-    # Channel 2: Bladder signed distance map (float32, mm)
-    sitk.WriteImage(
-        numpy_to_sitk(bladder_sdm, ct_image),
-        os.path.join(images_dir, f"{case_name}_0002.nii.gz")
-    )
+    sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
+                    os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    # Channel 3: Anorectum signed distance map (float32, mm)
-    sitk.WriteImage(
-        numpy_to_sitk(anorectum_sdm, ct_image),
-        os.path.join(images_dir, f"{case_name}_0003.nii.gz")
-    )
-
-    # Label: RTDose (float32, Gy)
-    sitk.WriteImage(
-        numpy_to_sitk(dose_array.astype(np.float32), ct_image),
-        os.path.join(labels_dir, f"{case_name}.nii.gz")
-    )
-
-    print(f"  ✓ Done! Saved 4 input channels + 1 label for {case_name}")
+    print(f"  ✓ Done! Saved 5 input channels + 1 label for {case_name}")
     return True
 
-
 def create_dataset_json(output_dir, num_cases):
-    """
-    Create the dataset.json file required by nnU-Net.
-
-    This file tells nnU-Net:
-    - How many input channels exist and what they represent
-    - That this is a REGRESSION task (not segmentation)
-    - The file naming convention
-    """
     dataset_json = {
         "channel_names": {
             "0": "CT",
             "1": "PTV_mask",
             "2": "Bladder_SDM",
             "3": "Anorectum_SDM",
+            "4": "IMRT_Beam_Prior"
         },
-        "labels": {
-            "0": "dose"
-        },
+        "labels": {"0": "dose"},
         "numTraining": num_cases,
         "file_ending": ".nii.gz",
-
-        # nnU-Net v2 regression configuration:
-        # "regions_class_order" is omitted for regression
-        # The label is a continuous float volume (dose in Gy)
     }
-
     json_path = os.path.join(output_dir, "dataset.json")
     with open(json_path, 'w') as f:
         json.dump(dataset_json, f, indent=2)
-
     print(f"\n  dataset.json saved to {json_path}")
     return json_path
 
-
-# EXECUTION
-
 if __name__ == "__main__":
-    # Create output directories
     images_dir = os.path.join(OUTPUT_DIR, "imagesTr")
     labels_dir = os.path.join(OUTPUT_DIR, "labelsTr")
     os.makedirs(images_dir, exist_ok=True)
     os.makedirs(labels_dir, exist_ok=True)
 
-    # Get all patient directories
     patient_dirs = sorted([
         os.path.join(DATA_DIR, d) for d in os.listdir(DATA_DIR)
         if os.path.isdir(os.path.join(DATA_DIR, d))
     ])
 
-    print(f"Found {len(patient_dirs)} patients")
-    print(f"Output: {OUTPUT_DIR}")
-
-    # Convert each patient
     success_count = 0
     failed = []
     for i, pdir in enumerate(patient_dirs):
@@ -518,20 +413,10 @@ if __name__ == "__main__":
                 failed.append(os.path.basename(pdir)[:12])
         except Exception as e:
             print(f"\n  *** ERROR processing {os.path.basename(pdir)[:12]}: {e} ***")
-            import traceback
-            traceback.print_exc()
             failed.append(os.path.basename(pdir)[:12])
 
-    # Create dataset.json
     create_dataset_json(OUTPUT_DIR, success_count)
-
-    # Summary
     print(f"\n{'='*60}")
     print(f"CONVERSION SUMMARY")
     print(f"{'='*60}")
     print(f"  Successfully converted: {success_count}/{len(patient_dirs)}")
-    if failed:
-        print(f"  Failed: {failed}")
-    print(f"  Output directory: {OUTPUT_DIR}")
-    print(f"  Images: {images_dir}")
-    print(f"  Labels: {labels_dir}")
