@@ -56,7 +56,7 @@ DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
-CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum SDM
+CHANNELS = ["0000", "0001", "0002", "0003", "0004"]  # CT, PTV, Bladder SDM, Anorectum SDM, IMRT Beam Prior
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (96, 96, 96)
 
@@ -484,7 +484,7 @@ class CreateFalloffRingd(MapTransform):
         return d
 
 
-ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "dose_label"]
+ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "dose_label"]
 
 train_transforms = Compose(
     [
@@ -493,7 +493,7 @@ train_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear", "bilinear"),
         ),
         # ── Build 5-class crop mask BEFORE CT normalisation ──────────────
         # ch_0 must still contain raw HU values here so the body/air
@@ -520,7 +520,7 @@ train_transforms = Compose(
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
             num_samples=4,
         ),
-        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
+        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
         ToTensord(keys=["image", "dose_label", "ring_mask"]),
     ]
 )
@@ -532,10 +532,10 @@ val_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear", "bilinear"),
         ),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
+        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
         ToTensord(keys=["image", "dose_label"]),
     ]
 )
@@ -636,7 +636,7 @@ def main():
 
     model = UNet(
         spatial_dims=3,
-        in_channels=4,
+        in_channels=5,
         out_channels=1,
         channels=(16, 32, 64, 128, 256),
         strides=(2, 2, 2, 2),
