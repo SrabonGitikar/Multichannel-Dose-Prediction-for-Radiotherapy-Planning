@@ -1,0 +1,1465 @@
+2026-05-19 11:27:51 [INFO] Training log started: training_20260519_112751.log
+2026-05-19 11:27:51 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-05-19 11:27:51 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v2.csv ...
+2026-05-19 11:27:51 [INFO] Model ready on cuda, epochs=100, AMP=ON
+2026-05-19 11:27:51 [INFO] Epoch 1/100 started, lr=1.00e-04
+2026-05-19 11:27:56 [INFO] Step 5/54 Loss=111.6506 mse=0.6756 v_opt=4.41646 v_mand=3.73844 ptv=0.0920 ring=0.10630 smooth=0.8712
+2026-05-19 11:27:59 [INFO] Step 10/54 Loss=96.2094 mse=0.6542 v_opt=3.82590 v_mand=3.17937 ptv=0.1380 ring=0.06921 smooth=1.1337
+2026-05-19 11:28:01 [INFO] Step 15/54 Loss=109.1425 mse=0.8498 v_opt=4.24109 v_mand=3.57179 ptv=0.1099 ring=0.11167 smooth=0.9379
+2026-05-19 11:28:03 [INFO] Step 20/54 Loss=100.5099 mse=0.6273 v_opt=3.99311 v_mand=3.33653 ptv=0.1225 ring=0.10120 smooth=0.9461
+2026-05-19 11:28:07 [INFO] Step 25/54 Loss=88.3063 mse=0.7359 v_opt=3.46290 v_mand=2.84223 ptv=0.1852 ring=0.06558 smooth=1.2966
+2026-05-19 11:28:10 [INFO] Step 30/54 Loss=86.5217 mse=0.8831 v_opt=3.33640 v_mand=2.72636 ptv=0.1860 ring=0.05895 smooth=1.1558
+2026-05-19 11:28:12 [INFO] Step 35/54 Loss=82.6510 mse=0.6400 v_opt=3.27340 v_mand=2.66850 ptv=0.1988 ring=0.05898 smooth=1.1876
+2026-05-19 11:28:14 [INFO] Step 40/54 Loss=79.4160 mse=0.7798 v_opt=3.07186 v_mand=2.48181 ptv=0.2405 ring=0.05792 smooth=1.5485
+2026-05-19 11:28:19 [INFO] Step 45/54 Loss=77.8982 mse=0.7486 v_opt=3.02138 v_mand=2.43922 ptv=0.2719 ring=0.03509 smooth=1.4310
+2026-05-19 11:28:21 [INFO] Step 50/54 Loss=31.7269 mse=1.0558 v_opt=0.90252 v_mand=0.64182 ptv=0.2913 ring=0.01895 smooth=1.2143
+2026-05-19 11:28:23 [INFO] Step 54/54 Loss=10.4343 mse=1.0326 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=1.0837
+2026-05-19 11:28:23 [INFO] Running validation at epoch 1...
+2026-05-19 11:28:45 [INFO] Epoch 1 Summary: Train=85.6382 Val=77.6164 PTV_D95=45.98Gy Bladder=58.44Gy Rectum=50.53Gy
+2026-05-19 11:28:45 [INFO] [PHYSICS] Saved best model val_loss=77.6164
+2026-05-19 11:28:45 [INFO] [CLINICAL] Saved best model Score=107.695 PTV_D95=45.98Gy Bladder=58.44Gy Rectum=50.53Gy
+2026-05-19 11:28:45 [INFO] Epoch 2/100 started, lr=1.00e-04
+2026-05-19 11:28:51 [INFO] Step 5/54 Loss=75.6458 mse=1.0621 v_opt=2.79855 v_mand=2.23047 ptv=0.3274 ring=0.01632 smooth=1.4706
+2026-05-19 11:28:53 [INFO] Step 10/54 Loss=69.9843 mse=0.7182 v_opt=2.70665 v_mand=2.14561 ptv=0.2939 ring=0.04609 smooth=1.1845
+2026-05-19 11:28:56 [INFO] Step 15/54 Loss=67.3679 mse=0.7919 v_opt=2.56663 v_mand=2.02083 ptv=0.3281 ring=0.02483 smooth=1.4081
+2026-05-19 11:28:58 [INFO] Step 20/54 Loss=65.0524 mse=0.6861 v_opt=2.50853 v_mand=1.97143 ptv=0.3388 ring=0.02469 smooth=1.3015
+2026-05-19 11:29:03 [INFO] Step 25/54 Loss=66.2363 mse=0.8770 v_opt=2.48493 v_mand=1.94401 ptv=0.3213 ring=0.03959 smooth=0.8894
+2026-05-19 11:29:05 [INFO] Step 30/54 Loss=44.0256 mse=0.9451 v_opt=1.52918 v_mand=1.25685 ptv=0.0000 ring=0.00000 smooth=0.9443
+2026-05-19 11:29:08 [INFO] Step 35/54 Loss=60.7850 mse=0.7285 v_opt=2.31818 v_mand=1.79538 ptv=0.3637 ring=0.01759 smooth=0.7860
+2026-05-19 11:29:10 [INFO] Step 40/54 Loss=63.2926 mse=0.9257 v_opt=2.32888 v_mand=1.80534 ptv=0.3993 ring=0.00892 smooth=1.1859
+2026-05-19 11:29:15 [INFO] Step 45/54 Loss=60.0660 mse=0.8522 v_opt=2.22314 v_mand=1.71131 ptv=0.4050 ring=0.00945 smooth=1.2247
+2026-05-19 11:29:17 [INFO] Step 50/54 Loss=54.4927 mse=0.6587 v_opt=2.05999 v_mand=1.56989 ptv=0.3780 ring=0.04235 smooth=1.2303
+2026-05-19 11:29:19 [INFO] Step 54/54 Loss=56.0320 mse=0.8463 v_opt=2.05072 v_mand=1.56271 ptv=0.4026 ring=0.01769 smooth=1.0797
+2026-05-19 11:29:19 [INFO] Running validation at epoch 2...
+2026-05-19 11:29:41 [INFO] Epoch 2 Summary: Train=64.6348 Val=58.1509 PTV_D95=43.06Gy Bladder=55.27Gy Rectum=46.81Gy
+2026-05-19 11:29:41 [INFO] [PHYSICS] Saved best model val_loss=58.1509
+2026-05-19 11:29:41 [INFO] Epoch 3/100 started, lr=9.99e-05
+2026-05-19 11:29:46 [INFO] Step 5/54 Loss=59.8869 mse=0.8885 v_opt=2.19016 v_mand=1.68726 ptv=0.4001 ring=0.02601 smooth=0.4927
+2026-05-19 11:29:49 [INFO] Step 10/54 Loss=9.4068 mse=0.9354 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.5255
+2026-05-19 11:29:51 [INFO] Step 15/54 Loss=49.3370 mse=0.7071 v_opt=1.79779 v_mand=1.35419 ptv=0.4420 ring=0.01797 smooth=1.2641
+2026-05-19 11:29:54 [INFO] Step 20/54 Loss=48.0128 mse=0.8568 v_opt=1.69752 v_mand=1.26366 ptv=0.3964 ring=0.02698 smooth=0.8929
+2026-05-19 11:29:58 [INFO] Step 25/54 Loss=45.1715 mse=0.7925 v_opt=1.59775 v_mand=1.17675 ptv=0.3885 ring=0.04605 smooth=0.5726
+2026-05-19 11:30:01 [INFO] Step 30/54 Loss=43.5568 mse=0.7359 v_opt=1.55528 v_mand=1.13515 ptv=0.4260 ring=0.02379 smooth=0.9180
+2026-05-19 11:30:03 [INFO] Step 35/54 Loss=40.6860 mse=0.7331 v_opt=1.43268 v_mand=1.03307 ptv=0.3778 ring=0.05117 smooth=1.1663
+2026-05-19 11:30:06 [INFO] Step 40/54 Loss=42.0739 mse=0.9006 v_opt=1.38656 v_mand=1.01387 ptv=0.4378 ring=0.03211 smooth=0.8903
+2026-05-19 11:30:10 [INFO] Step 45/54 Loss=40.2246 mse=0.9044 v_opt=1.30106 v_mand=0.93807 ptv=0.4804 ring=0.01186 smooth=1.4438
+2026-05-19 11:30:13 [INFO] Step 50/54 Loss=36.5884 mse=0.8353 v_opt=1.21153 v_mand=0.84848 ptv=0.4095 ring=0.02216 smooth=1.7266
+2026-05-19 11:30:15 [INFO] Step 54/54 Loss=42.0322 mse=1.0984 v_opt=1.31330 v_mand=0.93742 ptv=0.4735 ring=0.00763 smooth=1.3670
+2026-05-19 11:30:15 [INFO] Running validation at epoch 3...
+2026-05-19 11:30:37 [INFO] Epoch 3 Summary: Train=44.1609 Val=35.9543 PTV_D95=37.42Gy Bladder=51.89Gy Rectum=40.34Gy
+2026-05-19 11:30:37 [INFO] [PHYSICS] Saved best model val_loss=35.9543
+2026-05-19 11:30:37 [INFO] Epoch 4/100 started, lr=9.98e-05
+2026-05-19 11:30:42 [INFO] Step 5/54 Loss=10.0652 mse=1.0010 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.5515
+2026-05-19 11:30:45 [INFO] Step 10/54 Loss=29.7017 mse=0.7573 v_opt=0.95082 v_mand=0.64517 ptv=0.3423 ring=0.03285 smooth=1.8176
+2026-05-19 11:30:47 [INFO] Step 15/54 Loss=27.2749 mse=0.8136 v_opt=0.82615 v_mand=0.53999 ptv=0.3604 ring=0.01749 smooth=1.2078
+2026-05-19 11:30:49 [INFO] Step 20/54 Loss=24.5878 mse=1.0143 v_opt=0.65043 v_mand=0.40133 ptv=0.2508 ring=0.03479 smooth=0.8063
+2026-05-19 11:30:53 [INFO] Step 25/54 Loss=25.9009 mse=0.9113 v_opt=0.74023 v_mand=0.45420 ptv=0.3506 ring=0.02106 smooth=1.3085
+2026-05-19 11:30:56 [INFO] Step 30/54 Loss=17.9652 mse=0.7785 v_opt=0.41426 v_mand=0.23899 ptv=0.2891 ring=0.02727 smooth=0.7640
+2026-05-19 11:30:58 [INFO] Step 35/54 Loss=22.8689 mse=0.8831 v_opt=0.58404 v_mand=0.34633 ptv=0.3833 ring=0.01571 smooth=1.4345
+2026-05-19 11:31:01 [INFO] Step 40/54 Loss=22.7776 mse=0.8700 v_opt=0.63793 v_mand=0.38756 ptv=0.2439 ring=0.03802 smooth=1.0346
+2026-05-19 11:31:05 [INFO] Step 45/54 Loss=16.3539 mse=0.7080 v_opt=0.37592 v_mand=0.19636 ptv=0.3267 ring=0.01820 smooth=0.7293
+2026-05-19 11:31:07 [INFO] Step 50/54 Loss=19.2151 mse=0.8973 v_opt=0.38077 v_mand=0.21009 ptv=0.3893 ring=0.01361 smooth=1.3149
+2026-05-19 11:31:09 [INFO] Step 54/54 Loss=19.1690 mse=0.8274 v_opt=0.41552 v_mand=0.23646 ptv=0.2857 ring=0.08045 smooth=0.8869
+2026-05-19 11:31:09 [INFO] Running validation at epoch 4...
+2026-05-19 11:31:31 [INFO] Epoch 4 Summary: Train=25.0276 Val=19.1069 PTV_D95=38.98Gy Bladder=36.97Gy Rectum=34.11Gy
+2026-05-19 11:31:31 [INFO] [PHYSICS] Saved best model val_loss=19.1069
+2026-05-19 11:31:31 [INFO] [CLINICAL] Saved best model Score=107.234 PTV_D95=38.98Gy Bladder=36.97Gy Rectum=34.11Gy
+2026-05-19 11:31:31 [INFO] Epoch 5/100 started, lr=9.96e-05
+2026-05-19 11:31:36 [INFO] Step 5/54 Loss=19.1824 mse=1.0497 v_opt=0.15613 v_mand=0.07061 ptv=0.6542 ring=0.00120 smooth=0.4843
+2026-05-19 11:31:39 [INFO] Step 10/54 Loss=15.4810 mse=0.8687 v_opt=0.27740 v_mand=0.13132 ptv=0.2704 ring=0.01329 smooth=0.5353
+2026-05-19 11:31:42 [INFO] Step 15/54 Loss=18.9026 mse=0.9166 v_opt=0.34683 v_mand=0.19133 ptv=0.4085 ring=0.00676 smooth=0.7308
+2026-05-19 11:31:44 [INFO] Step 20/54 Loss=14.0599 mse=0.6992 v_opt=0.30353 v_mand=0.15161 ptv=0.2125 ring=0.03158 smooth=0.7223
+2026-05-19 11:31:48 [INFO] Step 25/54 Loss=20.3581 mse=0.7586 v_opt=0.57552 v_mand=0.34618 ptv=0.2671 ring=0.01344 smooth=0.9441
+2026-05-19 11:31:51 [INFO] Step 30/54 Loss=12.5611 mse=0.7030 v_opt=0.21935 v_mand=0.10145 ptv=0.2098 ring=0.02600 smooth=0.6880
+2026-05-19 11:31:53 [INFO] Step 35/54 Loss=15.3419 mse=0.9267 v_opt=0.25901 v_mand=0.11927 ptv=0.1734 ring=0.05195 smooth=0.6175
+2026-05-19 11:31:56 [INFO] Step 40/54 Loss=12.2033 mse=0.6799 v_opt=0.22667 v_mand=0.10441 ptv=0.1856 ring=0.02890 smooth=0.5063
+2026-05-19 11:32:00 [INFO] Step 45/54 Loss=14.5426 mse=0.8239 v_opt=0.17080 v_mand=0.07902 ptv=0.3795 ring=0.00957 smooth=0.4781
+2026-05-19 11:32:03 [INFO] Step 50/54 Loss=13.4701 mse=0.8610 v_opt=0.21137 v_mand=0.08551 ptv=0.1908 ring=0.02176 smooth=0.6522
+2026-05-19 11:32:05 [INFO] Step 54/54 Loss=11.3078 mse=0.7538 v_opt=0.08735 v_mand=0.02484 ptv=0.2495 ring=0.02970 smooth=0.3381
+2026-05-19 11:32:05 [INFO] Running validation at epoch 5...
+2026-05-19 11:32:26 [INFO] Epoch 5 Summary: Train=16.0084 Val=13.9337 PTV_D95=40.49Gy Bladder=32.29Gy Rectum=31.78Gy
+2026-05-19 11:32:26 [INFO] [PHYSICS] Saved best model val_loss=13.9337
+2026-05-19 11:32:27 [INFO] [CLINICAL] Saved best model Score=98.019 PTV_D95=40.49Gy Bladder=32.29Gy Rectum=31.78Gy
+2026-05-19 11:32:27 [INFO] Epoch 6/100 started, lr=9.94e-05
+2026-05-19 11:32:32 [INFO] Step 5/54 Loss=13.8791 mse=0.7199 v_opt=0.14108 v_mand=0.05206 ptv=0.4883 ring=0.01034 smooth=0.5872
+2026-05-19 11:32:34 [INFO] Step 10/54 Loss=9.0742 mse=0.5799 v_opt=0.02196 v_mand=0.00032 ptv=0.2954 ring=0.01573 smooth=0.3373
+2026-05-19 11:32:36 [INFO] Step 15/54 Loss=15.0767 mse=0.6445 v_opt=0.26519 v_mand=0.12930 ptv=0.2353 ring=0.16585 smooth=0.2744
+2026-05-19 11:32:39 [INFO] Step 20/54 Loss=15.1705 mse=0.7646 v_opt=0.37954 v_mand=0.19089 ptv=0.1499 ring=0.03077 smooth=0.3253
+2026-05-19 11:32:44 [INFO] Step 25/54 Loss=10.7725 mse=0.7228 v_opt=0.07131 v_mand=0.01356 ptv=0.2797 ring=0.01599 smooth=0.2687
+2026-05-19 11:32:46 [INFO] Step 30/54 Loss=22.8573 mse=0.7541 v_opt=0.58257 v_mand=0.37237 ptv=0.2132 ring=0.17666 smooth=0.5999
+2026-05-19 11:32:48 [INFO] Step 35/54 Loss=10.8125 mse=0.7647 v_opt=0.14700 v_mand=0.05197 ptv=0.0839 ring=0.04505 smooth=0.5784
+2026-05-19 11:32:51 [INFO] Step 40/54 Loss=11.3756 mse=0.6414 v_opt=0.16882 v_mand=0.09106 ptv=0.2084 ring=0.01446 smooth=0.4716
+2026-05-19 11:32:56 [INFO] Step 45/54 Loss=10.3767 mse=0.7280 v_opt=0.13746 v_mand=0.05833 ptv=0.0882 ring=0.02982 smooth=0.3451
+2026-05-19 11:32:58 [INFO] Step 50/54 Loss=12.9160 mse=0.6549 v_opt=0.35305 v_mand=0.17415 ptv=0.0605 ring=0.04383 smooth=0.4484
+2026-05-19 11:33:00 [INFO] Step 54/54 Loss=9.6045 mse=0.6621 v_opt=0.04361 v_mand=0.00425 ptv=0.2180 ring=0.03883 smooth=0.2726
+2026-05-19 11:33:00 [INFO] Running validation at epoch 6...
+2026-05-19 11:33:22 [INFO] Epoch 6 Summary: Train=12.1886 Val=11.9090 PTV_D95=44.14Gy Bladder=30.91Gy Rectum=31.65Gy
+2026-05-19 11:33:22 [INFO] [PHYSICS] Saved best model val_loss=11.9090
+2026-05-19 11:33:22 [INFO] [CLINICAL] Saved best model Score=86.433 PTV_D95=44.14Gy Bladder=30.91Gy Rectum=31.65Gy
+2026-05-19 11:33:22 [INFO] Epoch 7/100 started, lr=9.91e-05
+2026-05-19 11:33:27 [INFO] Step 5/54 Loss=9.1023 mse=0.7250 v_opt=0.04072 v_mand=0.00356 ptv=0.1208 ring=0.02881 smooth=0.4183
+2026-05-19 11:33:29 [INFO] Step 10/54 Loss=12.3541 mse=0.7424 v_opt=0.25937 v_mand=0.12180 ptv=0.0440 ring=0.05914 smooth=0.3877
+2026-05-19 11:33:32 [INFO] Step 15/54 Loss=8.7935 mse=0.5510 v_opt=0.13361 v_mand=0.05853 ptv=0.0816 ring=0.04728 smooth=0.2786
+2026-05-19 11:33:34 [INFO] Step 20/54 Loss=11.7286 mse=0.7242 v_opt=0.22216 v_mand=0.10075 ptv=0.0835 ring=0.04415 smooth=0.2693
+2026-05-19 11:33:39 [INFO] Step 25/54 Loss=9.1951 mse=0.5989 v_opt=0.13282 v_mand=0.04778 ptv=0.1366 ring=0.02218 smooth=0.4734
+2026-05-19 11:33:41 [INFO] Step 30/54 Loss=19.7928 mse=0.6512 v_opt=0.60447 v_mand=0.36750 ptv=0.2486 ring=0.02182 smooth=0.7153
+2026-05-19 11:33:44 [INFO] Step 35/54 Loss=7.9833 mse=0.6007 v_opt=0.07470 v_mand=0.02424 ptv=0.0655 ring=0.03555 smooth=0.3241
+2026-05-19 11:33:46 [INFO] Step 40/54 Loss=8.0497 mse=0.5747 v_opt=0.01364 v_mand=0.00001 ptv=0.1810 ring=0.02824 smooth=0.4189
+2026-05-19 11:33:51 [INFO] Step 45/54 Loss=10.6774 mse=0.7542 v_opt=0.15606 v_mand=0.05909 ptv=0.0597 ring=0.04753 smooth=0.3552
+2026-05-19 11:33:53 [INFO] Step 50/54 Loss=11.5033 mse=0.7838 v_opt=0.19264 v_mand=0.07572 ptv=0.0865 ring=0.03338 smooth=0.2119
+2026-05-19 11:33:55 [INFO] Step 54/54 Loss=13.1904 mse=0.7531 v_opt=0.06356 v_mand=0.02308 ptv=0.4726 ring=0.01265 smooth=0.3991
+2026-05-19 11:33:56 [INFO] Running validation at epoch 7...
+2026-05-19 11:34:18 [INFO] Epoch 7 Summary: Train=10.2627 Val=10.2648 PTV_D95=47.51Gy Bladder=29.32Gy Rectum=27.76Gy
+2026-05-19 11:34:18 [INFO] [PHYSICS] Saved best model val_loss=10.2648
+2026-05-19 11:34:18 [INFO] [CLINICAL] Saved best model Score=73.998 PTV_D95=47.51Gy Bladder=29.32Gy Rectum=27.76Gy
+2026-05-19 11:34:18 [INFO] Epoch 8/100 started, lr=9.88e-05
+2026-05-19 11:34:23 [INFO] Step 5/54 Loss=8.8290 mse=0.6452 v_opt=0.09508 v_mand=0.02468 ptv=0.0900 ring=0.04332 smooth=0.1964
+2026-05-19 11:34:25 [INFO] Step 10/54 Loss=8.9029 mse=0.6311 v_opt=0.11335 v_mand=0.04378 ptv=0.0653 ring=0.03866 smooth=0.3691
+2026-05-19 11:34:28 [INFO] Step 15/54 Loss=10.1195 mse=0.6297 v_opt=0.17902 v_mand=0.09310 ptv=0.0568 ring=0.03625 smooth=0.2508
+2026-05-19 11:34:30 [INFO] Step 20/54 Loss=7.8709 mse=0.4495 v_opt=0.14828 v_mand=0.05712 ptv=0.0814 ring=0.05419 smooth=0.2466
+2026-05-19 11:34:34 [INFO] Step 25/54 Loss=8.8342 mse=0.5780 v_opt=0.15922 v_mand=0.06199 ptv=0.0612 ring=0.03681 smooth=0.2241
+2026-05-19 11:34:37 [INFO] Step 30/54 Loss=8.8527 mse=0.7175 v_opt=0.05536 v_mand=0.01571 ptv=0.0681 ring=0.03132 smooth=0.2399
+2026-05-19 11:34:39 [INFO] Step 35/54 Loss=6.5572 mse=0.5115 v_opt=0.04005 v_mand=0.00419 ptv=0.0507 ring=0.04874 smooth=0.1918
+2026-05-19 11:34:42 [INFO] Step 40/54 Loss=9.1687 mse=0.5562 v_opt=0.15810 v_mand=0.07613 ptv=0.0620 ring=0.04984 smooth=0.1954
+2026-05-19 11:34:47 [INFO] Step 45/54 Loss=7.1032 mse=0.5461 v_opt=0.00061 v_mand=0.00000 ptv=0.1340 ring=0.01846 smooth=0.2371
+2026-05-19 11:34:49 [INFO] Step 50/54 Loss=8.7804 mse=0.6691 v_opt=0.11160 v_mand=0.03661 ptv=0.0312 ring=0.04137 smooth=0.1928
+2026-05-19 11:34:51 [INFO] Step 54/54 Loss=12.8408 mse=0.6779 v_opt=0.06846 v_mand=0.01985 ptv=0.5387 ring=0.00099 smooth=0.2767
+2026-05-19 11:34:51 [INFO] Running validation at epoch 8...
+2026-05-19 11:35:13 [INFO] Epoch 8 Summary: Train=9.0510 Val=9.4863 PTV_D95=51.32Gy Bladder=28.09Gy Rectum=30.34Gy
+2026-05-19 11:35:13 [INFO] [PHYSICS] Saved best model val_loss=9.4863
+2026-05-19 11:35:13 [INFO] [CLINICAL] Saved best model Score=63.585 PTV_D95=51.32Gy Bladder=28.09Gy Rectum=30.34Gy
+2026-05-19 11:35:13 [INFO] Epoch 9/100 started, lr=9.84e-05
+2026-05-19 11:35:18 [INFO] Step 5/54 Loss=7.2796 mse=0.5044 v_opt=0.10785 v_mand=0.03791 ptv=0.0474 ring=0.03830 smooth=0.2385
+2026-05-19 11:35:21 [INFO] Step 10/54 Loss=10.4506 mse=0.5826 v_opt=0.19398 v_mand=0.08207 ptv=0.1594 ring=0.03734 smooth=0.3100
+2026-05-19 11:35:24 [INFO] Step 15/54 Loss=8.9531 mse=0.6424 v_opt=0.04793 v_mand=0.00911 ptv=0.1916 ring=0.01696 smooth=0.3559
+2026-05-19 11:35:26 [INFO] Step 20/54 Loss=6.9937 mse=0.5748 v_opt=0.02526 v_mand=0.00205 ptv=0.0529 ring=0.03953 smooth=0.2186
+2026-05-19 11:35:31 [INFO] Step 25/54 Loss=8.5913 mse=0.7344 v_opt=0.04960 v_mand=0.00705 ptv=0.0459 ring=0.03267 smooth=0.2227
+2026-05-19 11:35:33 [INFO] Step 30/54 Loss=7.9003 mse=0.5536 v_opt=0.11312 v_mand=0.03480 ptv=0.0658 ring=0.03872 smooth=0.2872
+2026-05-19 11:35:35 [INFO] Step 35/54 Loss=17.1180 mse=0.7428 v_opt=0.52978 v_mand=0.34433 ptv=0.0000 ring=0.00000 smooth=0.2247
+2026-05-19 11:35:38 [INFO] Step 40/54 Loss=6.9526 mse=0.5735 v_opt=0.01249 v_mand=0.00006 ptv=0.0766 ring=0.02732 smooth=0.1505
+2026-05-19 11:35:42 [INFO] Step 45/54 Loss=9.6728 mse=0.5703 v_opt=0.15895 v_mand=0.07926 ptv=0.0702 ring=0.06287 smooth=0.2527
+2026-05-19 11:35:44 [INFO] Step 50/54 Loss=6.3648 mse=0.6346 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1867
+2026-05-19 11:35:46 [INFO] Step 54/54 Loss=7.2499 mse=0.7228 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.2216
+2026-05-19 11:35:46 [INFO] Running validation at epoch 9...
+2026-05-19 11:36:08 [INFO] Epoch 9 Summary: Train=8.1280 Val=9.1205 PTV_D95=53.74Gy Bladder=28.53Gy Rectum=26.85Gy
+2026-05-19 11:36:08 [INFO] [PHYSICS] Saved best model val_loss=9.1205
+2026-05-19 11:36:08 [INFO] [CLINICAL] Saved best model Score=54.521 PTV_D95=53.74Gy Bladder=28.53Gy Rectum=26.85Gy
+2026-05-19 11:36:08 [INFO] Epoch 10/100 started, lr=9.80e-05
+2026-05-19 11:36:14 [INFO] Step 5/54 Loss=6.0012 mse=0.4242 v_opt=0.06893 v_mand=0.01889 ptv=0.0407 ring=0.04787 smooth=0.2387
+2026-05-19 11:36:16 [INFO] Step 10/54 Loss=7.9413 mse=0.4905 v_opt=0.14388 v_mand=0.05055 ptv=0.0682 ring=0.05154 smooth=0.2898
+2026-05-19 11:36:19 [INFO] Step 15/54 Loss=6.7813 mse=0.5275 v_opt=0.02700 v_mand=0.00052 ptv=0.1211 ring=0.01398 smooth=0.1825
+2026-05-19 11:36:21 [INFO] Step 20/54 Loss=12.1026 mse=0.6154 v_opt=0.31942 v_mand=0.16415 ptv=0.0345 ring=0.05567 smooth=0.2535
+2026-05-19 11:36:26 [INFO] Step 25/54 Loss=8.1080 mse=0.5212 v_opt=0.11248 v_mand=0.04898 ptv=0.0927 ring=0.03306 smooth=0.2312
+2026-05-19 11:36:28 [INFO] Step 30/54 Loss=6.9174 mse=0.5077 v_opt=0.06388 v_mand=0.02317 ptv=0.0690 ring=0.02847 smooth=0.1641
+2026-05-19 11:36:31 [INFO] Step 35/54 Loss=9.8982 mse=0.8824 v_opt=0.01518 v_mand=0.00054 ptv=0.0502 ring=0.03403 smooth=0.1755
+2026-05-19 11:36:33 [INFO] Step 40/54 Loss=6.7240 mse=0.5324 v_opt=0.06279 v_mand=0.00992 ptv=0.0345 ring=0.04387 smooth=0.2345
+2026-05-19 11:36:37 [INFO] Step 45/54 Loss=6.1294 mse=0.4372 v_opt=0.06153 v_mand=0.02131 ptv=0.0396 ring=0.04600 smooth=0.1534
+2026-05-19 11:36:39 [INFO] Step 50/54 Loss=7.1633 mse=0.4576 v_opt=0.14926 v_mand=0.05522 ptv=0.0450 ring=0.02921 smooth=0.2047
+2026-05-19 11:36:41 [INFO] Step 54/54 Loss=6.7155 mse=0.5399 v_opt=0.03675 v_mand=0.00338 ptv=0.0748 ring=0.02625 smooth=0.1770
+2026-05-19 11:36:41 [INFO] Running validation at epoch 10...
+2026-05-19 11:37:04 [INFO] Epoch 10 Summary: Train=8.0431 Val=8.5725 PTV_D95=51.81Gy Bladder=26.80Gy Rectum=29.28Gy
+2026-05-19 11:37:04 [INFO] [PHYSICS] Saved best model val_loss=8.5725
+2026-05-19 11:37:04 [INFO] Epoch 11/100 started, lr=9.76e-05
+2026-05-19 11:37:09 [INFO] Step 5/54 Loss=7.7617 mse=0.5519 v_opt=0.09894 v_mand=0.04206 ptv=0.0346 ring=0.04173 smooth=0.2108
+2026-05-19 11:37:11 [INFO] Step 10/54 Loss=6.7493 mse=0.5731 v_opt=0.01881 v_mand=0.00138 ptv=0.0402 ring=0.03522 smooth=0.1681
+2026-05-19 11:37:13 [INFO] Step 15/54 Loss=6.7299 mse=0.5649 v_opt=0.00894 v_mand=0.00000 ptv=0.0767 ring=0.01876 smooth=0.1499
+2026-05-19 11:37:16 [INFO] Step 20/54 Loss=10.4622 mse=0.5593 v_opt=0.24155 v_mand=0.10168 ptv=0.1608 ring=0.01414 smooth=0.2377
+2026-05-19 11:37:20 [INFO] Step 25/54 Loss=6.5777 mse=0.4949 v_opt=0.05849 v_mand=0.00951 ptv=0.0592 ring=0.04416 smooth=0.1959
+2026-05-19 11:37:23 [INFO] Step 30/54 Loss=5.8700 mse=0.3437 v_opt=0.11155 v_mand=0.04841 ptv=0.0480 ring=0.03315 smooth=0.2295
+2026-05-19 11:37:25 [INFO] Step 35/54 Loss=7.2470 mse=0.7228 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1929
+2026-05-19 11:37:28 [INFO] Step 40/54 Loss=5.3742 mse=0.4039 v_opt=0.03975 v_mand=0.00369 ptv=0.0689 ring=0.03069 smooth=0.1414
+2026-05-19 11:37:31 [INFO] Step 45/54 Loss=8.7463 mse=0.7163 v_opt=0.06220 v_mand=0.02164 ptv=0.0384 ring=0.03459 smooth=0.1486
+2026-05-19 11:37:35 [INFO] Step 50/54 Loss=7.1252 mse=0.6245 v_opt=0.01379 v_mand=0.00015 ptv=0.0517 ring=0.02105 smooth=0.1660
+2026-05-19 11:37:37 [INFO] Step 54/54 Loss=5.1878 mse=0.4055 v_opt=0.01828 v_mand=0.00069 ptv=0.0427 ring=0.04248 smooth=0.1400
+2026-05-19 11:37:37 [INFO] Running validation at epoch 11...
+2026-05-19 11:37:59 [INFO] Epoch 11 Summary: Train=7.2789 Val=8.3402 PTV_D95=56.29Gy Bladder=26.24Gy Rectum=30.53Gy
+2026-05-19 11:37:59 [INFO] [PHYSICS] Saved best model val_loss=8.3402
+2026-05-19 11:37:59 [INFO] [CLINICAL] Saved best model Score=48.863 PTV_D95=56.29Gy Bladder=26.24Gy Rectum=30.53Gy
+2026-05-19 11:37:59 [INFO] Epoch 12/100 started, lr=9.71e-05
+2026-05-19 11:38:05 [INFO] Step 5/54 Loss=6.4145 mse=0.4594 v_opt=0.07024 v_mand=0.02267 ptv=0.0445 ring=0.04358 smooth=0.1545
+2026-05-19 11:38:07 [INFO] Step 10/54 Loss=6.2491 mse=0.4540 v_opt=0.07451 v_mand=0.02678 ptv=0.0517 ring=0.02390 smooth=0.1459
+2026-05-19 11:38:10 [INFO] Step 15/54 Loss=6.4952 mse=0.5313 v_opt=0.02544 v_mand=0.00354 ptv=0.0733 ring=0.01974 smooth=0.1368
+2026-05-19 11:38:12 [INFO] Step 20/54 Loss=6.0162 mse=0.4679 v_opt=0.02926 v_mand=0.00504 ptv=0.0492 ring=0.04324 smooth=0.1243
+2026-05-19 11:38:16 [INFO] Step 25/54 Loss=6.6427 mse=0.5103 v_opt=0.00278 v_mand=0.00000 ptv=0.0703 ring=0.05441 smooth=0.1491
+2026-05-19 11:38:19 [INFO] Step 30/54 Loss=6.7699 mse=0.5024 v_opt=0.05235 v_mand=0.01195 ptv=0.0668 ring=0.04392 smooth=0.1578
+2026-05-19 11:38:21 [INFO] Step 35/54 Loss=6.3206 mse=0.5018 v_opt=0.03039 v_mand=0.00552 ptv=0.0751 ring=0.02244 smooth=0.1576
+2026-05-19 11:38:24 [INFO] Step 40/54 Loss=7.8786 mse=0.6941 v_opt=0.00000 v_mand=0.00000 ptv=0.0683 ring=0.01618 smooth=0.1147
+2026-05-19 11:38:28 [INFO] Step 45/54 Loss=5.5936 mse=0.4616 v_opt=0.03408 v_mand=0.00265 ptv=0.0365 ring=0.03107 smooth=0.1246
+2026-05-19 11:38:31 [INFO] Step 50/54 Loss=5.2164 mse=0.3995 v_opt=0.00033 v_mand=0.00000 ptv=0.0993 ring=0.01435 smooth=0.1186
+2026-05-19 11:38:33 [INFO] Step 54/54 Loss=7.6905 mse=0.5564 v_opt=0.12818 v_mand=0.04063 ptv=0.0345 ring=0.03287 smooth=0.1621
+2026-05-19 11:38:33 [INFO] Running validation at epoch 12...
+2026-05-19 11:38:55 [INFO] Epoch 12 Summary: Train=7.0793 Val=8.5598 PTV_D95=58.44Gy Bladder=28.00Gy Rectum=31.14Gy
+2026-05-19 11:38:55 [INFO] [CLINICAL] Saved best model Score=43.014 PTV_D95=58.44Gy Bladder=28.00Gy Rectum=31.14Gy
+2026-05-19 11:38:55 [INFO] Epoch 13/100 started, lr=9.65e-05
+2026-05-19 11:39:00 [INFO] Step 5/54 Loss=6.2636 mse=0.4898 v_opt=0.07360 v_mand=0.01824 ptv=0.0282 ring=0.03120 smooth=0.1259
+2026-05-19 11:39:03 [INFO] Step 10/54 Loss=6.2222 mse=0.5404 v_opt=0.00763 v_mand=0.00000 ptv=0.0507 ring=0.01896 smooth=0.1113
+2026-05-19 11:39:05 [INFO] Step 15/54 Loss=5.2221 mse=0.4055 v_opt=0.04035 v_mand=0.00356 ptv=0.0402 ring=0.03904 smooth=0.0966
+2026-05-19 11:39:08 [INFO] Step 20/54 Loss=5.7907 mse=0.4591 v_opt=0.03434 v_mand=0.00696 ptv=0.0354 ring=0.03947 smooth=0.1061
+2026-05-19 11:39:12 [INFO] Step 25/54 Loss=5.4867 mse=0.4511 v_opt=0.01145 v_mand=0.00000 ptv=0.0497 ring=0.02938 smooth=0.1509
+2026-05-19 11:39:15 [INFO] Step 30/54 Loss=7.3340 mse=0.6356 v_opt=0.03498 v_mand=0.00757 ptv=0.0336 ring=0.02469 smooth=0.1253
+2026-05-19 11:39:17 [INFO] Step 35/54 Loss=5.7496 mse=0.4845 v_opt=0.00000 v_mand=0.00000 ptv=0.0516 ring=0.02497 smooth=0.1443
+2026-05-19 11:39:19 [INFO] Step 40/54 Loss=7.5798 mse=0.6272 v_opt=0.00434 v_mand=0.00000 ptv=0.1030 ring=0.01679 smooth=0.1782
+2026-05-19 11:39:24 [INFO] Step 45/54 Loss=6.5266 mse=0.5521 v_opt=0.00743 v_mand=0.00000 ptv=0.0563 ring=0.02738 smooth=0.1650
+2026-05-19 11:39:26 [INFO] Step 50/54 Loss=4.9696 mse=0.4153 v_opt=0.01368 v_mand=0.00020 ptv=0.0278 ring=0.03298 smooth=0.1164
+2026-05-19 11:39:29 [INFO] Step 54/54 Loss=8.0332 mse=0.7320 v_opt=0.00000 v_mand=0.00000 ptv=0.0457 ring=0.01609 smooth=0.1499
+2026-05-19 11:39:29 [INFO] Running validation at epoch 13...
+2026-05-19 11:39:51 [INFO] Epoch 13 Summary: Train=6.4497 Val=8.1410 PTV_D95=55.27Gy Bladder=25.67Gy Rectum=32.27Gy
+2026-05-19 11:39:51 [INFO] [PHYSICS] Saved best model val_loss=8.1410
+2026-05-19 11:39:51 [INFO] Epoch 14/100 started, lr=9.59e-05
+2026-05-19 11:39:56 [INFO] Step 5/54 Loss=6.4075 mse=0.4832 v_opt=0.10032 v_mand=0.02594 ptv=0.0324 ring=0.02612 smooth=0.1136
+2026-05-19 11:39:59 [INFO] Step 10/54 Loss=6.1379 mse=0.5028 v_opt=0.03610 v_mand=0.00810 ptv=0.0426 ring=0.02651 smooth=0.1177
+2026-05-19 11:40:01 [INFO] Step 15/54 Loss=6.4195 mse=0.5285 v_opt=0.03128 v_mand=0.00591 ptv=0.0436 ring=0.03160 smooth=0.1376
+2026-05-19 11:40:03 [INFO] Step 20/54 Loss=5.3813 mse=0.4450 v_opt=0.00000 v_mand=0.00000 ptv=0.0569 ring=0.02324 smooth=0.1333
+2026-05-19 11:40:08 [INFO] Step 25/54 Loss=11.0937 mse=0.6693 v_opt=0.00473 v_mand=0.00000 ptv=0.4229 ring=0.00984 smooth=0.1527
+2026-05-19 11:40:11 [INFO] Step 30/54 Loss=9.7259 mse=0.4517 v_opt=0.31205 v_mand=0.14261 ptv=0.0247 ring=0.05077 smooth=0.1147
+2026-05-19 11:40:13 [INFO] Step 35/54 Loss=5.2120 mse=0.4278 v_opt=0.00012 v_mand=0.00000 ptv=0.0513 ring=0.02721 smooth=0.1221
+2026-05-19 11:40:16 [INFO] Step 40/54 Loss=5.3918 mse=0.4543 v_opt=0.00403 v_mand=0.00000 ptv=0.0499 ring=0.02209 smooth=0.1052
+2026-05-19 11:40:19 [INFO] Step 45/54 Loss=9.1045 mse=0.8120 v_opt=0.00864 v_mand=0.00000 ptv=0.0286 ring=0.04473 smooth=0.1065
+2026-05-19 11:40:22 [INFO] Step 50/54 Loss=5.7512 mse=0.4918 v_opt=0.01163 v_mand=0.00006 ptv=0.0286 ring=0.03399 smooth=0.1279
+2026-05-19 11:40:24 [INFO] Step 54/54 Loss=5.7972 mse=0.5780 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1750
+2026-05-19 11:40:24 [INFO] Running validation at epoch 14...
+2026-05-19 11:40:46 [INFO] Epoch 14 Summary: Train=6.5463 Val=7.9303 PTV_D95=57.19Gy Bladder=27.67Gy Rectum=29.15Gy
+2026-05-19 11:40:46 [INFO] [PHYSICS] Saved best model val_loss=7.9303
+2026-05-19 11:40:46 [INFO] Epoch 15/100 started, lr=9.53e-05
+2026-05-19 11:40:51 [INFO] Step 5/54 Loss=7.0712 mse=0.5240 v_opt=0.09287 v_mand=0.03628 ptv=0.0326 ring=0.02681 smooth=0.1022
+2026-05-19 11:40:54 [INFO] Step 10/54 Loss=4.5262 mse=0.3749 v_opt=0.00216 v_mand=0.00000 ptv=0.0440 ring=0.02147 smooth=0.1123
+2026-05-19 11:40:56 [INFO] Step 15/54 Loss=5.0862 mse=0.4213 v_opt=0.02434 v_mand=0.00298 ptv=0.0385 ring=0.02355 smooth=0.1196
+2026-05-19 11:40:59 [INFO] Step 20/54 Loss=6.5256 mse=0.4883 v_opt=0.07948 v_mand=0.02970 ptv=0.0315 ring=0.02762 smooth=0.1099
+2026-05-19 11:41:03 [INFO] Step 25/54 Loss=5.5484 mse=0.5532 v_opt=0.00214 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1195
+2026-05-19 11:41:06 [INFO] Step 30/54 Loss=6.9292 mse=0.6057 v_opt=0.02586 v_mand=0.00358 ptv=0.0453 ring=0.01764 smooth=0.1359
+2026-05-19 11:41:08 [INFO] Step 35/54 Loss=4.4211 mse=0.3608 v_opt=0.00000 v_mand=0.00000 ptv=0.0437 ring=0.02436 smooth=0.1010
+2026-05-19 11:41:11 [INFO] Step 40/54 Loss=7.1388 mse=0.5283 v_opt=0.10925 v_mand=0.03195 ptv=0.0341 ring=0.03245 smooth=0.1148
+2026-05-19 11:41:15 [INFO] Step 45/54 Loss=7.9009 mse=0.6932 v_opt=0.03641 v_mand=0.00825 ptv=0.0429 ring=0.01684 smooth=0.0846
+2026-05-19 11:41:17 [INFO] Step 50/54 Loss=4.5838 mse=0.3918 v_opt=0.00121 v_mand=0.00000 ptv=0.0317 ring=0.02256 smooth=0.0816
+2026-05-19 11:41:19 [INFO] Step 54/54 Loss=4.9643 mse=0.3755 v_opt=0.00170 v_mand=0.00000 ptv=0.0896 ring=0.01994 smooth=0.1082
+2026-05-19 11:41:19 [INFO] Running validation at epoch 15...
+2026-05-19 11:41:41 [INFO] Epoch 15 Summary: Train=6.6462 Val=7.6450 PTV_D95=59.83Gy Bladder=25.22Gy Rectum=26.96Gy
+2026-05-19 11:41:41 [INFO] [PHYSICS] Saved best model val_loss=7.6450
+2026-05-19 11:41:41 [INFO] [CLINICAL] Saved best model Score=34.685 PTV_D95=59.83Gy Bladder=25.22Gy Rectum=26.96Gy
+2026-05-19 11:41:41 [INFO] Epoch 16/100 started, lr=9.46e-05
+2026-05-19 11:41:46 [INFO] Step 5/54 Loss=6.0075 mse=0.4952 v_opt=0.03445 v_mand=0.00633 ptv=0.0279 ring=0.03604 smooth=0.0904
+2026-05-19 11:41:49 [INFO] Step 10/54 Loss=5.4853 mse=0.4593 v_opt=0.01550 v_mand=0.00000 ptv=0.0494 ring=0.02379 smooth=0.1080
+2026-05-19 11:41:51 [INFO] Step 15/54 Loss=6.1987 mse=0.4809 v_opt=0.06938 v_mand=0.01860 ptv=0.0325 ring=0.03003 smooth=0.1055
+2026-05-19 11:41:53 [INFO] Step 20/54 Loss=7.8660 mse=0.6820 v_opt=0.02840 v_mand=0.00366 ptv=0.0502 ring=0.02569 smooth=0.1079
+2026-05-19 11:41:58 [INFO] Step 25/54 Loss=5.8981 mse=0.4172 v_opt=0.07747 v_mand=0.02686 ptv=0.0414 ring=0.03147 smooth=0.1349
+2026-05-19 11:42:00 [INFO] Step 30/54 Loss=7.1748 mse=0.6470 v_opt=0.00781 v_mand=0.00000 ptv=0.0356 ring=0.02135 smooth=0.1239
+2026-05-19 11:42:03 [INFO] Step 35/54 Loss=4.5134 mse=0.3786 v_opt=0.01180 v_mand=0.00000 ptv=0.0390 ring=0.02021 smooth=0.1043
+2026-05-19 11:42:05 [INFO] Step 40/54 Loss=4.9195 mse=0.3842 v_opt=0.03994 v_mand=0.00979 ptv=0.0339 ring=0.02698 smooth=0.0942
+2026-05-19 11:42:10 [INFO] Step 45/54 Loss=6.1331 mse=0.6118 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1513
+2026-05-19 11:42:12 [INFO] Step 50/54 Loss=5.8638 mse=0.5849 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1432
+2026-05-19 11:42:14 [INFO] Step 54/54 Loss=5.3940 mse=0.3918 v_opt=0.03997 v_mand=0.00999 ptv=0.0822 ring=0.02085 smooth=0.1162
+2026-05-19 11:42:14 [INFO] Running validation at epoch 16...
+2026-05-19 11:42:36 [INFO] Epoch 16 Summary: Train=6.0713 Val=8.0767 PTV_D95=56.97Gy Bladder=29.11Gy Rectum=24.77Gy
+2026-05-19 11:42:36 [INFO] Epoch 17/100 started, lr=9.39e-05
+2026-05-19 11:42:41 [INFO] Step 5/54 Loss=4.9077 mse=0.4168 v_opt=0.00001 v_mand=0.00000 ptv=0.0349 ring=0.02548 smooth=0.0879
+2026-05-19 11:42:44 [INFO] Step 10/54 Loss=5.1568 mse=0.4407 v_opt=0.01494 v_mand=0.00000 ptv=0.0348 ring=0.02422 smooth=0.0817
+2026-05-19 11:42:46 [INFO] Step 15/54 Loss=6.0489 mse=0.6035 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1436
+2026-05-19 11:42:48 [INFO] Step 20/54 Loss=5.1699 mse=0.4366 v_opt=0.00818 v_mand=0.00000 ptv=0.0535 ring=0.01616 smooth=0.0926
+2026-05-19 11:42:53 [INFO] Step 25/54 Loss=5.3940 mse=0.4708 v_opt=0.00153 v_mand=0.00000 ptv=0.0418 ring=0.01708 smooth=0.0898
+2026-05-19 11:42:55 [INFO] Step 30/54 Loss=6.4699 mse=0.5706 v_opt=0.00658 v_mand=0.00000 ptv=0.0280 ring=0.03069 smooth=0.1046
+2026-05-19 11:42:57 [INFO] Step 35/54 Loss=5.3786 mse=0.4766 v_opt=0.01057 v_mand=0.00001 ptv=0.0307 ring=0.01833 smooth=0.0891
+2026-05-19 11:43:00 [INFO] Step 40/54 Loss=4.8890 mse=0.4184 v_opt=0.00138 v_mand=0.00000 ptv=0.0402 ring=0.01943 smooth=0.0886
+2026-05-19 11:43:05 [INFO] Step 45/54 Loss=6.7660 mse=0.5388 v_opt=0.04058 v_mand=0.00995 ptv=0.0607 ring=0.02873 smooth=0.1072
+2026-05-19 11:43:07 [INFO] Step 50/54 Loss=5.7019 mse=0.4524 v_opt=0.05653 v_mand=0.01325 ptv=0.0301 ring=0.02815 smooth=0.0999
+2026-05-19 11:43:09 [INFO] Step 54/54 Loss=7.2146 mse=0.6540 v_opt=0.00594 v_mand=0.00000 ptv=0.0337 ring=0.02121 smooth=0.0758
+2026-05-19 11:43:09 [INFO] Running validation at epoch 17...
+2026-05-19 11:43:31 [INFO] Epoch 17 Summary: Train=6.3158 Val=7.2102 PTV_D95=55.04Gy Bladder=24.89Gy Rectum=27.87Gy
+2026-05-19 11:43:31 [INFO] [PHYSICS] Saved best model val_loss=7.2102
+2026-05-19 11:43:31 [INFO] Epoch 18/100 started, lr=9.31e-05
+2026-05-19 11:43:36 [INFO] Step 5/54 Loss=5.8978 mse=0.4276 v_opt=0.10008 v_mand=0.02770 ptv=0.0365 ring=0.02362 smooth=0.0927
+2026-05-19 11:43:39 [INFO] Step 10/54 Loss=8.5221 mse=0.7717 v_opt=0.01688 v_mand=0.00090 ptv=0.0320 ring=0.02796 smooth=0.0931
+2026-05-19 11:43:41 [INFO] Step 15/54 Loss=5.6832 mse=0.4555 v_opt=0.05094 v_mand=0.01362 ptv=0.0270 ring=0.02701 smooth=0.1024
+2026-05-19 11:43:44 [INFO] Step 20/54 Loss=6.3841 mse=0.4641 v_opt=0.09182 v_mand=0.03468 ptv=0.0326 ring=0.02385 smooth=0.0930
+2026-05-19 11:43:47 [INFO] Step 25/54 Loss=4.7608 mse=0.3985 v_opt=0.01673 v_mand=0.00002 ptv=0.0388 ring=0.02310 smooth=0.0746
+2026-05-19 11:43:50 [INFO] Step 30/54 Loss=4.7924 mse=0.3828 v_opt=0.03192 v_mand=0.00476 ptv=0.0414 ring=0.02397 smooth=0.0830
+2026-05-19 11:43:53 [INFO] Step 35/54 Loss=5.4841 mse=0.4737 v_opt=0.00000 v_mand=0.00000 ptv=0.0502 ring=0.01581 smooth=0.0847
+2026-05-19 11:43:55 [INFO] Step 40/54 Loss=4.8787 mse=0.3977 v_opt=0.02859 v_mand=0.00477 ptv=0.0402 ring=0.02088 smooth=0.1044
+2026-05-19 11:43:59 [INFO] Step 45/54 Loss=5.2585 mse=0.4227 v_opt=0.04975 v_mand=0.00974 ptv=0.0298 ring=0.02532 smooth=0.1046
+2026-05-19 11:44:02 [INFO] Step 50/54 Loss=7.1220 mse=0.4677 v_opt=0.13348 v_mand=0.05994 ptv=0.0262 ring=0.02729 smooth=0.0884
+2026-05-19 11:44:04 [INFO] Step 54/54 Loss=5.2934 mse=0.4521 v_opt=0.00000 v_mand=0.00000 ptv=0.0466 ring=0.01980 smooth=0.0940
+2026-05-19 11:44:04 [INFO] Running validation at epoch 18...
+2026-05-19 11:44:26 [INFO] Epoch 18 Summary: Train=5.9412 Val=7.2020 PTV_D95=57.29Gy Bladder=24.71Gy Rectum=30.77Gy
+2026-05-19 11:44:26 [INFO] [PHYSICS] Saved best model val_loss=7.2020
+2026-05-19 11:44:26 [INFO] Epoch 19/100 started, lr=9.23e-05
+2026-05-19 11:44:30 [INFO] Step 5/54 Loss=5.8088 mse=0.4896 v_opt=0.02993 v_mand=0.00303 ptv=0.0334 ring=0.02895 smooth=0.0863
+2026-05-19 11:44:34 [INFO] Step 10/54 Loss=5.4947 mse=0.4768 v_opt=0.00099 v_mand=0.00000 ptv=0.0477 ring=0.01597 smooth=0.0825
+2026-05-19 11:44:36 [INFO] Step 15/54 Loss=6.0935 mse=0.4673 v_opt=0.00027 v_mand=0.00000 ptv=0.1146 ring=0.01762 smooth=0.0975
+2026-05-19 11:44:38 [INFO] Step 20/54 Loss=6.2417 mse=0.5278 v_opt=0.02608 v_mand=0.00378 ptv=0.0292 ring=0.03422 smooth=0.1122
+2026-05-19 11:44:41 [INFO] Step 25/54 Loss=5.3514 mse=0.4687 v_opt=0.00659 v_mand=0.00000 ptv=0.0363 ring=0.01855 smooth=0.0996
+2026-05-19 11:44:45 [INFO] Step 30/54 Loss=5.3079 mse=0.4525 v_opt=0.00328 v_mand=0.00000 ptv=0.0478 ring=0.01924 smooth=0.0902
+2026-05-19 11:44:48 [INFO] Step 35/54 Loss=4.8353 mse=0.3825 v_opt=0.00071 v_mand=0.00000 ptv=0.0720 ring=0.01865 smooth=0.0960
+2026-05-19 11:44:50 [INFO] Step 40/54 Loss=7.3026 mse=0.4641 v_opt=0.13607 v_mand=0.05580 ptv=0.0442 ring=0.03616 smooth=0.0952
+2026-05-19 11:44:53 [INFO] Step 45/54 Loss=5.5972 mse=0.4764 v_opt=0.04012 v_mand=0.00278 ptv=0.0278 ring=0.02643 smooth=0.0818
+2026-05-19 11:44:56 [INFO] Step 50/54 Loss=6.2782 mse=0.4768 v_opt=0.06205 v_mand=0.02064 ptv=0.0565 ring=0.01978 smooth=0.0822
+2026-05-19 11:44:58 [INFO] Step 54/54 Loss=6.9854 mse=0.5817 v_opt=0.03587 v_mand=0.00799 ptv=0.0523 ring=0.02383 smooth=0.1560
+2026-05-19 11:44:58 [INFO] Running validation at epoch 19...
+2026-05-19 11:45:21 [INFO] Epoch 19 Summary: Train=5.8668 Val=7.2934 PTV_D95=52.67Gy Bladder=24.74Gy Rectum=24.20Gy
+2026-05-19 11:45:21 [INFO] Epoch 20/100 started, lr=9.14e-05
+2026-05-19 11:45:26 [INFO] Step 5/54 Loss=7.4499 mse=0.6688 v_opt=0.02210 v_mand=0.00235 ptv=0.0329 ring=0.02147 smooth=0.0797
+2026-05-19 11:45:28 [INFO] Step 10/54 Loss=8.3720 mse=0.7334 v_opt=0.02064 v_mand=0.00191 ptv=0.0482 ring=0.03052 smooth=0.0903
+2026-05-19 11:45:31 [INFO] Step 15/54 Loss=6.5512 mse=0.5658 v_opt=0.00672 v_mand=0.00000 ptv=0.0567 ring=0.02001 smooth=0.1220
+2026-05-19 11:45:33 [INFO] Step 20/54 Loss=6.2469 mse=0.6234 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.1308
+2026-05-19 11:45:38 [INFO] Step 25/54 Loss=4.6768 mse=0.3881 v_opt=0.03769 v_mand=0.00274 ptv=0.0340 ring=0.02025 smooth=0.0874
+2026-05-19 11:45:40 [INFO] Step 30/54 Loss=5.7591 mse=0.5160 v_opt=0.00572 v_mand=0.00000 ptv=0.0337 ring=0.01585 smooth=0.1282
+2026-05-19 11:45:43 [INFO] Step 35/54 Loss=5.0682 mse=0.4289 v_opt=0.01506 v_mand=0.00052 ptv=0.0313 ring=0.02769 smooth=0.0756
+2026-05-19 11:45:46 [INFO] Step 40/54 Loss=4.7931 mse=0.4004 v_opt=0.01220 v_mand=0.00006 ptv=0.0314 ring=0.02932 smooth=0.0969
+2026-05-19 11:45:49 [INFO] Step 45/54 Loss=6.1847 mse=0.5142 v_opt=0.04134 v_mand=0.00329 ptv=0.0378 ring=0.03262 smooth=0.1099
+2026-05-19 11:45:52 [INFO] Step 50/54 Loss=7.2210 mse=0.5328 v_opt=0.11428 v_mand=0.03897 ptv=0.0292 ring=0.02578 smooth=0.1074
+2026-05-19 11:45:54 [INFO] Step 54/54 Loss=4.4107 mse=0.3558 v_opt=0.02072 v_mand=0.00193 ptv=0.0389 ring=0.02445 smooth=0.0736
+2026-05-19 11:45:54 [INFO] Running validation at epoch 20...
+2026-05-19 11:46:16 [INFO] Epoch 20 Summary: Train=6.8249 Val=7.1592 PTV_D95=53.35Gy Bladder=24.59Gy Rectum=25.79Gy
+2026-05-19 11:46:16 [INFO] [PHYSICS] Saved best model val_loss=7.1592
+2026-05-19 11:46:16 [INFO] Epoch 21/100 started, lr=9.05e-05
+2026-05-19 11:46:22 [INFO] Step 5/54 Loss=4.9841 mse=0.4353 v_opt=0.00877 v_mand=0.00000 ptv=0.0315 ring=0.01948 smooth=0.0684
+2026-05-19 11:46:24 [INFO] Step 10/54 Loss=4.4974 mse=0.3262 v_opt=0.06320 v_mand=0.01000 ptv=0.0264 ring=0.03917 smooth=0.0708
+2026-05-19 11:46:27 [INFO] Step 15/54 Loss=4.5189 mse=0.3715 v_opt=0.00170 v_mand=0.00000 ptv=0.0596 ring=0.01298 smooth=0.1017
+2026-05-19 11:46:29 [INFO] Step 20/54 Loss=5.1459 mse=0.4496 v_opt=0.00000 v_mand=0.00000 ptv=0.0387 ring=0.01703 smooth=0.0775
+2026-05-19 11:46:34 [INFO] Step 25/54 Loss=4.9328 mse=0.3924 v_opt=0.05299 v_mand=0.00472 ptv=0.0303 ring=0.03166 smooth=0.0715
+2026-05-19 11:46:36 [INFO] Step 30/54 Loss=5.3608 mse=0.3755 v_opt=0.08625 v_mand=0.02876 ptv=0.0282 ring=0.02813 smooth=0.0994
+2026-05-19 11:46:38 [INFO] Step 35/54 Loss=5.6948 mse=0.5041 v_opt=0.03075 v_mand=0.00107 ptv=0.0283 ring=0.01825 smooth=0.0968
+2026-05-19 11:46:41 [INFO] Step 40/54 Loss=5.6084 mse=0.4496 v_opt=0.00020 v_mand=0.00000 ptv=0.0700 ring=0.02676 smooth=0.1047
+2026-05-19 11:46:45 [INFO] Step 45/54 Loss=6.6599 mse=0.4926 v_opt=0.08701 v_mand=0.03340 ptv=0.0301 ring=0.02762 smooth=0.0987
+2026-05-19 11:46:48 [INFO] Step 50/54 Loss=6.0063 mse=0.5321 v_opt=0.00440 v_mand=0.00000 ptv=0.0329 ring=0.02249 smooth=0.1067
+2026-05-19 11:46:50 [INFO] Step 54/54 Loss=6.3425 mse=0.5447 v_opt=0.00830 v_mand=0.00000 ptv=0.0672 ring=0.01305 smooth=0.1063
+2026-05-19 11:46:50 [INFO] Running validation at epoch 21...
+2026-05-19 11:47:12 [INFO] Epoch 21 Summary: Train=5.4907 Val=6.8825 PTV_D95=55.80Gy Bladder=24.48Gy Rectum=23.77Gy
+2026-05-19 11:47:12 [INFO] [PHYSICS] Saved best model val_loss=6.8825
+2026-05-19 11:47:12 [INFO] Epoch 22/100 started, lr=8.96e-05
+2026-05-19 11:47:17 [INFO] Step 5/54 Loss=5.0458 mse=0.4232 v_opt=0.02760 v_mand=0.00282 ptv=0.0253 ring=0.02839 smooth=0.0972
+2026-05-19 11:47:20 [INFO] Step 10/54 Loss=5.7674 mse=0.4785 v_opt=0.03556 v_mand=0.00743 ptv=0.0238 ring=0.03197 smooth=0.0854
+2026-05-19 11:47:22 [INFO] Step 15/54 Loss=4.2166 mse=0.3479 v_opt=0.00614 v_mand=0.00000 ptv=0.0423 ring=0.01972 smooth=0.0689
+2026-05-19 11:47:25 [INFO] Step 20/54 Loss=4.9065 mse=0.4208 v_opt=0.00181 v_mand=0.00000 ptv=0.0411 ring=0.01831 smooth=0.0878
+2026-05-19 11:47:29 [INFO] Step 25/54 Loss=7.1967 mse=0.4748 v_opt=0.09812 v_mand=0.04276 ptv=0.0581 ring=0.03929 smooth=0.1312
+2026-05-19 11:47:32 [INFO] Step 30/54 Loss=5.0377 mse=0.4210 v_opt=0.03174 v_mand=0.00552 ptv=0.0304 ring=0.02096 smooth=0.0704
+2026-05-19 11:47:34 [INFO] Step 35/54 Loss=7.2463 mse=0.5304 v_opt=0.10377 v_mand=0.04402 ptv=0.0297 ring=0.02187 smooth=0.0909
+2026-05-19 11:47:37 [INFO] Step 40/54 Loss=6.1973 mse=0.5572 v_opt=0.00732 v_mand=0.00000 ptv=0.0369 ring=0.01549 smooth=0.0905
+2026-05-19 11:47:41 [INFO] Step 45/54 Loss=6.0210 mse=0.5268 v_opt=0.00031 v_mand=0.00000 ptv=0.0439 ring=0.02032 smooth=0.0796
+2026-05-19 11:47:43 [INFO] Step 50/54 Loss=6.5726 mse=0.5457 v_opt=0.06887 v_mand=0.00905 ptv=0.0244 ring=0.03329 smooth=0.0886
+2026-05-19 11:47:45 [INFO] Step 54/54 Loss=4.0245 mse=0.2990 v_opt=0.03642 v_mand=0.00640 ptv=0.0320 ring=0.03162 smooth=0.0747
+2026-05-19 11:47:45 [INFO] Running validation at epoch 22...
+2026-05-19 11:48:07 [INFO] Epoch 22 Summary: Train=5.6182 Val=7.1369 PTV_D95=58.79Gy Bladder=26.79Gy Rectum=26.40Gy
+2026-05-19 11:48:07 [INFO] Epoch 23/100 started, lr=8.86e-05
+2026-05-19 11:48:13 [INFO] Step 5/54 Loss=5.9178 mse=0.4032 v_opt=0.10021 v_mand=0.03944 ptv=0.0467 ring=0.01503 smooth=0.0661
+2026-05-19 11:48:15 [INFO] Step 10/54 Loss=5.6146 mse=0.4544 v_opt=0.03698 v_mand=0.00564 ptv=0.0612 ring=0.01572 smooth=0.0734
+2026-05-19 11:48:18 [INFO] Step 15/54 Loss=4.8678 mse=0.4083 v_opt=0.00013 v_mand=0.00000 ptv=0.0626 ring=0.00997 smooth=0.0890
+2026-05-19 11:48:20 [INFO] Step 20/54 Loss=7.5473 mse=0.5348 v_opt=0.10663 v_mand=0.04680 ptv=0.0298 ring=0.03389 smooth=0.1038
+2026-05-19 11:48:25 [INFO] Step 25/54 Loss=5.2904 mse=0.4634 v_opt=0.01464 v_mand=0.00044 ptv=0.0296 ring=0.02057 smooth=0.1172
+2026-05-19 11:48:27 [INFO] Step 30/54 Loss=5.3141 mse=0.3809 v_opt=0.07472 v_mand=0.02500 ptv=0.0466 ring=0.01705 smooth=0.0955
+2026-05-19 11:48:30 [INFO] Step 35/54 Loss=4.2484 mse=0.3538 v_opt=0.01688 v_mand=0.00090 ptv=0.0436 ring=0.01399 smooth=0.0769
+2026-05-19 11:48:32 [INFO] Step 40/54 Loss=7.2756 mse=0.6508 v_opt=0.01625 v_mand=0.00040 ptv=0.0274 ring=0.02932 smooth=0.1207
+2026-05-19 11:48:36 [INFO] Step 45/54 Loss=5.0692 mse=0.4284 v_opt=0.02207 v_mand=0.00139 ptv=0.0287 ring=0.02747 smooth=0.0705
+2026-05-19 11:48:38 [INFO] Step 50/54 Loss=5.4980 mse=0.4727 v_opt=0.02390 v_mand=0.00298 ptv=0.0300 ring=0.02261 smooth=0.0983
+2026-05-19 11:48:40 [INFO] Step 54/54 Loss=4.2443 mse=0.3526 v_opt=0.01714 v_mand=0.00077 ptv=0.0394 ring=0.01749 smooth=0.0775
+2026-05-19 11:48:40 [INFO] Running validation at epoch 23...
+2026-05-19 11:49:02 [INFO] Epoch 23 Summary: Train=6.2401 Val=7.0476 PTV_D95=55.69Gy Bladder=25.04Gy Rectum=25.07Gy
+2026-05-19 11:49:02 [INFO] Epoch 24/100 started, lr=8.76e-05
+2026-05-19 11:49:07 [INFO] Step 5/54 Loss=4.7898 mse=0.4136 v_opt=0.00074 v_mand=0.00000 ptv=0.0420 ring=0.01500 smooth=0.0665
+2026-05-19 11:49:09 [INFO] Step 10/54 Loss=4.6352 mse=0.3964 v_opt=0.00006 v_mand=0.00000 ptv=0.0288 ring=0.02499 smooth=0.0882
+2026-05-19 11:49:12 [INFO] Step 15/54 Loss=4.5553 mse=0.3905 v_opt=0.00038 v_mand=0.00000 ptv=0.0282 ring=0.02405 smooth=0.0739
+2026-05-19 11:49:14 [INFO] Step 20/54 Loss=4.3982 mse=0.3670 v_opt=0.01619 v_mand=0.00074 ptv=0.0280 ring=0.02590 smooth=0.0799
+2026-05-19 11:49:18 [INFO] Step 25/54 Loss=3.9659 mse=0.3236 v_opt=0.02356 v_mand=0.00016 ptv=0.0312 ring=0.02406 smooth=0.0595
+2026-05-19 11:49:21 [INFO] Step 30/54 Loss=7.1024 mse=0.6519 v_opt=0.00999 v_mand=0.00000 ptv=0.0264 ring=0.01955 smooth=0.0572
+2026-05-19 11:49:24 [INFO] Step 35/54 Loss=5.2789 mse=0.4561 v_opt=0.00370 v_mand=0.00000 ptv=0.0327 ring=0.02499 smooth=0.0854
+2026-05-19 11:49:27 [INFO] Step 40/54 Loss=5.2380 mse=0.4076 v_opt=0.07074 v_mand=0.01319 ptv=0.0216 ring=0.03118 smooth=0.0696
+2026-05-19 11:49:30 [INFO] Step 45/54 Loss=5.9272 mse=0.4428 v_opt=0.07042 v_mand=0.02317 ptv=0.0484 ring=0.01922 smooth=0.0728
+2026-05-19 11:49:33 [INFO] Step 50/54 Loss=6.4419 mse=0.5139 v_opt=0.07131 v_mand=0.02205 ptv=0.0269 ring=0.02212 smooth=0.0814
+2026-05-19 11:49:35 [INFO] Step 54/54 Loss=6.5527 mse=0.5161 v_opt=0.06651 v_mand=0.02206 ptv=0.0378 ring=0.02132 smooth=0.0951
+2026-05-19 11:49:35 [INFO] Running validation at epoch 24...
+2026-05-19 11:49:57 [INFO] Epoch 24 Summary: Train=5.8757 Val=6.9538 PTV_D95=54.56Gy Bladder=25.04Gy Rectum=28.69Gy
+2026-05-19 11:49:57 [INFO] Epoch 25/100 started, lr=8.66e-05
+2026-05-19 11:50:03 [INFO] Step 5/54 Loss=4.3251 mse=0.3638 v_opt=0.00426 v_mand=0.00000 ptv=0.0375 ring=0.01974 smooth=0.0699
+2026-05-19 11:50:05 [INFO] Step 10/54 Loss=5.1348 mse=0.4434 v_opt=0.00000 v_mand=0.00000 ptv=0.0401 ring=0.01949 smooth=0.0797
+2026-05-19 11:50:07 [INFO] Step 15/54 Loss=7.9616 mse=0.7341 v_opt=0.00256 v_mand=0.00000 ptv=0.0293 ring=0.02106 smooth=0.0666
+2026-05-19 11:50:10 [INFO] Step 20/54 Loss=5.0974 mse=0.4169 v_opt=0.05398 v_mand=0.00916 ptv=0.0355 ring=0.01523 smooth=0.0750
+2026-05-19 11:50:14 [INFO] Step 25/54 Loss=5.6707 mse=0.4624 v_opt=0.03358 v_mand=0.00138 ptv=0.0662 ring=0.01835 smooth=0.0794
+2026-05-19 11:50:17 [INFO] Step 30/54 Loss=4.4152 mse=0.3711 v_opt=0.00000 v_mand=0.00000 ptv=0.0442 ring=0.01695 smooth=0.0792
+2026-05-19 11:50:20 [INFO] Step 35/54 Loss=4.5385 mse=0.3847 v_opt=0.00000 v_mand=0.00000 ptv=0.0461 ring=0.01489 smooth=0.0656
+2026-05-19 11:50:22 [INFO] Step 40/54 Loss=4.3136 mse=0.3613 v_opt=0.00000 v_mand=0.00000 ptv=0.0433 ring=0.01735 smooth=0.0746
+2026-05-19 11:50:25 [INFO] Step 45/54 Loss=5.9441 mse=0.5277 v_opt=0.00005 v_mand=0.00000 ptv=0.0228 ring=0.02872 smooth=0.0820
+2026-05-19 11:50:28 [INFO] Step 50/54 Loss=5.3128 mse=0.4412 v_opt=0.03353 v_mand=0.00483 ptv=0.0279 ring=0.02838 smooth=0.0769
+2026-05-19 11:50:30 [INFO] Step 54/54 Loss=5.0966 mse=0.4446 v_opt=0.01149 v_mand=0.00005 ptv=0.0372 ring=0.01632 smooth=0.0933
+2026-05-19 11:50:30 [INFO] Running validation at epoch 25...
+2026-05-19 11:50:52 [INFO] Epoch 25 Summary: Train=5.5951 Val=6.8551 PTV_D95=56.36Gy Bladder=26.45Gy Rectum=26.05Gy
+2026-05-19 11:50:52 [INFO] [PHYSICS] Saved best model val_loss=6.8551
+2026-05-19 11:50:52 [INFO] Epoch 26/100 started, lr=8.55e-05
+2026-05-19 11:50:58 [INFO] Step 5/54 Loss=4.8259 mse=0.3966 v_opt=0.03232 v_mand=0.00560 ptv=0.0278 ring=0.02471 smooth=0.0625
+2026-05-19 11:51:00 [INFO] Step 10/54 Loss=5.4934 mse=0.3185 v_opt=0.14634 v_mand=0.05388 ptv=0.0314 ring=0.02326 smooth=0.0652
+2026-05-19 11:51:03 [INFO] Step 15/54 Loss=5.2260 mse=0.3879 v_opt=0.08107 v_mand=0.01492 ptv=0.0258 ring=0.03651 smooth=0.0636
+2026-05-19 11:51:05 [INFO] Step 20/54 Loss=5.7201 mse=0.4762 v_opt=0.03531 v_mand=0.00720 ptv=0.0481 ring=0.01462 smooth=0.0657
+2026-05-19 11:51:10 [INFO] Step 25/54 Loss=5.4749 mse=0.4613 v_opt=0.01153 v_mand=0.00002 ptv=0.0566 ring=0.01767 smooth=0.0745
+2026-05-19 11:51:12 [INFO] Step 30/54 Loss=5.0425 mse=0.4422 v_opt=0.00230 v_mand=0.00000 ptv=0.0352 ring=0.01701 smooth=0.0881
+2026-05-19 11:51:15 [INFO] Step 35/54 Loss=5.1542 mse=0.4508 v_opt=0.00646 v_mand=0.00000 ptv=0.0299 ring=0.02172 smooth=0.0835
+2026-05-19 11:51:17 [INFO] Step 40/54 Loss=3.7307 mse=0.3099 v_opt=0.00642 v_mand=0.00000 ptv=0.0320 ring=0.01949 smooth=0.0650
+2026-05-19 11:51:22 [INFO] Step 45/54 Loss=3.9787 mse=0.3351 v_opt=0.00304 v_mand=0.00000 ptv=0.0374 ring=0.01611 smooth=0.0623
+2026-05-19 11:51:24 [INFO] Step 50/54 Loss=6.4188 mse=0.5642 v_opt=0.03536 v_mand=0.00692 ptv=0.0256 ring=0.01784 smooth=0.0888
+2026-05-19 11:51:26 [INFO] Step 54/54 Loss=5.2290 mse=0.4559 v_opt=0.02260 v_mand=0.00044 ptv=0.0211 ring=0.02626 smooth=0.0913
+2026-05-19 11:51:26 [INFO] Running validation at epoch 26...
+2026-05-19 11:51:48 [INFO] Epoch 26 Summary: Train=5.0885 Val=6.6389 PTV_D95=58.45Gy Bladder=25.62Gy Rectum=27.91Gy
+2026-05-19 11:51:48 [INFO] [PHYSICS] Saved best model val_loss=6.6389
+2026-05-19 11:51:48 [INFO] Epoch 27/100 started, lr=8.44e-05
+2026-05-19 11:51:53 [INFO] Step 5/54 Loss=5.2101 mse=0.4573 v_opt=0.01319 v_mand=0.00001 ptv=0.0338 ring=0.01769 smooth=0.0729
+2026-05-19 11:51:56 [INFO] Step 10/54 Loss=5.2257 mse=0.4562 v_opt=0.00000 v_mand=0.00000 ptv=0.0472 ring=0.01192 smooth=0.1318
+2026-05-19 11:51:58 [INFO] Step 15/54 Loss=4.5732 mse=0.3753 v_opt=0.03407 v_mand=0.00261 ptv=0.0368 ring=0.02081 smooth=0.0642
+2026-05-19 11:52:00 [INFO] Step 20/54 Loss=4.8447 mse=0.3983 v_opt=0.01594 v_mand=0.00000 ptv=0.0345 ring=0.03178 smooth=0.0791
+2026-05-19 11:52:05 [INFO] Step 25/54 Loss=4.0818 mse=0.3492 v_opt=0.00441 v_mand=0.00000 ptv=0.0319 ring=0.01707 smooth=0.0585
+2026-05-19 11:52:08 [INFO] Step 30/54 Loss=5.4301 mse=0.4739 v_opt=0.02173 v_mand=0.00225 ptv=0.0311 ring=0.01818 smooth=0.0784
+2026-05-19 11:52:10 [INFO] Step 35/54 Loss=5.4652 mse=0.4838 v_opt=0.00095 v_mand=0.00000 ptv=0.0361 ring=0.01706 smooth=0.0841
+2026-05-19 11:52:12 [INFO] Step 40/54 Loss=4.7063 mse=0.4133 v_opt=0.00326 v_mand=0.00000 ptv=0.0254 ring=0.02042 smooth=0.0621
+2026-05-19 11:52:17 [INFO] Step 45/54 Loss=4.7658 mse=0.3984 v_opt=0.04507 v_mand=0.00493 ptv=0.0244 ring=0.02128 smooth=0.0582
+2026-05-19 11:52:19 [INFO] Step 50/54 Loss=4.7480 mse=0.4069 v_opt=0.01338 v_mand=0.00024 ptv=0.0313 ring=0.02157 smooth=0.0935
+2026-05-19 11:52:21 [INFO] Step 54/54 Loss=5.0290 mse=0.3894 v_opt=0.00630 v_mand=0.00000 ptv=0.0917 ring=0.01323 smooth=0.0670
+2026-05-19 11:52:21 [INFO] Running validation at epoch 27...
+2026-05-19 11:52:44 [INFO] Epoch 27 Summary: Train=5.3886 Val=6.6493 PTV_D95=57.47Gy Bladder=26.25Gy Rectum=20.86Gy
+2026-05-19 11:52:44 [INFO] Epoch 28/100 started, lr=8.32e-05
+2026-05-19 11:52:49 [INFO] Step 5/54 Loss=4.2575 mse=0.3556 v_opt=0.00003 v_mand=0.00000 ptv=0.0485 ring=0.01386 smooth=0.0812
+2026-05-19 11:52:51 [INFO] Step 10/54 Loss=4.3674 mse=0.3365 v_opt=0.04751 v_mand=0.01346 ptv=0.0260 ring=0.02023 smooth=0.0683
+2026-05-19 11:52:54 [INFO] Step 15/54 Loss=5.3820 mse=0.4442 v_opt=0.05623 v_mand=0.01075 ptv=0.0254 ring=0.01980 smooth=0.0744
+2026-05-19 11:52:56 [INFO] Step 20/54 Loss=4.8029 mse=0.3775 v_opt=0.05802 v_mand=0.00943 ptv=0.0277 ring=0.02619 smooth=0.0670
+2026-05-19 11:53:01 [INFO] Step 25/54 Loss=6.2270 mse=0.4198 v_opt=0.11302 v_mand=0.04689 ptv=0.0303 ring=0.02132 smooth=0.0753
+2026-05-19 11:53:04 [INFO] Step 30/54 Loss=4.8695 mse=0.3828 v_opt=0.05097 v_mand=0.01535 ptv=0.0276 ring=0.01820 smooth=0.0604
+2026-05-19 11:53:06 [INFO] Step 35/54 Loss=3.6652 mse=0.3105 v_opt=0.00067 v_mand=0.00000 ptv=0.0243 ring=0.02069 smooth=0.0537
+2026-05-19 11:53:08 [INFO] Step 40/54 Loss=6.0416 mse=0.5519 v_opt=0.00072 v_mand=0.00000 ptv=0.0237 ring=0.01857 smooth=0.0586
+2026-05-19 11:53:13 [INFO] Step 45/54 Loss=5.1168 mse=0.4249 v_opt=0.02282 v_mand=0.00228 ptv=0.0450 ring=0.02057 smooth=0.0636
+2026-05-19 11:53:15 [INFO] Step 50/54 Loss=14.3324 mse=0.4957 v_opt=0.13911 v_mand=0.05471 ptv=0.7660 ring=0.00409 smooth=0.0869
+2026-05-19 11:53:17 [INFO] Step 54/54 Loss=4.4103 mse=0.3654 v_opt=0.01933 v_mand=0.00152 ptv=0.0493 ring=0.01200 smooth=0.0731
+2026-05-19 11:53:17 [INFO] Running validation at epoch 28...
+2026-05-19 11:53:40 [INFO] Epoch 28 Summary: Train=5.1885 Val=6.7529 PTV_D95=56.36Gy Bladder=26.23Gy Rectum=25.16Gy
+2026-05-19 11:53:40 [INFO] Epoch 29/100 started, lr=8.21e-05
+2026-05-19 11:53:45 [INFO] Step 5/54 Loss=7.5870 mse=0.4324 v_opt=0.17697 v_mand=0.08641 ptv=0.0276 ring=0.03101 smooth=0.0845
+2026-05-19 11:53:47 [INFO] Step 10/54 Loss=5.0297 mse=0.4162 v_opt=0.03527 v_mand=0.00640 ptv=0.0288 ring=0.02285 smooth=0.0674
+2026-05-19 11:53:50 [INFO] Step 15/54 Loss=5.0650 mse=0.4505 v_opt=0.00000 v_mand=0.00000 ptv=0.0316 ring=0.01580 smooth=0.0674
+2026-05-19 11:53:53 [INFO] Step 20/54 Loss=5.8147 mse=0.3665 v_opt=0.13690 v_mand=0.04844 ptv=0.0226 ring=0.02871 smooth=0.0735
+2026-05-19 11:53:57 [INFO] Step 25/54 Loss=5.2808 mse=0.4330 v_opt=0.06150 v_mand=0.01033 ptv=0.0265 ring=0.01984 smooth=0.0674
+2026-05-19 11:54:00 [INFO] Step 30/54 Loss=6.5491 mse=0.6008 v_opt=0.00183 v_mand=0.00000 ptv=0.0330 ring=0.01336 smooth=0.0745
+2026-05-19 11:54:02 [INFO] Step 35/54 Loss=3.5407 mse=0.2905 v_opt=0.00000 v_mand=0.00000 ptv=0.0357 ring=0.01823 smooth=0.0570
+2026-05-19 11:54:04 [INFO] Step 40/54 Loss=3.3451 mse=0.2709 v_opt=0.00216 v_mand=0.00000 ptv=0.0298 ring=0.02191 smooth=0.0568
+2026-05-19 11:54:09 [INFO] Step 45/54 Loss=5.1827 mse=0.4169 v_opt=0.04062 v_mand=0.00873 ptv=0.0337 ring=0.02475 smooth=0.0637
+2026-05-19 11:54:11 [INFO] Step 50/54 Loss=6.9040 mse=0.5737 v_opt=0.07833 v_mand=0.01464 ptv=0.0413 ring=0.01504 smooth=0.0591
+2026-05-19 11:54:13 [INFO] Step 54/54 Loss=4.4209 mse=0.3819 v_opt=0.01581 v_mand=0.00014 ptv=0.0323 ring=0.01590 smooth=0.0525
+2026-05-19 11:54:13 [INFO] Running validation at epoch 29...
+2026-05-19 11:54:35 [INFO] Epoch 29 Summary: Train=5.0493 Val=6.4814 PTV_D95=55.12Gy Bladder=24.25Gy Rectum=25.73Gy
+2026-05-19 11:54:35 [INFO] [PHYSICS] Saved best model val_loss=6.4814
+2026-05-19 11:54:35 [INFO] Epoch 30/100 started, lr=8.08e-05
+2026-05-19 11:54:40 [INFO] Step 5/54 Loss=4.9310 mse=0.4016 v_opt=0.04252 v_mand=0.01029 ptv=0.0233 ring=0.02222 smooth=0.0600
+2026-05-19 11:54:43 [INFO] Step 10/54 Loss=5.6537 mse=0.5104 v_opt=0.00725 v_mand=0.00000 ptv=0.0237 ring=0.01932 smooth=0.0801
+2026-05-19 11:54:45 [INFO] Step 15/54 Loss=4.5094 mse=0.3942 v_opt=0.00000 v_mand=0.00000 ptv=0.0334 ring=0.01518 smooth=0.0617
+2026-05-19 11:54:48 [INFO] Step 20/54 Loss=6.4063 mse=0.4333 v_opt=0.15304 v_mand=0.04610 ptv=0.0296 ring=0.02073 smooth=0.0743
+2026-05-19 11:54:51 [INFO] Step 25/54 Loss=5.2151 mse=0.4453 v_opt=0.00596 v_mand=0.00000 ptv=0.0517 ring=0.01500 smooth=0.0792
+2026-05-19 11:54:54 [INFO] Step 30/54 Loss=3.9483 mse=0.3391 v_opt=0.00397 v_mand=0.00000 ptv=0.0303 ring=0.01600 smooth=0.0545
+2026-05-19 11:54:56 [INFO] Step 35/54 Loss=4.5895 mse=0.3793 v_opt=0.01652 v_mand=0.00081 ptv=0.0289 ring=0.02982 smooth=0.0679
+2026-05-19 11:54:59 [INFO] Step 40/54 Loss=4.3493 mse=0.3827 v_opt=0.00000 v_mand=0.00000 ptv=0.0254 ring=0.01752 smooth=0.0594
+2026-05-19 11:55:03 [INFO] Step 45/54 Loss=4.1335 mse=0.3446 v_opt=0.01533 v_mand=0.00057 ptv=0.0264 ring=0.02483 smooth=0.0577
+2026-05-19 11:55:06 [INFO] Step 50/54 Loss=5.5718 mse=0.4241 v_opt=0.05056 v_mand=0.01315 ptv=0.0485 ring=0.02704 smooth=0.0995
+2026-05-19 11:55:08 [INFO] Step 54/54 Loss=3.5861 mse=0.2970 v_opt=0.00283 v_mand=0.00000 ptv=0.0286 ring=0.02119 smooth=0.0672
+2026-05-19 11:55:08 [INFO] Running validation at epoch 30...
+2026-05-19 11:55:30 [INFO] Epoch 30 Summary: Train=5.0240 Val=6.5253 PTV_D95=57.57Gy Bladder=26.09Gy Rectum=28.66Gy
+2026-05-19 11:55:30 [INFO] Epoch 31/100 started, lr=7.96e-05
+2026-05-19 11:55:36 [INFO] Step 5/54 Loss=4.0410 mse=0.3428 v_opt=0.00983 v_mand=0.00000 ptv=0.0379 ring=0.01385 smooth=0.0638
+2026-05-19 11:55:38 [INFO] Step 10/54 Loss=5.7044 mse=0.5114 v_opt=0.00000 v_mand=0.00000 ptv=0.0347 ring=0.01567 smooth=0.0845
+2026-05-19 11:55:41 [INFO] Step 15/54 Loss=7.4792 mse=0.5070 v_opt=0.15178 v_mand=0.08386 ptv=0.0000 ring=0.00000 smooth=0.0934
+2026-05-19 11:55:43 [INFO] Step 20/54 Loss=5.1365 mse=0.4555 v_opt=0.00022 v_mand=0.00000 ptv=0.0295 ring=0.01840 smooth=0.0980
+2026-05-19 11:55:48 [INFO] Step 25/54 Loss=4.4935 mse=0.3811 v_opt=0.00000 v_mand=0.00000 ptv=0.0534 ring=0.00950 smooth=0.0579
+2026-05-19 11:55:50 [INFO] Step 30/54 Loss=5.3122 mse=0.4600 v_opt=0.00144 v_mand=0.00000 ptv=0.0499 ring=0.01359 smooth=0.0688
+2026-05-19 11:55:53 [INFO] Step 35/54 Loss=3.8279 mse=0.3191 v_opt=0.00581 v_mand=0.00000 ptv=0.0234 ring=0.02574 smooth=0.0535
+2026-05-19 11:55:55 [INFO] Step 40/54 Loss=5.0386 mse=0.4022 v_opt=0.06734 v_mand=0.01059 ptv=0.0300 ring=0.02073 smooth=0.0661
+2026-05-19 11:55:59 [INFO] Step 45/54 Loss=5.6445 mse=0.4617 v_opt=0.04426 v_mand=0.00648 ptv=0.0445 ring=0.02150 smooth=0.0933
+2026-05-19 11:56:02 [INFO] Step 50/54 Loss=3.5863 mse=0.2902 v_opt=0.01314 v_mand=0.00021 ptv=0.0428 ring=0.01453 smooth=0.0611
+2026-05-19 11:56:04 [INFO] Step 54/54 Loss=5.2131 mse=0.4446 v_opt=0.01968 v_mand=0.00002 ptv=0.0443 ring=0.01856 smooth=0.0666
+2026-05-19 11:56:04 [INFO] Running validation at epoch 31...
+2026-05-19 11:56:26 [INFO] Epoch 31 Summary: Train=5.2833 Val=6.4422 PTV_D95=55.95Gy Bladder=24.69Gy Rectum=29.92Gy
+2026-05-19 11:56:26 [INFO] [PHYSICS] Saved best model val_loss=6.4422
+2026-05-19 11:56:26 [INFO] Epoch 32/100 started, lr=7.83e-05
+2026-05-19 11:56:32 [INFO] Step 5/54 Loss=7.7723 mse=0.7169 v_opt=0.00245 v_mand=0.00000 ptv=0.0314 ring=0.01849 smooth=0.0670
+2026-05-19 11:56:34 [INFO] Step 10/54 Loss=3.9983 mse=0.3434 v_opt=0.00393 v_mand=0.00000 ptv=0.0275 ring=0.01838 smooth=0.0513
+2026-05-19 11:56:37 [INFO] Step 15/54 Loss=4.6552 mse=0.4647 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0871
+2026-05-19 11:56:39 [INFO] Step 20/54 Loss=5.0025 mse=0.4293 v_opt=0.01539 v_mand=0.00058 ptv=0.0392 ring=0.01764 smooth=0.0793
+2026-05-19 11:56:43 [INFO] Step 25/54 Loss=5.1744 mse=0.4573 v_opt=0.00681 v_mand=0.00000 ptv=0.0261 ring=0.02091 smooth=0.1319
+2026-05-19 11:56:46 [INFO] Step 30/54 Loss=4.0380 mse=0.3437 v_opt=0.01475 v_mand=0.00046 ptv=0.0226 ring=0.02187 smooth=0.0564
+2026-05-19 11:56:49 [INFO] Step 35/54 Loss=4.5399 mse=0.3786 v_opt=0.03108 v_mand=0.00429 ptv=0.0223 ring=0.02376 smooth=0.0517
+2026-05-19 11:56:51 [INFO] Step 40/54 Loss=3.8565 mse=0.3280 v_opt=0.00114 v_mand=0.00000 ptv=0.0293 ring=0.01837 smooth=0.0609
+2026-05-19 11:56:56 [INFO] Step 45/54 Loss=11.0785 mse=0.4232 v_opt=0.41729 v_mand=0.24015 ptv=0.0000 ring=0.00000 smooth=0.0858
+2026-05-19 11:56:58 [INFO] Step 50/54 Loss=6.8177 mse=0.4637 v_opt=0.13661 v_mand=0.04950 ptv=0.0335 ring=0.02181 smooth=0.0762
+2026-05-19 11:57:00 [INFO] Step 54/54 Loss=6.7818 mse=0.6173 v_opt=0.01305 v_mand=0.00020 ptv=0.0371 ring=0.01338 smooth=0.0627
+2026-05-19 11:57:00 [INFO] Running validation at epoch 32...
+2026-05-19 11:57:22 [INFO] Epoch 32 Summary: Train=5.9041 Val=6.5953 PTV_D95=53.69Gy Bladder=24.89Gy Rectum=24.25Gy
+2026-05-19 11:57:22 [INFO] Epoch 33/100 started, lr=7.70e-05
+2026-05-19 11:57:27 [INFO] Step 5/54 Loss=4.2420 mse=0.3585 v_opt=0.00847 v_mand=0.00000 ptv=0.0301 ring=0.02217 smooth=0.0604
+2026-05-19 11:57:30 [INFO] Step 10/54 Loss=5.1814 mse=0.4038 v_opt=0.06451 v_mand=0.00970 ptv=0.0255 ring=0.03403 smooth=0.0622
+2026-05-19 11:57:33 [INFO] Step 15/54 Loss=4.8182 mse=0.4274 v_opt=0.00406 v_mand=0.00000 ptv=0.0236 ring=0.01952 smooth=0.0735
+2026-05-19 11:57:35 [INFO] Step 20/54 Loss=23.6891 mse=0.5865 v_opt=0.86559 v_mand=0.61219 ptv=0.0000 ring=0.05189 smooth=0.0983
+2026-05-19 11:57:39 [INFO] Step 25/54 Loss=4.8357 mse=0.3893 v_opt=0.00191 v_mand=0.00000 ptv=0.0697 ring=0.01571 smooth=0.0646
+2026-05-19 11:57:42 [INFO] Step 30/54 Loss=5.5353 mse=0.4733 v_opt=0.00007 v_mand=0.00000 ptv=0.0570 ring=0.01481 smooth=0.1046
+2026-05-19 11:57:45 [INFO] Step 35/54 Loss=4.4074 mse=0.3296 v_opt=0.06714 v_mand=0.01049 ptv=0.0217 ring=0.03284 smooth=0.0536
+2026-05-19 11:57:47 [INFO] Step 40/54 Loss=4.4476 mse=0.3197 v_opt=0.07411 v_mand=0.01612 ptv=0.0258 ring=0.02891 smooth=0.0773
+2026-05-19 11:57:51 [INFO] Step 45/54 Loss=5.0022 mse=0.4371 v_opt=0.02536 v_mand=0.00105 ptv=0.0321 ring=0.01513 smooth=0.0692
+2026-05-19 11:57:53 [INFO] Step 50/54 Loss=4.8031 mse=0.4795 v_opt=0.00093 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0624
+2026-05-19 11:57:55 [INFO] Step 54/54 Loss=4.7864 mse=0.2962 v_opt=0.10361 v_mand=0.04183 ptv=0.0251 ring=0.02098 smooth=0.0552
+2026-05-19 11:57:55 [INFO] Running validation at epoch 33...
+2026-05-19 11:58:17 [INFO] Epoch 33 Summary: Train=5.4378 Val=6.5757 PTV_D95=57.63Gy Bladder=27.89Gy Rectum=21.25Gy
+2026-05-19 11:58:17 [INFO] Epoch 34/100 started, lr=7.57e-05
+2026-05-19 11:58:22 [INFO] Step 5/54 Loss=5.9522 mse=0.5421 v_opt=0.00844 v_mand=0.00000 ptv=0.0269 ring=0.01599 smooth=0.0610
+2026-05-19 11:58:25 [INFO] Step 10/54 Loss=4.1208 mse=0.3534 v_opt=0.00269 v_mand=0.00000 ptv=0.0303 ring=0.01813 smooth=0.0606
+2026-05-19 11:58:28 [INFO] Step 15/54 Loss=4.7604 mse=0.4180 v_opt=0.00000 v_mand=0.00000 ptv=0.0362 ring=0.01417 smooth=0.0640
+2026-05-19 11:58:30 [INFO] Step 20/54 Loss=5.6387 mse=0.4749 v_opt=0.00293 v_mand=0.00000 ptv=0.0367 ring=0.03389 smooth=0.0844
+2026-05-19 11:58:35 [INFO] Step 25/54 Loss=6.6619 mse=0.6070 v_opt=0.01716 v_mand=0.00096 ptv=0.0258 ring=0.01802 smooth=0.0591
+2026-05-19 11:58:38 [INFO] Step 30/54 Loss=7.6027 mse=0.7011 v_opt=0.01270 v_mand=0.00016 ptv=0.0337 ring=0.01468 smooth=0.0558
+2026-05-19 11:58:40 [INFO] Step 35/54 Loss=5.4707 mse=0.4243 v_opt=0.05990 v_mand=0.01787 ptv=0.0301 ring=0.02357 smooth=0.0627
+2026-05-19 11:58:42 [INFO] Step 40/54 Loss=4.1080 mse=0.3480 v_opt=0.01673 v_mand=0.00086 ptv=0.0288 ring=0.01860 smooth=0.0566
+2026-05-19 11:58:46 [INFO] Step 45/54 Loss=4.4981 mse=0.3692 v_opt=0.04629 v_mand=0.00529 ptv=0.0302 ring=0.01824 smooth=0.0584
+2026-05-19 11:58:49 [INFO] Step 50/54 Loss=5.0267 mse=0.4224 v_opt=0.02621 v_mand=0.00135 ptv=0.0363 ring=0.02317 smooth=0.0548
+2026-05-19 11:58:50 [INFO] Step 54/54 Loss=4.4364 mse=0.3885 v_opt=0.01098 v_mand=0.00002 ptv=0.0249 ring=0.01833 smooth=0.0527
+2026-05-19 11:58:50 [INFO] Running validation at epoch 34...
+2026-05-19 11:59:12 [INFO] Epoch 34 Summary: Train=4.8815 Val=6.2569 PTV_D95=58.12Gy Bladder=25.48Gy Rectum=23.82Gy
+2026-05-19 11:59:12 [INFO] [PHYSICS] Saved best model val_loss=6.2569
+2026-05-19 11:59:12 [INFO] Epoch 35/100 started, lr=7.43e-05
+2026-05-19 11:59:18 [INFO] Step 5/54 Loss=4.9370 mse=0.4222 v_opt=0.02004 v_mand=0.00173 ptv=0.0278 ring=0.02317 smooth=0.0636
+2026-05-19 11:59:20 [INFO] Step 10/54 Loss=3.5187 mse=0.2959 v_opt=0.00860 v_mand=0.00000 ptv=0.0262 ring=0.01831 smooth=0.0564
+2026-05-19 11:59:23 [INFO] Step 15/54 Loss=4.1666 mse=0.3514 v_opt=0.00105 v_mand=0.00000 ptv=0.0441 ring=0.01362 smooth=0.0508
+2026-05-19 11:59:25 [INFO] Step 20/54 Loss=5.7021 mse=0.5197 v_opt=0.01155 v_mand=0.00000 ptv=0.0249 ring=0.01522 smooth=0.0472
+2026-05-19 11:59:30 [INFO] Step 25/54 Loss=6.4237 mse=0.4483 v_opt=0.09028 v_mand=0.03197 ptv=0.0614 ring=0.02261 smooth=0.0698
+2026-05-19 11:59:32 [INFO] Step 30/54 Loss=3.9162 mse=0.3209 v_opt=0.00900 v_mand=0.00000 ptv=0.0399 ring=0.01895 smooth=0.0505
+2026-05-19 11:59:35 [INFO] Step 35/54 Loss=5.8093 mse=0.5144 v_opt=0.00000 v_mand=0.00000 ptv=0.0492 ring=0.01112 smooth=0.0679
+2026-05-19 11:59:37 [INFO] Step 40/54 Loss=3.6294 mse=0.3084 v_opt=0.00581 v_mand=0.00000 ptv=0.0260 ring=0.01792 smooth=0.0502
+2026-05-19 11:59:41 [INFO] Step 45/54 Loss=4.9576 mse=0.4106 v_opt=0.00089 v_mand=0.00000 ptv=0.0368 ring=0.03174 smooth=0.0588
+2026-05-19 11:59:44 [INFO] Step 50/54 Loss=3.6777 mse=0.3036 v_opt=0.00000 v_mand=0.00000 ptv=0.0337 ring=0.01998 smooth=0.0523
+2026-05-19 11:59:46 [INFO] Step 54/54 Loss=4.3286 mse=0.3697 v_opt=0.00000 v_mand=0.00000 ptv=0.0439 ring=0.01238 smooth=0.0650
+2026-05-19 11:59:46 [INFO] Running validation at epoch 35...
+2026-05-19 12:00:08 [INFO] Epoch 35 Summary: Train=4.8596 Val=6.3154 PTV_D95=56.23Gy Bladder=25.42Gy Rectum=24.97Gy
+2026-05-19 12:00:08 [INFO] Epoch 36/100 started, lr=7.30e-05
+2026-05-19 12:00:12 [INFO] Step 5/54 Loss=4.2438 mse=0.3441 v_opt=0.03056 v_mand=0.00188 ptv=0.0316 ring=0.02487 smooth=0.0528
+2026-05-19 12:00:15 [INFO] Step 10/54 Loss=4.4692 mse=0.3657 v_opt=0.03878 v_mand=0.00595 ptv=0.0214 ring=0.02442 smooth=0.0514
+2026-05-19 12:00:18 [INFO] Step 15/54 Loss=6.4208 mse=0.4623 v_opt=0.13249 v_mand=0.03482 ptv=0.0241 ring=0.02757 smooth=0.0777
+2026-05-19 12:00:20 [INFO] Step 20/54 Loss=3.9745 mse=0.3393 v_opt=0.00306 v_mand=0.00000 ptv=0.0301 ring=0.01802 smooth=0.0471
+2026-05-19 12:00:23 [INFO] Step 25/54 Loss=4.0703 mse=0.3514 v_opt=0.00101 v_mand=0.00000 ptv=0.0307 ring=0.01610 smooth=0.0495
+2026-05-19 12:00:27 [INFO] Step 30/54 Loss=3.6530 mse=0.3144 v_opt=0.00000 v_mand=0.00000 ptv=0.0251 ring=0.01687 smooth=0.0537
+2026-05-19 12:00:30 [INFO] Step 35/54 Loss=6.3504 mse=0.5545 v_opt=0.03200 v_mand=0.00548 ptv=0.0240 ring=0.02398 smooth=0.0512
+2026-05-19 12:00:33 [INFO] Step 40/54 Loss=4.5791 mse=0.4019 v_opt=0.01003 v_mand=0.00000 ptv=0.0324 ring=0.01396 smooth=0.0673
+2026-05-19 12:00:35 [INFO] Step 45/54 Loss=4.2595 mse=0.3541 v_opt=0.02575 v_mand=0.00152 ptv=0.0256 ring=0.02455 smooth=0.0513
+2026-05-19 12:00:39 [INFO] Step 50/54 Loss=6.4685 mse=0.5852 v_opt=0.00119 v_mand=0.00000 ptv=0.0294 ring=0.02091 smooth=0.0632
+2026-05-19 12:00:41 [INFO] Step 54/54 Loss=6.2822 mse=0.5641 v_opt=0.00746 v_mand=0.00000 ptv=0.0260 ring=0.02405 smooth=0.0554
+2026-05-19 12:00:41 [INFO] Running validation at epoch 36...
+2026-05-19 12:01:03 [INFO] Epoch 36 Summary: Train=4.7562 Val=6.4000 PTV_D95=60.82Gy Bladder=26.74Gy Rectum=27.79Gy
+2026-05-19 12:01:03 [INFO] [CLINICAL] Saved best model Score=32.522 PTV_D95=60.82Gy Bladder=26.74Gy Rectum=27.79Gy
+2026-05-19 12:01:03 [INFO] Epoch 37/100 started, lr=7.16e-05
+2026-05-19 12:01:08 [INFO] Step 5/54 Loss=5.2982 mse=0.5291 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0735
+2026-05-19 12:01:10 [INFO] Step 10/54 Loss=4.9191 mse=0.4014 v_opt=0.01591 v_mand=0.00068 ptv=0.0571 ring=0.01860 smooth=0.0597
+2026-05-19 12:01:13 [INFO] Step 15/54 Loss=5.1653 mse=0.3760 v_opt=0.10139 v_mand=0.02393 ptv=0.0261 ring=0.02240 smooth=0.0720
+2026-05-19 12:01:16 [INFO] Step 20/54 Loss=3.6459 mse=0.2979 v_opt=0.02005 v_mand=0.00159 ptv=0.0297 ring=0.01895 smooth=0.0524
+2026-05-19 12:01:19 [INFO] Step 25/54 Loss=45.8186 mse=0.4359 v_opt=1.83554 v_mand=1.48442 ptv=0.0365 ring=0.02044 smooth=0.0623
+2026-05-19 12:01:22 [INFO] Step 30/54 Loss=3.6779 mse=0.3001 v_opt=0.01769 v_mand=0.00109 ptv=0.0241 ring=0.02457 smooth=0.0520
+2026-05-19 12:01:25 [INFO] Step 35/54 Loss=4.3276 mse=0.3563 v_opt=0.02639 v_mand=0.00390 ptv=0.0314 ring=0.01969 smooth=0.0585
+2026-05-19 12:01:27 [INFO] Step 40/54 Loss=5.7232 mse=0.5233 v_opt=0.00524 v_mand=0.00000 ptv=0.0251 ring=0.01478 smooth=0.0627
+2026-05-19 12:01:31 [INFO] Step 45/54 Loss=4.5239 mse=0.3836 v_opt=0.02812 v_mand=0.00456 ptv=0.0252 ring=0.01727 smooth=0.0645
+2026-05-19 12:01:34 [INFO] Step 50/54 Loss=7.3285 mse=0.4191 v_opt=0.18921 v_mand=0.08250 ptv=0.0241 ring=0.02994 smooth=0.0692
+2026-05-19 12:01:36 [INFO] Step 54/54 Loss=5.2004 mse=0.3963 v_opt=0.07378 v_mand=0.02245 ptv=0.0263 ring=0.01733 smooth=0.0589
+2026-05-19 12:01:36 [INFO] Running validation at epoch 37...
+2026-05-19 12:01:58 [INFO] Epoch 37 Summary: Train=5.5287 Val=6.2558 PTV_D95=57.60Gy Bladder=24.60Gy Rectum=24.03Gy
+2026-05-19 12:01:58 [INFO] [PHYSICS] Saved best model val_loss=6.2558
+2026-05-19 12:01:58 [INFO] Epoch 38/100 started, lr=7.02e-05
+2026-05-19 12:02:03 [INFO] Step 5/54 Loss=4.8403 mse=0.4264 v_opt=0.00000 v_mand=0.00000 ptv=0.0315 ring=0.01705 smooth=0.0539
+2026-05-19 12:02:05 [INFO] Step 10/54 Loss=3.8813 mse=0.3345 v_opt=0.00112 v_mand=0.00000 ptv=0.0295 ring=0.01562 smooth=0.0513
+2026-05-19 12:02:08 [INFO] Step 15/54 Loss=6.5530 mse=0.4127 v_opt=0.11786 v_mand=0.03165 ptv=0.0937 ring=0.03039 smooth=0.0632
+2026-05-19 12:02:10 [INFO] Step 20/54 Loss=5.1254 mse=0.4397 v_opt=0.03951 v_mand=0.00675 ptv=0.0259 ring=0.01443 smooth=0.0552
+2026-05-19 12:02:14 [INFO] Step 25/54 Loss=7.0789 mse=0.6512 v_opt=0.01388 v_mand=0.00032 ptv=0.0330 ring=0.01313 smooth=0.0472
+2026-05-19 12:02:17 [INFO] Step 30/54 Loss=4.0667 mse=0.3433 v_opt=0.00441 v_mand=0.00000 ptv=0.0336 ring=0.01896 smooth=0.0495
+2026-05-19 12:02:20 [INFO] Step 35/54 Loss=7.3044 mse=0.5102 v_opt=0.14741 v_mand=0.05268 ptv=0.0303 ring=0.01876 smooth=0.0584
+2026-05-19 12:02:22 [INFO] Step 40/54 Loss=3.4430 mse=0.2920 v_opt=0.00000 v_mand=0.00000 ptv=0.0257 ring=0.01739 smooth=0.0535
+2026-05-19 12:02:27 [INFO] Step 45/54 Loss=5.7845 mse=0.5212 v_opt=0.00429 v_mand=0.00000 ptv=0.0336 ring=0.01477 smooth=0.0561
+2026-05-19 12:02:29 [INFO] Step 50/54 Loss=4.5051 mse=0.4500 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0530
+2026-05-19 12:02:31 [INFO] Step 54/54 Loss=4.0469 mse=0.3107 v_opt=0.05192 v_mand=0.01197 ptv=0.0285 ring=0.01643 smooth=0.0514
+2026-05-19 12:02:31 [INFO] Running validation at epoch 38...
+2026-05-19 12:02:54 [INFO] Epoch 38 Summary: Train=4.8127 Val=6.2790 PTV_D95=57.68Gy Bladder=27.39Gy Rectum=26.00Gy
+2026-05-19 12:02:54 [INFO] Epoch 39/100 started, lr=6.87e-05
+2026-05-19 12:02:59 [INFO] Step 5/54 Loss=3.8811 mse=0.3311 v_opt=0.02189 v_mand=0.00002 ptv=0.0308 ring=0.01419 smooth=0.0499
+2026-05-19 12:03:01 [INFO] Step 10/54 Loss=3.8912 mse=0.3283 v_opt=0.02141 v_mand=0.00037 ptv=0.0272 ring=0.01861 smooth=0.0464
+2026-05-19 12:03:04 [INFO] Step 15/54 Loss=3.9482 mse=0.3358 v_opt=0.00471 v_mand=0.00000 ptv=0.0269 ring=0.02041 smooth=0.0527
+2026-05-19 12:03:06 [INFO] Step 20/54 Loss=3.7563 mse=0.3098 v_opt=0.00246 v_mand=0.00000 ptv=0.0377 ring=0.01812 smooth=0.0468
+2026-05-19 12:03:11 [INFO] Step 25/54 Loss=5.0944 mse=0.4501 v_opt=0.01476 v_mand=0.00046 ptv=0.0319 ring=0.01518 smooth=0.0573
+2026-05-19 12:03:13 [INFO] Step 30/54 Loss=4.1839 mse=0.3092 v_opt=0.06164 v_mand=0.01865 ptv=0.0299 ring=0.01315 smooth=0.0572
+2026-05-19 12:03:15 [INFO] Step 35/54 Loss=5.2247 mse=0.4206 v_opt=0.04605 v_mand=0.01063 ptv=0.0469 ring=0.01245 smooth=0.0497
+2026-05-19 12:03:18 [INFO] Step 40/54 Loss=3.9435 mse=0.3249 v_opt=0.02961 v_mand=0.00395 ptv=0.0235 ring=0.01980 smooth=0.0444
+2026-05-19 12:03:23 [INFO] Step 45/54 Loss=4.3931 mse=0.3705 v_opt=0.02248 v_mand=0.00249 ptv=0.0219 ring=0.02380 smooth=0.0455
+2026-05-19 12:03:25 [INFO] Step 50/54 Loss=3.6569 mse=0.3026 v_opt=0.00000 v_mand=0.00000 ptv=0.0366 ring=0.01732 smooth=0.0513
+2026-05-19 12:03:26 [INFO] Step 54/54 Loss=4.0074 mse=0.3355 v_opt=0.00000 v_mand=0.00000 ptv=0.0422 ring=0.01487 smooth=0.0647
+2026-05-19 12:03:26 [INFO] Running validation at epoch 39...
+2026-05-19 12:03:49 [INFO] Epoch 39 Summary: Train=4.8060 Val=5.9877 PTV_D95=57.96Gy Bladder=25.07Gy Rectum=21.28Gy
+2026-05-19 12:03:49 [INFO] [PHYSICS] Saved best model val_loss=5.9877
+2026-05-19 12:03:49 [INFO] Epoch 40/100 started, lr=6.73e-05
+2026-05-19 12:03:53 [INFO] Step 5/54 Loss=5.5011 mse=0.4978 v_opt=0.01195 v_mand=0.00009 ptv=0.0264 ring=0.01525 smooth=0.0463
+2026-05-19 12:03:56 [INFO] Step 10/54 Loss=4.2978 mse=0.3733 v_opt=0.00487 v_mand=0.00000 ptv=0.0294 ring=0.01706 smooth=0.0533
+2026-05-19 12:03:59 [INFO] Step 15/54 Loss=4.2305 mse=0.3514 v_opt=0.04561 v_mand=0.00371 ptv=0.0293 ring=0.01569 smooth=0.0444
+2026-05-19 12:04:01 [INFO] Step 20/54 Loss=4.5437 mse=0.3976 v_opt=0.01444 v_mand=0.00000 ptv=0.0258 ring=0.01835 smooth=0.0545
+2026-05-19 12:04:05 [INFO] Step 25/54 Loss=3.6314 mse=0.3001 v_opt=0.02052 v_mand=0.00179 ptv=0.0237 ring=0.02025 smooth=0.0436
+2026-05-19 12:04:08 [INFO] Step 30/54 Loss=4.0241 mse=0.3435 v_opt=0.00384 v_mand=0.00000 ptv=0.0311 ring=0.01771 smooth=0.0501
+2026-05-19 12:04:10 [INFO] Step 35/54 Loss=5.1706 mse=0.4248 v_opt=0.04294 v_mand=0.00475 ptv=0.0384 ring=0.02193 smooth=0.0558
+2026-05-19 12:04:13 [INFO] Step 40/54 Loss=6.2614 mse=0.5758 v_opt=0.01029 v_mand=0.00000 ptv=0.0228 ring=0.01657 smooth=0.0578
+2026-05-19 12:04:16 [INFO] Step 45/54 Loss=4.5324 mse=0.3797 v_opt=0.04027 v_mand=0.00656 ptv=0.0282 ring=0.01357 smooth=0.0511
+2026-05-19 12:04:20 [INFO] Step 50/54 Loss=4.3556 mse=0.3718 v_opt=0.00000 v_mand=0.00000 ptv=0.0425 ring=0.01383 smooth=0.0590
+2026-05-19 12:04:22 [INFO] Step 54/54 Loss=4.8789 mse=0.4795 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00523 smooth=0.0551
+2026-05-19 12:04:22 [INFO] Running validation at epoch 40...
+2026-05-19 12:04:44 [INFO] Epoch 40 Summary: Train=4.5456 Val=6.0095 PTV_D95=57.57Gy Bladder=24.51Gy Rectum=23.75Gy
+2026-05-19 12:04:44 [INFO] Epoch 41/100 started, lr=6.58e-05
+2026-05-19 12:04:49 [INFO] Step 5/54 Loss=6.0895 mse=0.5574 v_opt=0.00000 v_mand=0.00000 ptv=0.0242 ring=0.01792 smooth=0.0416
+2026-05-19 12:04:52 [INFO] Step 10/54 Loss=4.5483 mse=0.3944 v_opt=0.01963 v_mand=0.00111 ptv=0.0239 ring=0.01955 smooth=0.0488
+2026-05-19 12:04:54 [INFO] Step 15/54 Loss=3.6616 mse=0.3098 v_opt=0.00026 v_mand=0.00000 ptv=0.0320 ring=0.01589 smooth=0.0476
+2026-05-19 12:04:57 [INFO] Step 20/54 Loss=3.9253 mse=0.3384 v_opt=0.00000 v_mand=0.00000 ptv=0.0364 ring=0.01155 smooth=0.0448
+2026-05-19 12:05:01 [INFO] Step 25/54 Loss=5.6215 mse=0.4452 v_opt=0.05366 v_mand=0.01711 ptv=0.0280 ring=0.02320 smooth=0.0574
+2026-05-19 12:05:04 [INFO] Step 30/54 Loss=4.4454 mse=0.3824 v_opt=0.00026 v_mand=0.00000 ptv=0.0283 ring=0.02218 smooth=0.0522
+2026-05-19 12:05:06 [INFO] Step 35/54 Loss=3.7871 mse=0.3071 v_opt=0.02232 v_mand=0.00244 ptv=0.0254 ring=0.02347 smooth=0.0449
+2026-05-19 12:05:08 [INFO] Step 40/54 Loss=4.9924 mse=0.4185 v_opt=0.04603 v_mand=0.00826 ptv=0.0276 ring=0.01523 smooth=0.0479
+2026-05-19 12:05:13 [INFO] Step 45/54 Loss=6.0160 mse=0.5319 v_opt=0.04200 v_mand=0.00242 ptv=0.0299 ring=0.01648 smooth=0.0613
+2026-05-19 12:05:15 [INFO] Step 50/54 Loss=4.5759 mse=0.3991 v_opt=0.01665 v_mand=0.00078 ptv=0.0243 ring=0.01894 smooth=0.0477
+2026-05-19 12:05:17 [INFO] Step 54/54 Loss=4.7772 mse=0.3901 v_opt=0.02733 v_mand=0.00330 ptv=0.0514 ring=0.01471 smooth=0.0539
+2026-05-19 12:05:17 [INFO] Running validation at epoch 41...
+2026-05-19 12:05:39 [INFO] Epoch 41 Summary: Train=4.6369 Val=6.0158 PTV_D95=57.22Gy Bladder=24.66Gy Rectum=27.25Gy
+2026-05-19 12:05:39 [INFO] Epoch 42/100 started, lr=6.43e-05
+2026-05-19 12:05:45 [INFO] Step 5/54 Loss=3.5612 mse=0.3089 v_opt=0.00000 v_mand=0.00000 ptv=0.0235 ring=0.01549 smooth=0.0461
+2026-05-19 12:05:48 [INFO] Step 10/54 Loss=4.6982 mse=0.4161 v_opt=0.00000 v_mand=0.00000 ptv=0.0230 ring=0.02013 smooth=0.0472
+2026-05-19 12:05:50 [INFO] Step 15/54 Loss=4.9344 mse=0.4081 v_opt=0.02723 v_mand=0.00418 ptv=0.0317 ring=0.02490 smooth=0.0477
+2026-05-19 12:05:52 [INFO] Step 20/54 Loss=4.4488 mse=0.3710 v_opt=0.02970 v_mand=0.00096 ptv=0.0497 ring=0.01013 smooth=0.0592
+2026-05-19 12:05:56 [INFO] Step 25/54 Loss=3.8632 mse=0.3308 v_opt=0.00128 v_mand=0.00000 ptv=0.0413 ring=0.00898 smooth=0.0537
+2026-05-19 12:05:59 [INFO] Step 30/54 Loss=3.7749 mse=0.3263 v_opt=0.01695 v_mand=0.00000 ptv=0.0277 ring=0.01305 smooth=0.0463
+2026-05-19 12:06:01 [INFO] Step 35/54 Loss=4.9757 mse=0.4274 v_opt=0.04384 v_mand=0.00288 ptv=0.0227 ring=0.02057 smooth=0.0675
+2026-05-19 12:06:04 [INFO] Step 40/54 Loss=4.4555 mse=0.3452 v_opt=0.05813 v_mand=0.01184 ptv=0.0220 ring=0.02440 smooth=0.0442
+2026-05-19 12:06:06 [INFO] Step 45/54 Loss=5.3078 mse=0.4781 v_opt=0.00117 v_mand=0.00000 ptv=0.0296 ring=0.01468 smooth=0.0818
+2026-05-19 12:06:10 [INFO] Step 50/54 Loss=5.4961 mse=0.4965 v_opt=0.00459 v_mand=0.00000 ptv=0.0196 ring=0.02140 smooth=0.0484
+2026-05-19 12:06:13 [INFO] Step 54/54 Loss=8.9768 mse=0.4712 v_opt=0.18670 v_mand=0.07372 ptv=0.1760 ring=0.01877 smooth=0.0757
+2026-05-19 12:06:13 [INFO] Running validation at epoch 42...
+2026-05-19 12:06:35 [INFO] Epoch 42 Summary: Train=4.9559 Val=6.1735 PTV_D95=56.32Gy Bladder=24.20Gy Rectum=25.09Gy
+2026-05-19 12:06:35 [INFO] Epoch 43/100 started, lr=6.28e-05
+2026-05-19 12:06:40 [INFO] Step 5/54 Loss=18.7326 mse=0.4051 v_opt=0.73353 v_mand=0.49797 ptv=0.0580 ring=0.01195 smooth=0.0618
+2026-05-19 12:06:43 [INFO] Step 10/54 Loss=4.2026 mse=0.3650 v_opt=0.01377 v_mand=0.00030 ptv=0.0254 ring=0.01722 smooth=0.0441
+2026-05-19 12:06:45 [INFO] Step 15/54 Loss=3.9133 mse=0.2904 v_opt=0.06047 v_mand=0.01485 ptv=0.0256 ring=0.01711 smooth=0.0422
+2026-05-19 12:06:48 [INFO] Step 20/54 Loss=2.8937 mse=0.2371 v_opt=0.00814 v_mand=0.00000 ptv=0.0284 ring=0.01443 smooth=0.0519
+2026-05-19 12:06:52 [INFO] Step 25/54 Loss=4.3007 mse=0.3623 v_opt=0.02918 v_mand=0.00443 ptv=0.0198 ring=0.02040 smooth=0.0476
+2026-05-19 12:06:55 [INFO] Step 30/54 Loss=4.8256 mse=0.3940 v_opt=0.03445 v_mand=0.00708 ptv=0.0259 ring=0.02509 smooth=0.0470
+2026-05-19 12:06:57 [INFO] Step 35/54 Loss=3.7308 mse=0.3211 v_opt=0.01627 v_mand=0.00076 ptv=0.0244 ring=0.01462 smooth=0.0480
+2026-05-19 12:07:00 [INFO] Step 40/54 Loss=5.9553 mse=0.4059 v_opt=0.11126 v_mand=0.04279 ptv=0.0243 ring=0.02366 smooth=0.0591
+2026-05-19 12:07:04 [INFO] Step 45/54 Loss=5.2319 mse=0.3703 v_opt=0.11609 v_mand=0.02671 ptv=0.0237 ring=0.02582 smooth=0.0492
+2026-05-19 12:07:06 [INFO] Step 50/54 Loss=3.3666 mse=0.2610 v_opt=0.03812 v_mand=0.00667 ptv=0.0237 ring=0.01813 smooth=0.0488
+2026-05-19 12:07:08 [INFO] Step 54/54 Loss=4.3024 mse=0.3575 v_opt=0.01748 v_mand=0.00037 ptv=0.0278 ring=0.02664 smooth=0.0481
+2026-05-19 12:07:08 [INFO] Running validation at epoch 43...
+2026-05-19 12:07:30 [INFO] Epoch 43 Summary: Train=4.6816 Val=6.2010 PTV_D95=59.86Gy Bladder=27.95Gy Rectum=25.57Gy
+2026-05-19 12:07:30 [INFO] Epoch 44/100 started, lr=6.13e-05
+2026-05-19 12:07:36 [INFO] Step 5/54 Loss=4.6658 mse=0.4150 v_opt=0.01420 v_mand=0.00037 ptv=0.0269 ring=0.01351 smooth=0.0621
+2026-05-19 12:07:38 [INFO] Step 10/54 Loss=3.7702 mse=0.3147 v_opt=0.00059 v_mand=0.00000 ptv=0.0452 ring=0.01108 smooth=0.0423
+2026-05-19 12:07:41 [INFO] Step 15/54 Loss=4.7227 mse=0.3618 v_opt=0.05383 v_mand=0.01668 ptv=0.0311 ring=0.01762 smooth=0.0549
+2026-05-19 12:07:43 [INFO] Step 20/54 Loss=3.9695 mse=0.3502 v_opt=0.00733 v_mand=0.00000 ptv=0.0249 ring=0.01328 smooth=0.0486
+2026-05-19 12:07:48 [INFO] Step 25/54 Loss=4.4473 mse=0.3817 v_opt=0.01581 v_mand=0.00066 ptv=0.0289 ring=0.01918 smooth=0.0530
+2026-05-19 12:07:50 [INFO] Step 30/54 Loss=3.5448 mse=0.2822 v_opt=0.02548 v_mand=0.00336 ptv=0.0342 ring=0.01606 smooth=0.0461
+2026-05-19 12:07:53 [INFO] Step 35/54 Loss=5.2278 mse=0.4739 v_opt=0.01439 v_mand=0.00040 ptv=0.0218 ring=0.01525 smooth=0.0390
+2026-05-19 12:07:55 [INFO] Step 40/54 Loss=3.3108 mse=0.2814 v_opt=0.00982 v_mand=0.00000 ptv=0.0210 ring=0.01758 smooth=0.0406
+2026-05-19 12:07:59 [INFO] Step 45/54 Loss=3.5104 mse=0.2922 v_opt=0.00704 v_mand=0.00000 ptv=0.0281 ring=0.01921 smooth=0.0481
+2026-05-19 12:08:02 [INFO] Step 50/54 Loss=3.9463 mse=0.2796 v_opt=0.08200 v_mand=0.01554 ptv=0.0219 ring=0.02497 smooth=0.0422
+2026-05-19 12:08:04 [INFO] Step 54/54 Loss=5.9128 mse=0.5314 v_opt=0.00275 v_mand=0.00000 ptv=0.0350 ring=0.01590 smooth=0.0512
+2026-05-19 12:08:04 [INFO] Running validation at epoch 44...
+2026-05-19 12:08:26 [INFO] Epoch 44 Summary: Train=4.8908 Val=5.9070 PTV_D95=56.79Gy Bladder=24.74Gy Rectum=24.60Gy
+2026-05-19 12:08:26 [INFO] [PHYSICS] Saved best model val_loss=5.9070
+2026-05-19 12:08:26 [INFO] Epoch 45/100 started, lr=5.98e-05
+2026-05-19 12:08:31 [INFO] Step 5/54 Loss=3.3568 mse=0.2861 v_opt=0.00000 v_mand=0.00000 ptv=0.0333 ring=0.01049 smooth=0.0488
+2026-05-19 12:08:34 [INFO] Step 10/54 Loss=5.0095 mse=0.4430 v_opt=0.02016 v_mand=0.00176 ptv=0.0247 ring=0.01619 smooth=0.0493
+2026-05-19 12:08:36 [INFO] Step 15/54 Loss=6.7741 mse=0.3905 v_opt=0.21371 v_mand=0.07619 ptv=0.0242 ring=0.01931 smooth=0.0549
+2026-05-19 12:08:39 [INFO] Step 20/54 Loss=5.3216 mse=0.5315 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0626
+2026-05-19 12:08:44 [INFO] Step 25/54 Loss=4.0317 mse=0.3082 v_opt=0.07094 v_mand=0.01209 ptv=0.0253 ring=0.01655 smooth=0.0427
+2026-05-19 12:08:46 [INFO] Step 30/54 Loss=3.9246 mse=0.3376 v_opt=0.02131 v_mand=0.00077 ptv=0.0259 ring=0.01477 smooth=0.0590
+2026-05-19 12:08:48 [INFO] Step 35/54 Loss=4.7070 mse=0.3978 v_opt=0.04954 v_mand=0.00565 ptv=0.0254 ring=0.01535 smooth=0.0473
+2026-05-19 12:08:51 [INFO] Step 40/54 Loss=5.4036 mse=0.4934 v_opt=0.00238 v_mand=0.00000 ptv=0.0205 ring=0.01708 smooth=0.0396
+2026-05-19 12:08:55 [INFO] Step 45/54 Loss=3.1902 mse=0.2663 v_opt=0.00006 v_mand=0.00000 ptv=0.0308 ring=0.01435 smooth=0.0387
+2026-05-19 12:08:58 [INFO] Step 50/54 Loss=3.5202 mse=0.2885 v_opt=0.02324 v_mand=0.00058 ptv=0.0311 ring=0.01720 smooth=0.0480
+2026-05-19 12:09:00 [INFO] Step 54/54 Loss=11.7429 mse=0.3842 v_opt=0.06557 v_mand=0.02417 ptv=0.7155 ring=0.00039 smooth=0.0495
+2026-05-19 12:09:00 [INFO] Running validation at epoch 45...
+2026-05-19 12:09:21 [INFO] Epoch 45 Summary: Train=4.4735 Val=6.0104 PTV_D95=59.67Gy Bladder=27.85Gy Rectum=24.75Gy
+2026-05-19 12:09:21 [INFO] Epoch 46/100 started, lr=5.82e-05
+2026-05-19 12:09:27 [INFO] Step 5/54 Loss=3.9871 mse=0.3281 v_opt=0.02598 v_mand=0.00374 ptv=0.0246 ring=0.02070 smooth=0.0484
+2026-05-19 12:09:29 [INFO] Step 10/54 Loss=5.4680 mse=0.4998 v_opt=0.01223 v_mand=0.00000 ptv=0.0213 ring=0.01524 smooth=0.0425
+2026-05-19 12:09:32 [INFO] Step 15/54 Loss=3.5988 mse=0.3071 v_opt=0.00000 v_mand=0.00000 ptv=0.0348 ring=0.01167 smooth=0.0488
+2026-05-19 12:09:34 [INFO] Step 20/54 Loss=4.7064 mse=0.4153 v_opt=0.00000 v_mand=0.00000 ptv=0.0328 ring=0.01464 smooth=0.0560
+2026-05-19 12:09:39 [INFO] Step 25/54 Loss=4.0907 mse=0.2918 v_opt=0.06370 v_mand=0.01214 ptv=0.0293 ring=0.02955 smooth=0.0533
+2026-05-19 12:09:41 [INFO] Step 30/54 Loss=3.6611 mse=0.3078 v_opt=0.00138 v_mand=0.00000 ptv=0.0354 ring=0.01474 smooth=0.0504
+2026-05-19 12:09:44 [INFO] Step 35/54 Loss=3.6923 mse=0.3022 v_opt=0.03101 v_mand=0.00487 ptv=0.0243 ring=0.01598 smooth=0.0417
+2026-05-19 12:09:46 [INFO] Step 40/54 Loss=5.6862 mse=0.5195 v_opt=0.00173 v_mand=0.00000 ptv=0.0256 ring=0.01516 smooth=0.0472
+2026-05-19 12:09:51 [INFO] Step 45/54 Loss=4.2431 mse=0.3672 v_opt=0.02155 v_mand=0.00148 ptv=0.0206 ring=0.01871 smooth=0.0444
+2026-05-19 12:09:53 [INFO] Step 50/54 Loss=4.7882 mse=0.4006 v_opt=0.02092 v_mand=0.00198 ptv=0.0301 ring=0.02563 smooth=0.0501
+2026-05-19 12:09:55 [INFO] Step 54/54 Loss=4.2486 mse=0.3767 v_opt=0.00554 v_mand=0.00000 ptv=0.0209 ring=0.01712 smooth=0.0461
+2026-05-19 12:09:55 [INFO] Running validation at epoch 46...
+2026-05-19 12:10:17 [INFO] Epoch 46 Summary: Train=4.7363 Val=5.9698 PTV_D95=59.34Gy Bladder=27.30Gy Rectum=24.69Gy
+2026-05-19 12:10:17 [INFO] Epoch 47/100 started, lr=5.67e-05
+2026-05-19 12:10:22 [INFO] Step 5/54 Loss=4.8213 mse=0.4222 v_opt=0.02846 v_mand=0.00306 ptv=0.0237 ring=0.01497 smooth=0.0472
+2026-05-19 12:10:25 [INFO] Step 10/54 Loss=3.9524 mse=0.3432 v_opt=0.01376 v_mand=0.00030 ptv=0.0220 ring=0.01740 smooth=0.0455
+2026-05-19 12:10:27 [INFO] Step 15/54 Loss=3.7522 mse=0.3242 v_opt=0.00467 v_mand=0.00000 ptv=0.0256 ring=0.01603 smooth=0.0449
+2026-05-19 12:10:30 [INFO] Step 20/54 Loss=4.2035 mse=0.3148 v_opt=0.08696 v_mand=0.01330 ptv=0.0301 ring=0.01629 smooth=0.0441
+2026-05-19 12:10:35 [INFO] Step 25/54 Loss=5.3131 mse=0.4840 v_opt=0.00452 v_mand=0.00000 ptv=0.0286 ring=0.01157 smooth=0.0496
+2026-05-19 12:10:37 [INFO] Step 30/54 Loss=3.7943 mse=0.3315 v_opt=0.00468 v_mand=0.00000 ptv=0.0275 ring=0.01269 smooth=0.0419
+2026-05-19 12:10:39 [INFO] Step 35/54 Loss=4.4723 mse=0.3976 v_opt=0.00146 v_mand=0.00000 ptv=0.0300 ring=0.01266 smooth=0.0420
+2026-05-19 12:10:42 [INFO] Step 40/54 Loss=6.1192 mse=0.4476 v_opt=0.10638 v_mand=0.03282 ptv=0.0225 ring=0.02524 smooth=0.0561
+2026-05-19 12:10:47 [INFO] Step 45/54 Loss=3.5719 mse=0.3567 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0516
+2026-05-19 12:10:49 [INFO] Step 50/54 Loss=3.1926 mse=0.2642 v_opt=0.00000 v_mand=0.00000 ptv=0.0360 ring=0.01242 smooth=0.0403
+2026-05-19 12:10:51 [INFO] Step 54/54 Loss=6.3251 mse=0.5752 v_opt=0.01990 v_mand=0.00168 ptv=0.0248 ring=0.01584 smooth=0.0559
+2026-05-19 12:10:51 [INFO] Running validation at epoch 47...
+2026-05-19 12:11:13 [INFO] Epoch 47 Summary: Train=4.1866 Val=5.8194 PTV_D95=58.48Gy Bladder=25.94Gy Rectum=23.38Gy
+2026-05-19 12:11:13 [INFO] [PHYSICS] Saved best model val_loss=5.8194
+2026-05-19 12:11:13 [INFO] Epoch 48/100 started, lr=5.52e-05
+2026-05-19 12:11:19 [INFO] Step 5/54 Loss=5.2513 mse=0.4810 v_opt=0.00631 v_mand=0.00000 ptv=0.0191 ring=0.01543 smooth=0.0582
+2026-05-19 12:11:21 [INFO] Step 10/54 Loss=3.6396 mse=0.3142 v_opt=0.00232 v_mand=0.00000 ptv=0.0216 ring=0.01814 smooth=0.0466
+2026-05-19 12:11:24 [INFO] Step 15/54 Loss=5.0451 mse=0.4128 v_opt=0.06588 v_mand=0.01064 ptv=0.0194 ring=0.02130 smooth=0.0594
+2026-05-19 12:11:26 [INFO] Step 20/54 Loss=4.9387 mse=0.4143 v_opt=0.00141 v_mand=0.00000 ptv=0.0539 ring=0.01657 smooth=0.0537
+2026-05-19 12:11:30 [INFO] Step 25/54 Loss=3.5768 mse=0.2944 v_opt=0.02460 v_mand=0.00284 ptv=0.0230 ring=0.01858 smooth=0.0409
+2026-05-19 12:11:32 [INFO] Step 30/54 Loss=4.2459 mse=0.3635 v_opt=0.02901 v_mand=0.00129 ptv=0.0256 ring=0.01728 smooth=0.0503
+2026-05-19 12:11:35 [INFO] Step 35/54 Loss=4.9751 mse=0.4509 v_opt=0.00012 v_mand=0.00000 ptv=0.0231 ring=0.01528 smooth=0.0512
+2026-05-19 12:11:38 [INFO] Step 40/54 Loss=3.9387 mse=0.3379 v_opt=0.00579 v_mand=0.00000 ptv=0.0323 ring=0.01472 smooth=0.0429
+2026-05-19 12:11:42 [INFO] Step 45/54 Loss=5.4463 mse=0.4857 v_opt=0.02773 v_mand=0.00443 ptv=0.0214 ring=0.01360 smooth=0.0465
+2026-05-19 12:11:45 [INFO] Step 50/54 Loss=3.9546 mse=0.3361 v_opt=0.01836 v_mand=0.00041 ptv=0.0371 ring=0.01138 smooth=0.0435
+2026-05-19 12:11:47 [INFO] Step 54/54 Loss=6.6419 mse=0.6162 v_opt=0.00089 v_mand=0.00000 ptv=0.0269 ring=0.01363 smooth=0.0426
+2026-05-19 12:11:47 [INFO] Running validation at epoch 48...
+2026-05-19 12:12:09 [INFO] Epoch 48 Summary: Train=4.5449 Val=5.7711 PTV_D95=58.74Gy Bladder=25.73Gy Rectum=24.26Gy
+2026-05-19 12:12:09 [INFO] [PHYSICS] Saved best model val_loss=5.7711
+2026-05-19 12:12:09 [INFO] Epoch 49/100 started, lr=5.36e-05
+2026-05-19 12:12:14 [INFO] Step 5/54 Loss=19.4175 mse=0.5069 v_opt=0.73357 v_mand=0.49605 ptv=0.0000 ring=0.03166 smooth=0.0528
+2026-05-19 12:12:17 [INFO] Step 10/54 Loss=5.9914 mse=0.5406 v_opt=0.01088 v_mand=0.00000 ptv=0.0216 ring=0.02287 smooth=0.0419
+2026-05-19 12:12:20 [INFO] Step 15/54 Loss=3.4764 mse=0.2902 v_opt=0.00541 v_mand=0.00000 ptv=0.0292 ring=0.01782 smooth=0.0427
+2026-05-19 12:12:22 [INFO] Step 20/54 Loss=4.8096 mse=0.4307 v_opt=0.01481 v_mand=0.00047 ptv=0.0228 ring=0.01520 smooth=0.0484
+2026-05-19 12:12:26 [INFO] Step 25/54 Loss=3.3941 mse=0.2753 v_opt=0.04603 v_mand=0.00423 ptv=0.0214 ring=0.01503 smooth=0.0368
+2026-05-19 12:12:29 [INFO] Step 30/54 Loss=5.4406 mse=0.4992 v_opt=0.00549 v_mand=0.00000 ptv=0.0212 ring=0.01475 smooth=0.0417
+2026-05-19 12:12:31 [INFO] Step 35/54 Loss=4.2890 mse=0.3780 v_opt=0.00262 v_mand=0.00000 ptv=0.0322 ring=0.01188 smooth=0.0386
+2026-05-19 12:12:33 [INFO] Step 40/54 Loss=3.7773 mse=0.3190 v_opt=0.02403 v_mand=0.00303 ptv=0.0206 ring=0.01693 smooth=0.0389
+2026-05-19 12:12:38 [INFO] Step 45/54 Loss=3.8619 mse=0.3324 v_opt=0.00277 v_mand=0.00000 ptv=0.0262 ring=0.01773 smooth=0.0449
+2026-05-19 12:12:40 [INFO] Step 50/54 Loss=3.8903 mse=0.3411 v_opt=0.00000 v_mand=0.00000 ptv=0.0223 ring=0.01682 smooth=0.0438
+2026-05-19 12:12:42 [INFO] Step 54/54 Loss=3.2833 mse=0.2726 v_opt=0.01084 v_mand=0.00002 ptv=0.0243 ring=0.01922 smooth=0.0386
+2026-05-19 12:12:42 [INFO] Running validation at epoch 49...
+2026-05-19 12:13:04 [INFO] Epoch 49 Summary: Train=4.5378 Val=5.7270 PTV_D95=58.14Gy Bladder=25.31Gy Rectum=25.03Gy
+2026-05-19 12:13:04 [INFO] [PHYSICS] Saved best model val_loss=5.7270
+2026-05-19 12:13:04 [INFO] Epoch 50/100 started, lr=5.21e-05
+2026-05-19 12:13:09 [INFO] Step 5/54 Loss=4.2551 mse=0.3743 v_opt=0.00422 v_mand=0.00000 ptv=0.0235 ring=0.01764 smooth=0.0457
+2026-05-19 12:13:12 [INFO] Step 10/54 Loss=5.1814 mse=0.4599 v_opt=0.02624 v_mand=0.00331 ptv=0.0206 ring=0.01579 smooth=0.0419
+2026-05-19 12:13:14 [INFO] Step 15/54 Loss=6.0595 mse=0.3894 v_opt=0.14005 v_mand=0.05088 ptv=0.0310 ring=0.01987 smooth=0.0559
+2026-05-19 12:13:17 [INFO] Step 20/54 Loss=5.2473 mse=0.4749 v_opt=0.00183 v_mand=0.00000 ptv=0.0279 ring=0.01409 smooth=0.0460
+2026-05-19 12:13:20 [INFO] Step 25/54 Loss=4.7010 mse=0.4178 v_opt=0.00776 v_mand=0.00000 ptv=0.0317 ring=0.01243 smooth=0.0454
+2026-05-19 12:13:23 [INFO] Step 30/54 Loss=3.5485 mse=0.2868 v_opt=0.02421 v_mand=0.00309 ptv=0.0253 ring=0.01986 smooth=0.0452
+2026-05-19 12:13:26 [INFO] Step 35/54 Loss=3.4827 mse=0.2985 v_opt=0.01551 v_mand=0.00060 ptv=0.0222 ring=0.01505 smooth=0.0400
+2026-05-19 12:13:28 [INFO] Step 40/54 Loss=4.1854 mse=0.4179 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0661
+2026-05-19 12:13:31 [INFO] Step 45/54 Loss=4.0617 mse=0.3033 v_opt=0.06221 v_mand=0.01508 ptv=0.0260 ring=0.01754 smooth=0.0435
+2026-05-19 12:13:35 [INFO] Step 50/54 Loss=4.5516 mse=0.4100 v_opt=0.00449 v_mand=0.00000 ptv=0.0225 ring=0.01418 smooth=0.0495
+2026-05-19 12:13:37 [INFO] Step 54/54 Loss=5.0559 mse=0.3955 v_opt=0.07355 v_mand=0.01778 ptv=0.0178 ring=0.02178 smooth=0.0444
+2026-05-19 12:13:37 [INFO] Running validation at epoch 50...
+2026-05-19 12:14:00 [INFO] Epoch 50 Summary: Train=4.9834 Val=5.7702 PTV_D95=59.36Gy Bladder=25.36Gy Rectum=24.91Gy
+2026-05-19 12:14:00 [INFO] Epoch 51/100 started, lr=5.05e-05
+2026-05-19 12:14:05 [INFO] Step 5/54 Loss=3.8683 mse=0.3326 v_opt=0.02054 v_mand=0.00006 ptv=0.0220 ring=0.01837 smooth=0.0414
+2026-05-19 12:14:08 [INFO] Step 10/54 Loss=3.3937 mse=0.2925 v_opt=0.00491 v_mand=0.00000 ptv=0.0249 ring=0.01358 smooth=0.0543
+2026-05-19 12:14:10 [INFO] Step 15/54 Loss=6.8492 mse=0.4280 v_opt=0.15054 v_mand=0.07112 ptv=0.0293 ring=0.01284 smooth=0.0474
+2026-05-19 12:14:12 [INFO] Step 20/54 Loss=3.0023 mse=0.2527 v_opt=0.00815 v_mand=0.00000 ptv=0.0275 ring=0.01198 smooth=0.0421
+2026-05-19 12:14:17 [INFO] Step 25/54 Loss=3.2555 mse=0.2705 v_opt=0.00000 v_mand=0.00000 ptv=0.0346 ring=0.01335 smooth=0.0446
+2026-05-19 12:14:19 [INFO] Step 30/54 Loss=2.9073 mse=0.2389 v_opt=0.00002 v_mand=0.00000 ptv=0.0245 ring=0.01798 smooth=0.0388
+2026-05-19 12:14:22 [INFO] Step 35/54 Loss=3.9836 mse=0.3261 v_opt=0.03003 v_mand=0.00145 ptv=0.0251 ring=0.02476 smooth=0.0409
+2026-05-19 12:14:24 [INFO] Step 40/54 Loss=3.9860 mse=0.3355 v_opt=0.03408 v_mand=0.00284 ptv=0.0213 ring=0.01831 smooth=0.0409
+2026-05-19 12:14:28 [INFO] Step 45/54 Loss=4.1904 mse=0.3730 v_opt=0.00314 v_mand=0.00000 ptv=0.0230 ring=0.01467 smooth=0.0398
+2026-05-19 12:14:31 [INFO] Step 50/54 Loss=3.4856 mse=0.2937 v_opt=0.00045 v_mand=0.00000 ptv=0.0366 ring=0.01178 smooth=0.0416
+2026-05-19 12:14:33 [INFO] Step 54/54 Loss=3.6956 mse=0.3123 v_opt=0.01377 v_mand=0.00022 ptv=0.0253 ring=0.01882 smooth=0.0424
+2026-05-19 12:14:33 [INFO] Running validation at epoch 51...
+2026-05-19 12:14:56 [INFO] Epoch 51 Summary: Train=4.8839 Val=5.8095 PTV_D95=59.22Gy Bladder=27.26Gy Rectum=22.59Gy
+2026-05-19 12:14:56 [INFO] Epoch 52/100 started, lr=4.89e-05
+2026-05-19 12:15:01 [INFO] Step 5/54 Loss=3.7216 mse=0.2987 v_opt=0.03099 v_mand=0.00557 ptv=0.0191 ring=0.02258 smooth=0.0396
+2026-05-19 12:15:03 [INFO] Step 10/54 Loss=3.6721 mse=0.3133 v_opt=0.00000 v_mand=0.00000 ptv=0.0286 ring=0.01647 smooth=0.0596
+2026-05-19 12:15:06 [INFO] Step 15/54 Loss=3.7141 mse=0.3217 v_opt=0.00086 v_mand=0.00000 ptv=0.0279 ring=0.01416 smooth=0.0387
+2026-05-19 12:15:09 [INFO] Step 20/54 Loss=4.1710 mse=0.3671 v_opt=0.00050 v_mand=0.00000 ptv=0.0264 ring=0.01533 smooth=0.0523
+2026-05-19 12:15:12 [INFO] Step 25/54 Loss=4.0767 mse=0.3495 v_opt=0.01243 v_mand=0.00013 ptv=0.0288 ring=0.01736 smooth=0.0457
+2026-05-19 12:15:14 [INFO] Step 30/54 Loss=4.1606 mse=0.3636 v_opt=0.00000 v_mand=0.00000 ptv=0.0301 ring=0.01464 smooth=0.0416
+2026-05-19 12:15:18 [INFO] Step 35/54 Loss=5.7478 mse=0.4388 v_opt=0.06576 v_mand=0.01862 ptv=0.0500 ring=0.01713 smooth=0.0531
+2026-05-19 12:15:20 [INFO] Step 40/54 Loss=5.6763 mse=0.4615 v_opt=0.04545 v_mand=0.01017 ptv=0.0529 ring=0.01211 smooth=0.0531
+2026-05-19 12:15:23 [INFO] Step 45/54 Loss=3.2932 mse=0.2774 v_opt=0.00000 v_mand=0.00000 ptv=0.0297 ring=0.01457 smooth=0.0380
+2026-05-19 12:15:26 [INFO] Step 50/54 Loss=4.8761 mse=0.4872 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0451
+2026-05-19 12:15:28 [INFO] Step 54/54 Loss=4.7605 mse=0.3586 v_opt=0.08616 v_mand=0.01717 ptv=0.0277 ring=0.01940 smooth=0.0519
+2026-05-19 12:15:28 [INFO] Running validation at epoch 52...
+2026-05-19 12:15:51 [INFO] Epoch 52 Summary: Train=4.3811 Val=5.7754 PTV_D95=58.98Gy Bladder=26.22Gy Rectum=27.71Gy
+2026-05-19 12:15:51 [INFO] Epoch 53/100 started, lr=4.74e-05
+2026-05-19 12:15:56 [INFO] Step 5/54 Loss=4.8398 mse=0.3852 v_opt=0.06805 v_mand=0.01564 ptv=0.0220 ring=0.01572 smooth=0.0458
+2026-05-19 12:15:59 [INFO] Step 10/54 Loss=7.0670 mse=0.6374 v_opt=0.00003 v_mand=0.00000 ptv=0.0570 ring=0.00781 smooth=0.0553
+2026-05-19 12:16:01 [INFO] Step 15/54 Loss=3.1480 mse=0.2547 v_opt=0.01705 v_mand=0.00023 ptv=0.0263 ring=0.01958 smooth=0.0383
+2026-05-19 12:16:04 [INFO] Step 20/54 Loss=4.8152 mse=0.4016 v_opt=0.02966 v_mand=0.00078 ptv=0.0429 ring=0.01912 smooth=0.0424
+2026-05-19 12:16:08 [INFO] Step 25/54 Loss=5.7330 mse=0.5131 v_opt=0.01513 v_mand=0.00053 ptv=0.0315 ring=0.01592 smooth=0.0509
+2026-05-19 12:16:11 [INFO] Step 30/54 Loss=3.4094 mse=0.2853 v_opt=0.00000 v_mand=0.00000 ptv=0.0385 ring=0.01116 smooth=0.0455
+2026-05-19 12:16:13 [INFO] Step 35/54 Loss=6.7448 mse=0.6084 v_opt=0.01358 v_mand=0.00000 ptv=0.0272 ring=0.02390 smooth=0.0376
+2026-05-19 12:16:16 [INFO] Step 40/54 Loss=3.7878 mse=0.3292 v_opt=0.00303 v_mand=0.00000 ptv=0.0252 ring=0.01563 smooth=0.0405
+2026-05-19 12:16:19 [INFO] Step 45/54 Loss=4.0411 mse=0.3351 v_opt=0.03072 v_mand=0.00379 ptv=0.0253 ring=0.01846 smooth=0.0415
+2026-05-19 12:16:23 [INFO] Step 50/54 Loss=4.4269 mse=0.2823 v_opt=0.12402 v_mand=0.03447 ptv=0.0207 ring=0.01891 smooth=0.0387
+2026-05-19 12:16:24 [INFO] Step 54/54 Loss=3.3225 mse=0.2697 v_opt=0.00404 v_mand=0.00000 ptv=0.0366 ring=0.01650 smooth=0.0379
+2026-05-19 12:16:24 [INFO] Running validation at epoch 53...
+2026-05-19 12:16:47 [INFO] Epoch 53 Summary: Train=4.1893 Val=5.6245 PTV_D95=58.54Gy Bladder=25.40Gy Rectum=25.98Gy
+2026-05-19 12:16:47 [INFO] [PHYSICS] Saved best model val_loss=5.6245
+2026-05-19 12:16:47 [INFO] Epoch 54/100 started, lr=4.58e-05
+2026-05-19 12:16:52 [INFO] Step 5/54 Loss=3.1108 mse=0.2679 v_opt=0.00000 v_mand=0.00000 ptv=0.0255 ring=0.01151 smooth=0.0436
+2026-05-19 12:16:55 [INFO] Step 10/54 Loss=4.4305 mse=0.3976 v_opt=0.00263 v_mand=0.00000 ptv=0.0200 ring=0.01641 smooth=0.0395
+2026-05-19 12:16:58 [INFO] Step 15/54 Loss=3.0762 mse=0.2565 v_opt=0.00916 v_mand=0.00000 ptv=0.0269 ring=0.01463 smooth=0.0380
+2026-05-19 12:17:00 [INFO] Step 20/54 Loss=4.3842 mse=0.3679 v_opt=0.03584 v_mand=0.00418 ptv=0.0321 ring=0.01344 smooth=0.0609
+2026-05-19 12:17:04 [INFO] Step 25/54 Loss=4.4183 mse=0.3858 v_opt=0.02533 v_mand=0.00291 ptv=0.0241 ring=0.01270 smooth=0.0521
+2026-05-19 12:17:07 [INFO] Step 30/54 Loss=5.1377 mse=0.4286 v_opt=0.04818 v_mand=0.01083 ptv=0.0257 ring=0.01475 smooth=0.0706
+2026-05-19 12:17:10 [INFO] Step 35/54 Loss=5.0204 mse=0.4658 v_opt=0.00068 v_mand=0.00000 ptv=0.0204 ring=0.01022 smooth=0.0345
+2026-05-19 12:17:12 [INFO] Step 40/54 Loss=4.8304 mse=0.3564 v_opt=0.07368 v_mand=0.02405 ptv=0.0334 ring=0.01196 smooth=0.0503
+2026-05-19 12:17:15 [INFO] Step 45/54 Loss=4.2220 mse=0.3748 v_opt=0.00593 v_mand=0.00000 ptv=0.0265 ring=0.01285 smooth=0.0419
+2026-05-19 12:17:19 [INFO] Step 50/54 Loss=4.6834 mse=0.4116 v_opt=0.01234 v_mand=0.00012 ptv=0.0281 ring=0.01694 smooth=0.0467
+2026-05-19 12:17:21 [INFO] Step 54/54 Loss=3.4928 mse=0.2988 v_opt=0.01184 v_mand=0.00008 ptv=0.0243 ring=0.01545 smooth=0.0442
+2026-05-19 12:17:21 [INFO] Running validation at epoch 54...
+2026-05-19 12:17:43 [INFO] Epoch 54 Summary: Train=4.3327 Val=5.7260 PTV_D95=58.88Gy Bladder=27.08Gy Rectum=25.91Gy
+2026-05-19 12:17:43 [INFO] Epoch 55/100 started, lr=4.43e-05
+2026-05-19 12:17:49 [INFO] Step 5/54 Loss=4.4428 mse=0.3928 v_opt=0.01380 v_mand=0.00020 ptv=0.0297 ring=0.01212 smooth=0.0427
+2026-05-19 12:17:51 [INFO] Step 10/54 Loss=4.6150 mse=0.4042 v_opt=0.01704 v_mand=0.00083 ptv=0.0282 ring=0.01543 smooth=0.0453
+2026-05-19 12:17:53 [INFO] Step 15/54 Loss=5.4131 mse=0.4204 v_opt=0.08374 v_mand=0.01865 ptv=0.0238 ring=0.02214 smooth=0.0455
+2026-05-19 12:17:56 [INFO] Step 20/54 Loss=3.3404 mse=0.2888 v_opt=0.00008 v_mand=0.00000 ptv=0.0259 ring=0.01265 smooth=0.0377
+2026-05-19 12:18:01 [INFO] Step 25/54 Loss=3.9038 mse=0.3461 v_opt=0.00078 v_mand=0.00000 ptv=0.0197 ring=0.01593 smooth=0.0441
+2026-05-19 12:18:03 [INFO] Step 30/54 Loss=3.5731 mse=0.3044 v_opt=0.00147 v_mand=0.00000 ptv=0.0321 ring=0.01337 smooth=0.0414
+2026-05-19 12:18:06 [INFO] Step 35/54 Loss=3.2451 mse=0.2698 v_opt=0.01416 v_mand=0.00036 ptv=0.0333 ring=0.01152 smooth=0.0387
+2026-05-19 12:18:08 [INFO] Step 40/54 Loss=3.3959 mse=0.2944 v_opt=0.00036 v_mand=0.00000 ptv=0.0253 ring=0.01294 smooth=0.0370
+2026-05-19 12:18:13 [INFO] Step 45/54 Loss=4.9167 mse=0.4471 v_opt=0.00381 v_mand=0.00000 ptv=0.0183 ring=0.01674 smooth=0.0355
+2026-05-19 12:18:15 [INFO] Step 50/54 Loss=3.9417 mse=0.3207 v_opt=0.05302 v_mand=0.00640 ptv=0.0193 ring=0.01814 smooth=0.0358
+2026-05-19 12:18:17 [INFO] Step 54/54 Loss=2.5687 mse=0.1986 v_opt=0.03097 v_mand=0.00102 ptv=0.0239 ring=0.01683 smooth=0.0372
+2026-05-19 12:18:17 [INFO] Running validation at epoch 55...
+2026-05-19 12:18:39 [INFO] Epoch 55 Summary: Train=4.1045 Val=5.8850 PTV_D95=58.28Gy Bladder=27.58Gy Rectum=28.26Gy
+2026-05-19 12:18:39 [INFO] Epoch 56/100 started, lr=4.28e-05
+2026-05-19 12:18:44 [INFO] Step 5/54 Loss=3.6735 mse=0.3066 v_opt=0.00787 v_mand=0.00000 ptv=0.0405 ring=0.01216 smooth=0.0355
+2026-05-19 12:18:47 [INFO] Step 10/54 Loss=2.6004 mse=0.2073 v_opt=0.00000 v_mand=0.00000 ptv=0.0341 ring=0.01215 smooth=0.0352
+2026-05-19 12:18:49 [INFO] Step 15/54 Loss=4.3826 mse=0.3929 v_opt=0.00224 v_mand=0.00000 ptv=0.0227 ring=0.01443 smooth=0.0561
+2026-05-19 12:18:52 [INFO] Step 20/54 Loss=3.3973 mse=0.2734 v_opt=0.00119 v_mand=0.00000 ptv=0.0324 ring=0.02221 smooth=0.0432
+2026-05-19 12:18:56 [INFO] Step 25/54 Loss=3.9802 mse=0.3441 v_opt=0.01093 v_mand=0.00002 ptv=0.0252 ring=0.01744 smooth=0.0370
+2026-05-19 12:18:59 [INFO] Step 30/54 Loss=4.7311 mse=0.4167 v_opt=0.00818 v_mand=0.00000 ptv=0.0314 ring=0.01529 smooth=0.0453
+2026-05-19 12:19:02 [INFO] Step 35/54 Loss=4.0196 mse=0.3218 v_opt=0.03378 v_mand=0.00597 ptv=0.0317 ring=0.01757 smooth=0.0427
+2026-05-19 12:19:04 [INFO] Step 40/54 Loss=3.5349 mse=0.3009 v_opt=0.01129 v_mand=0.00000 ptv=0.0218 ring=0.01878 smooth=0.0381
+2026-05-19 12:19:09 [INFO] Step 45/54 Loss=4.0726 mse=0.3257 v_opt=0.05963 v_mand=0.00872 ptv=0.0200 ring=0.01834 smooth=0.0375
+2026-05-19 12:19:11 [INFO] Step 50/54 Loss=4.3372 mse=0.3658 v_opt=0.03295 v_mand=0.00538 ptv=0.0228 ring=0.01643 smooth=0.0422
+2026-05-19 12:19:13 [INFO] Step 54/54 Loss=5.8305 mse=0.4874 v_opt=0.01849 v_mand=0.00124 ptv=0.0697 ring=0.01246 smooth=0.0465
+2026-05-19 12:19:13 [INFO] Running validation at epoch 56...
+2026-05-19 12:19:35 [INFO] Epoch 56 Summary: Train=4.0515 Val=5.6263 PTV_D95=58.15Gy Bladder=25.74Gy Rectum=22.97Gy
+2026-05-19 12:19:35 [INFO] Epoch 57/100 started, lr=4.12e-05
+2026-05-19 12:19:40 [INFO] Step 5/54 Loss=3.3841 mse=0.2887 v_opt=0.00992 v_mand=0.00000 ptv=0.0279 ring=0.01296 smooth=0.0402
+2026-05-19 12:19:42 [INFO] Step 10/54 Loss=3.6142 mse=0.3078 v_opt=0.00259 v_mand=0.00000 ptv=0.0319 ring=0.01389 smooth=0.0377
+2026-05-19 12:19:45 [INFO] Step 15/54 Loss=4.5642 mse=0.3967 v_opt=0.02440 v_mand=0.00521 ptv=0.0219 ring=0.01304 smooth=0.0437
+2026-05-19 12:19:47 [INFO] Step 20/54 Loss=3.1816 mse=0.2750 v_opt=0.00385 v_mand=0.00000 ptv=0.0205 ring=0.01436 smooth=0.0334
+2026-05-19 12:19:52 [INFO] Step 25/54 Loss=4.0350 mse=0.3527 v_opt=0.00888 v_mand=0.00000 ptv=0.0220 ring=0.01781 smooth=0.0371
+2026-05-19 12:19:55 [INFO] Step 30/54 Loss=4.9986 mse=0.4993 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0557
+2026-05-19 12:19:57 [INFO] Step 35/54 Loss=5.1103 mse=0.4539 v_opt=0.00000 v_mand=0.00000 ptv=0.0372 ring=0.01293 smooth=0.0500
+2026-05-19 12:19:59 [INFO] Step 40/54 Loss=5.5046 mse=0.5061 v_opt=0.01017 v_mand=0.00000 ptv=0.0213 ring=0.01365 smooth=0.0536
+2026-05-19 12:20:04 [INFO] Step 45/54 Loss=3.0392 mse=0.2532 v_opt=0.00000 v_mand=0.00000 ptv=0.0288 ring=0.01439 smooth=0.0365
+2026-05-19 12:20:07 [INFO] Step 50/54 Loss=3.9349 mse=0.3087 v_opt=0.04064 v_mand=0.01032 ptv=0.0198 ring=0.02042 smooth=0.0471
+2026-05-19 12:20:09 [INFO] Step 54/54 Loss=3.0767 mse=0.2613 v_opt=0.00326 v_mand=0.00000 ptv=0.0268 ring=0.01241 smooth=0.0350
+2026-05-19 12:20:09 [INFO] Running validation at epoch 57...
+2026-05-19 12:20:31 [INFO] Epoch 57 Summary: Train=4.0898 Val=5.8021 PTV_D95=59.66Gy Bladder=27.74Gy Rectum=24.90Gy
+2026-05-19 12:20:31 [INFO] Epoch 58/100 started, lr=3.97e-05
+2026-05-19 12:20:36 [INFO] Step 5/54 Loss=4.0320 mse=0.3416 v_opt=0.03013 v_mand=0.00409 ptv=0.0246 ring=0.01348 smooth=0.0466
+2026-05-19 12:20:38 [INFO] Step 10/54 Loss=3.2989 mse=0.2794 v_opt=0.00431 v_mand=0.00000 ptv=0.0268 ring=0.01493 smooth=0.0396
+2026-05-19 12:20:41 [INFO] Step 15/54 Loss=3.6348 mse=0.3222 v_opt=0.00471 v_mand=0.00000 ptv=0.0200 ring=0.01333 smooth=0.0404
+2026-05-19 12:20:43 [INFO] Step 20/54 Loss=4.1802 mse=0.3741 v_opt=0.00057 v_mand=0.00000 ptv=0.0219 ring=0.01432 smooth=0.0481
+2026-05-19 12:20:48 [INFO] Step 25/54 Loss=3.1801 mse=0.2738 v_opt=0.00012 v_mand=0.00000 ptv=0.0223 ring=0.01430 smooth=0.0440
+2026-05-19 12:20:50 [INFO] Step 30/54 Loss=3.4684 mse=0.3035 v_opt=0.01049 v_mand=0.00000 ptv=0.0213 ring=0.01306 smooth=0.0422
+2026-05-19 12:20:53 [INFO] Step 35/54 Loss=4.4113 mse=0.3833 v_opt=0.00222 v_mand=0.00000 ptv=0.0371 ring=0.01329 smooth=0.0430
+2026-05-19 12:20:56 [INFO] Step 40/54 Loss=5.0891 mse=0.3562 v_opt=0.10844 v_mand=0.03097 ptv=0.0221 ring=0.02071 smooth=0.0461
+2026-05-19 12:21:00 [INFO] Step 45/54 Loss=4.0896 mse=0.3377 v_opt=0.04580 v_mand=0.00291 ptv=0.0332 ring=0.01404 smooth=0.0507
+2026-05-19 12:21:02 [INFO] Step 50/54 Loss=3.4739 mse=0.2882 v_opt=0.03287 v_mand=0.00168 ptv=0.0293 ring=0.01242 smooth=0.0468
+2026-05-19 12:21:05 [INFO] Step 54/54 Loss=4.3622 mse=0.3877 v_opt=0.00389 v_mand=0.00000 ptv=0.0297 ring=0.01167 smooth=0.0456
+2026-05-19 12:21:05 [INFO] Running validation at epoch 58...
+2026-05-19 12:21:27 [INFO] Epoch 58 Summary: Train=4.1235 Val=5.5691 PTV_D95=57.20Gy Bladder=24.84Gy Rectum=25.19Gy
+2026-05-19 12:21:27 [INFO] [PHYSICS] Saved best model val_loss=5.5691
+2026-05-19 12:21:27 [INFO] Epoch 59/100 started, lr=3.82e-05
+2026-05-19 12:21:32 [INFO] Step 5/54 Loss=5.1887 mse=0.4568 v_opt=0.00538 v_mand=0.00000 ptv=0.0367 ring=0.01594 smooth=0.0459
+2026-05-19 12:21:34 [INFO] Step 10/54 Loss=4.0135 mse=0.3381 v_opt=0.00928 v_mand=0.00000 ptv=0.0245 ring=0.02435 smooth=0.0377
+2026-05-19 12:21:37 [INFO] Step 15/54 Loss=4.6430 mse=0.4158 v_opt=0.00496 v_mand=0.00000 ptv=0.0193 ring=0.01849 smooth=0.0483
+2026-05-19 12:21:40 [INFO] Step 20/54 Loss=3.3127 mse=0.2767 v_opt=0.01914 v_mand=0.00000 ptv=0.0260 ring=0.01617 smooth=0.0441
+2026-05-19 12:21:44 [INFO] Step 25/54 Loss=3.6588 mse=0.3100 v_opt=0.02822 v_mand=0.00125 ptv=0.0315 ring=0.01013 smooth=0.0428
+2026-05-19 12:21:47 [INFO] Step 30/54 Loss=5.1191 mse=0.4277 v_opt=0.01660 v_mand=0.00080 ptv=0.0593 ring=0.01262 smooth=0.0593
+2026-05-19 12:21:49 [INFO] Step 35/54 Loss=3.8606 mse=0.3391 v_opt=0.01767 v_mand=0.00107 ptv=0.0200 ring=0.01352 smooth=0.0476
+2026-05-19 12:21:52 [INFO] Step 40/54 Loss=3.0208 mse=0.2472 v_opt=0.00000 v_mand=0.00000 ptv=0.0296 ring=0.01661 smooth=0.0365
+2026-05-19 12:21:57 [INFO] Step 45/54 Loss=4.9186 mse=0.3061 v_opt=0.11812 v_mand=0.04394 ptv=0.0189 ring=0.02192 smooth=0.0440
+2026-05-19 12:21:59 [INFO] Step 50/54 Loss=4.5471 mse=0.4119 v_opt=0.00115 v_mand=0.00000 ptv=0.0207 ring=0.01418 smooth=0.0621
+2026-05-19 12:22:01 [INFO] Step 54/54 Loss=4.0266 mse=0.3516 v_opt=0.00000 v_mand=0.00000 ptv=0.0284 ring=0.01486 smooth=0.0411
+2026-05-19 12:22:01 [INFO] Running validation at epoch 59...
+2026-05-19 12:22:24 [INFO] Epoch 59 Summary: Train=4.1232 Val=5.5109 PTV_D95=58.80Gy Bladder=25.36Gy Rectum=25.49Gy
+2026-05-19 12:22:24 [INFO] [PHYSICS] Saved best model val_loss=5.5109
+2026-05-19 12:22:24 [INFO] Epoch 60/100 started, lr=3.67e-05
+2026-05-19 12:22:29 [INFO] Step 5/54 Loss=3.3902 mse=0.2944 v_opt=0.00404 v_mand=0.00011 ptv=0.0247 ring=0.01228 smooth=0.0387
+2026-05-19 12:22:31 [INFO] Step 10/54 Loss=5.6914 mse=0.5165 v_opt=0.01324 v_mand=0.00022 ptv=0.0287 ring=0.01352 smooth=0.0516
+2026-05-19 12:22:33 [INFO] Step 15/54 Loss=3.9218 mse=0.3421 v_opt=0.00856 v_mand=0.00000 ptv=0.0266 ring=0.01425 smooth=0.0405
+2026-05-19 12:22:36 [INFO] Step 20/54 Loss=4.8662 mse=0.4043 v_opt=0.06359 v_mand=0.01133 ptv=0.0190 ring=0.01457 smooth=0.0452
+2026-05-19 12:22:41 [INFO] Step 25/54 Loss=5.2638 mse=0.4294 v_opt=0.00304 v_mand=0.00000 ptv=0.0723 ring=0.01568 smooth=0.0542
+2026-05-19 12:22:43 [INFO] Step 30/54 Loss=3.5487 mse=0.3055 v_opt=0.00212 v_mand=0.00000 ptv=0.0280 ring=0.01373 smooth=0.0362
+2026-05-19 12:22:45 [INFO] Step 35/54 Loss=3.4373 mse=0.2921 v_opt=0.00764 v_mand=0.00000 ptv=0.0280 ring=0.01448 smooth=0.0372
+2026-05-19 12:22:48 [INFO] Step 40/54 Loss=3.9063 mse=0.3286 v_opt=0.00000 v_mand=0.00000 ptv=0.0409 ring=0.01387 smooth=0.0392
+2026-05-19 12:22:52 [INFO] Step 45/54 Loss=4.0408 mse=0.3598 v_opt=0.00625 v_mand=0.00000 ptv=0.0227 ring=0.01334 smooth=0.0396
+2026-05-19 12:22:54 [INFO] Step 50/54 Loss=3.7406 mse=0.3261 v_opt=0.00669 v_mand=0.00000 ptv=0.0229 ring=0.01559 smooth=0.0372
+2026-05-19 12:22:57 [INFO] Step 54/54 Loss=4.1359 mse=0.3492 v_opt=0.00259 v_mand=0.00000 ptv=0.0346 ring=0.01921 smooth=0.0439
+2026-05-19 12:22:57 [INFO] Running validation at epoch 60...
+2026-05-19 12:23:20 [INFO] Epoch 60 Summary: Train=4.6322 Val=5.5531 PTV_D95=58.99Gy Bladder=25.99Gy Rectum=23.37Gy
+2026-05-19 12:23:20 [INFO] Epoch 61/100 started, lr=3.52e-05
+2026-05-19 12:23:25 [INFO] Step 5/54 Loss=3.8896 mse=0.3380 v_opt=0.00614 v_mand=0.00000 ptv=0.0293 ring=0.01337 smooth=0.0372
+2026-05-19 12:23:27 [INFO] Step 10/54 Loss=3.9681 mse=0.3228 v_opt=0.04852 v_mand=0.00582 ptv=0.0279 ring=0.01429 smooth=0.0412
+2026-05-19 12:23:30 [INFO] Step 15/54 Loss=5.1356 mse=0.4315 v_opt=0.04770 v_mand=0.01070 ptv=0.0188 ring=0.01770 smooth=0.0468
+2026-05-19 12:23:32 [INFO] Step 20/54 Loss=4.0719 mse=0.3448 v_opt=0.03246 v_mand=0.00469 ptv=0.0219 ring=0.01459 smooth=0.0372
+2026-05-19 12:23:37 [INFO] Step 25/54 Loss=3.5980 mse=0.2981 v_opt=0.02666 v_mand=0.00395 ptv=0.0188 ring=0.01818 smooth=0.0361
+2026-05-19 12:23:39 [INFO] Step 30/54 Loss=5.1539 mse=0.4633 v_opt=0.01115 v_mand=0.00003 ptv=0.0307 ring=0.01241 smooth=0.0404
+2026-05-19 12:23:42 [INFO] Step 35/54 Loss=3.6029 mse=0.3127 v_opt=0.00666 v_mand=0.00000 ptv=0.0201 ring=0.01714 smooth=0.0374
+2026-05-19 12:23:44 [INFO] Step 40/54 Loss=4.6780 mse=0.3498 v_opt=0.07414 v_mand=0.02290 ptv=0.0215 ring=0.01602 smooth=0.0462
+2026-05-19 12:23:49 [INFO] Step 45/54 Loss=3.5427 mse=0.2889 v_opt=0.02506 v_mand=0.00245 ptv=0.0408 ring=0.00863 smooth=0.0469
+2026-05-19 12:23:51 [INFO] Step 50/54 Loss=3.5564 mse=0.2941 v_opt=0.02425 v_mand=0.00292 ptv=0.0321 ring=0.01130 smooth=0.0416
+2026-05-19 12:23:54 [INFO] Step 54/54 Loss=3.9725 mse=0.3425 v_opt=0.02050 v_mand=0.00259 ptv=0.0287 ring=0.01004 smooth=0.0362
+2026-05-19 12:23:54 [INFO] Running validation at epoch 61...
+2026-05-19 12:24:16 [INFO] Epoch 61 Summary: Train=3.9911 Val=5.4953 PTV_D95=57.84Gy Bladder=25.53Gy Rectum=23.56Gy
+2026-05-19 12:24:16 [INFO] [PHYSICS] Saved best model val_loss=5.4953
+2026-05-19 12:24:16 [INFO] Epoch 62/100 started, lr=3.37e-05
+2026-05-19 12:24:21 [INFO] Step 5/54 Loss=3.8029 mse=0.3023 v_opt=0.03808 v_mand=0.00891 ptv=0.0248 ring=0.01528 smooth=0.0387
+2026-05-19 12:24:24 [INFO] Step 10/54 Loss=3.5671 mse=0.3099 v_opt=0.00217 v_mand=0.00000 ptv=0.0211 ring=0.01661 smooth=0.0365
+2026-05-19 12:24:26 [INFO] Step 15/54 Loss=4.5897 mse=0.3959 v_opt=0.03490 v_mand=0.00392 ptv=0.0188 ring=0.01793 smooth=0.0526
+2026-05-19 12:24:29 [INFO] Step 20/54 Loss=3.7557 mse=0.2982 v_opt=0.04306 v_mand=0.00963 ptv=0.0217 ring=0.01507 smooth=0.0333
+2026-05-19 12:24:33 [INFO] Step 25/54 Loss=3.5867 mse=0.3120 v_opt=0.00000 v_mand=0.00000 ptv=0.0291 ring=0.01149 smooth=0.0351
+2026-05-19 12:24:36 [INFO] Step 30/54 Loss=2.6265 mse=0.2154 v_opt=0.00000 v_mand=0.00000 ptv=0.0273 ring=0.01301 smooth=0.0343
+2026-05-19 12:24:38 [INFO] Step 35/54 Loss=3.4763 mse=0.2909 v_opt=0.00664 v_mand=0.00000 ptv=0.0249 ring=0.02009 smooth=0.0389
+2026-05-19 12:24:41 [INFO] Step 40/54 Loss=3.4725 mse=0.2982 v_opt=0.01120 v_mand=0.00002 ptv=0.0210 ring=0.01691 smooth=0.0380
+2026-05-19 12:24:44 [INFO] Step 45/54 Loss=5.4624 mse=0.4943 v_opt=0.02055 v_mand=0.00154 ptv=0.0250 ring=0.01242 smooth=0.0379
+2026-05-19 12:24:47 [INFO] Step 50/54 Loss=3.6142 mse=0.2965 v_opt=0.02633 v_mand=0.00380 ptv=0.0284 ring=0.01428 smooth=0.0360
+2026-05-19 12:24:49 [INFO] Step 54/54 Loss=3.2220 mse=0.2786 v_opt=0.00000 v_mand=0.00000 ptv=0.0265 ring=0.01120 smooth=0.0354
+2026-05-19 12:24:49 [INFO] Running validation at epoch 62...
+2026-05-19 12:25:12 [INFO] Epoch 62 Summary: Train=3.9605 Val=5.5108 PTV_D95=58.53Gy Bladder=25.89Gy Rectum=23.66Gy
+2026-05-19 12:25:12 [INFO] Epoch 63/100 started, lr=3.23e-05
+2026-05-19 12:25:17 [INFO] Step 5/54 Loss=5.0518 mse=0.4576 v_opt=0.01816 v_mand=0.00121 ptv=0.0188 ring=0.01450 smooth=0.0400
+2026-05-19 12:25:19 [INFO] Step 10/54 Loss=4.4445 mse=0.3983 v_opt=0.01361 v_mand=0.00028 ptv=0.0193 ring=0.01538 smooth=0.0412
+2026-05-19 12:25:22 [INFO] Step 15/54 Loss=4.2272 mse=0.3806 v_opt=0.00268 v_mand=0.00000 ptv=0.0234 ring=0.01178 smooth=0.0453
+2026-05-19 12:25:25 [INFO] Step 20/54 Loss=4.5646 mse=0.3984 v_opt=0.01451 v_mand=0.00042 ptv=0.0313 ring=0.01495 smooth=0.0407
+2026-05-19 12:25:29 [INFO] Step 25/54 Loss=3.3932 mse=0.2956 v_opt=0.00760 v_mand=0.00000 ptv=0.0239 ring=0.01193 smooth=0.0351
+2026-05-19 12:25:32 [INFO] Step 30/54 Loss=3.4015 mse=0.2906 v_opt=0.00006 v_mand=0.00000 ptv=0.0268 ring=0.01489 smooth=0.0353
+2026-05-19 12:25:34 [INFO] Step 35/54 Loss=2.9093 mse=0.2414 v_opt=0.00800 v_mand=0.00000 ptv=0.0242 ring=0.01565 smooth=0.0334
+2026-05-19 12:25:37 [INFO] Step 40/54 Loss=4.5555 mse=0.3726 v_opt=0.04198 v_mand=0.00889 ptv=0.0285 ring=0.01557 smooth=0.0461
+2026-05-19 12:25:41 [INFO] Step 45/54 Loss=3.6218 mse=0.2950 v_opt=0.04886 v_mand=0.00439 ptv=0.0235 ring=0.01507 smooth=0.0327
+2026-05-19 12:25:44 [INFO] Step 50/54 Loss=4.9877 mse=0.4983 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0453
+2026-05-19 12:25:46 [INFO] Step 54/54 Loss=3.0467 mse=0.2601 v_opt=0.00579 v_mand=0.00000 ptv=0.0246 ring=0.01233 smooth=0.0304
+2026-05-19 12:25:46 [INFO] Running validation at epoch 63...
+2026-05-19 12:26:08 [INFO] Epoch 63 Summary: Train=4.2167 Val=5.4657 PTV_D95=58.29Gy Bladder=24.28Gy Rectum=24.44Gy
+2026-05-19 12:26:08 [INFO] [PHYSICS] Saved best model val_loss=5.4657
+2026-05-19 12:26:08 [INFO] Epoch 64/100 started, lr=3.08e-05
+2026-05-19 12:26:14 [INFO] Step 5/54 Loss=3.9944 mse=0.3258 v_opt=0.05508 v_mand=0.00568 ptv=0.0172 ring=0.02059 smooth=0.0383
+2026-05-19 12:26:16 [INFO] Step 10/54 Loss=5.9297 mse=0.4012 v_opt=0.16082 v_mand=0.06368 ptv=0.0000 ring=0.00000 smooth=0.0446
+2026-05-19 12:26:19 [INFO] Step 15/54 Loss=4.0978 mse=0.2944 v_opt=0.07321 v_mand=0.02226 ptv=0.0215 ring=0.01545 smooth=0.0389
+2026-05-19 12:26:21 [INFO] Step 20/54 Loss=4.2517 mse=0.3537 v_opt=0.03049 v_mand=0.00528 ptv=0.0271 ring=0.01641 smooth=0.0425
+2026-05-19 12:26:26 [INFO] Step 25/54 Loss=5.7010 mse=0.3460 v_opt=0.13982 v_mand=0.05672 ptv=0.0196 ring=0.02285 smooth=0.0452
+2026-05-19 12:26:28 [INFO] Step 30/54 Loss=5.6677 mse=0.4782 v_opt=0.00146 v_mand=0.00000 ptv=0.0665 ring=0.01418 smooth=0.0512
+2026-05-19 12:26:31 [INFO] Step 35/54 Loss=5.4005 mse=0.4834 v_opt=0.02437 v_mand=0.00191 ptv=0.0230 ring=0.01574 smooth=0.0366
+2026-05-19 12:26:33 [INFO] Step 40/54 Loss=3.7406 mse=0.3323 v_opt=0.00031 v_mand=0.00000 ptv=0.0210 ring=0.01355 smooth=0.0377
+2026-05-19 12:26:38 [INFO] Step 45/54 Loss=2.8544 mse=0.2364 v_opt=0.00012 v_mand=0.00000 ptv=0.0272 ring=0.01429 smooth=0.0384
+2026-05-19 12:26:40 [INFO] Step 50/54 Loss=3.2063 mse=0.2684 v_opt=0.02194 v_mand=0.00192 ptv=0.0214 ring=0.01425 smooth=0.0299
+2026-05-19 12:26:42 [INFO] Step 54/54 Loss=4.9872 mse=0.4983 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0466
+2026-05-19 12:26:42 [INFO] Running validation at epoch 64...
+2026-05-19 12:27:04 [INFO] Epoch 64 Summary: Train=4.1773 Val=5.5102 PTV_D95=59.57Gy Bladder=26.41Gy Rectum=24.79Gy
+2026-05-19 12:27:04 [INFO] Epoch 65/100 started, lr=2.94e-05
+2026-05-19 12:27:09 [INFO] Step 5/54 Loss=5.1048 mse=0.3890 v_opt=0.05805 v_mand=0.01888 ptv=0.0410 ring=0.01412 smooth=0.0545
+2026-05-19 12:27:12 [INFO] Step 10/54 Loss=4.0773 mse=0.3609 v_opt=0.01876 v_mand=0.00043 ptv=0.0239 ring=0.01180 smooth=0.0440
+2026-05-19 12:27:14 [INFO] Step 15/54 Loss=5.3411 mse=0.4844 v_opt=0.01666 v_mand=0.00000 ptv=0.0232 ring=0.01522 smooth=0.0345
+2026-05-19 12:27:17 [INFO] Step 20/54 Loss=3.4688 mse=0.3062 v_opt=0.00410 v_mand=0.00000 ptv=0.0206 ring=0.01262 smooth=0.0345
+2026-05-19 12:27:21 [INFO] Step 25/54 Loss=4.3670 mse=0.3761 v_opt=0.01325 v_mand=0.00000 ptv=0.0321 ring=0.01687 smooth=0.0461
+2026-05-19 12:27:24 [INFO] Step 30/54 Loss=3.2249 mse=0.2775 v_opt=0.00391 v_mand=0.00000 ptv=0.0237 ring=0.01346 smooth=0.0349
+2026-05-19 12:27:26 [INFO] Step 35/54 Loss=4.1345 mse=0.3721 v_opt=0.00181 v_mand=0.00000 ptv=0.0236 ring=0.01123 smooth=0.0520
+2026-05-19 12:27:29 [INFO] Step 40/54 Loss=3.9335 mse=0.3477 v_opt=0.00811 v_mand=0.00000 ptv=0.0239 ring=0.01313 smooth=0.0482
+2026-05-19 12:27:32 [INFO] Step 45/54 Loss=3.8022 mse=0.2926 v_opt=0.07128 v_mand=0.01036 ptv=0.0203 ring=0.01787 smooth=0.0367
+2026-05-19 12:27:35 [INFO] Step 50/54 Loss=3.3030 mse=0.2723 v_opt=0.03260 v_mand=0.00204 ptv=0.0282 ring=0.01192 smooth=0.0349
+2026-05-19 12:27:37 [INFO] Step 54/54 Loss=3.9546 mse=0.3482 v_opt=0.00691 v_mand=0.00000 ptv=0.0263 ring=0.01278 smooth=0.0421
+2026-05-19 12:27:37 [INFO] Running validation at epoch 65...
+2026-05-19 12:27:59 [INFO] Epoch 65 Summary: Train=4.6875 Val=5.4646 PTV_D95=59.96Gy Bladder=26.60Gy Rectum=23.62Gy
+2026-05-19 12:27:59 [INFO] [PHYSICS] Saved best model val_loss=5.4646
+2026-05-19 12:27:59 [INFO] Epoch 66/100 started, lr=2.80e-05
+2026-05-19 12:28:05 [INFO] Step 5/54 Loss=7.5804 mse=0.4359 v_opt=0.17853 v_mand=0.09076 ptv=0.0254 ring=0.02235 smooth=0.0537
+2026-05-19 12:28:07 [INFO] Step 10/54 Loss=3.4677 mse=0.2941 v_opt=0.01967 v_mand=0.00147 ptv=0.0194 ring=0.01687 smooth=0.0356
+2026-05-19 12:28:10 [INFO] Step 15/54 Loss=4.6957 mse=0.4152 v_opt=0.00099 v_mand=0.00000 ptv=0.0242 ring=0.01968 smooth=0.0510
+2026-05-19 12:28:12 [INFO] Step 20/54 Loss=3.3633 mse=0.2867 v_opt=0.02345 v_mand=0.00084 ptv=0.0212 ring=0.01418 smooth=0.0339
+2026-05-19 12:28:17 [INFO] Step 25/54 Loss=3.0788 mse=0.2597 v_opt=0.00949 v_mand=0.00042 ptv=0.0210 ring=0.01595 smooth=0.0338
+2026-05-19 12:28:20 [INFO] Step 30/54 Loss=3.4096 mse=0.2774 v_opt=0.02689 v_mand=0.00389 ptv=0.0205 ring=0.01840 smooth=0.0320
+2026-05-19 12:28:22 [INFO] Step 35/54 Loss=4.3027 mse=0.3868 v_opt=0.00331 v_mand=0.00000 ptv=0.0240 ring=0.01234 smooth=0.0376
+2026-05-19 12:28:24 [INFO] Step 40/54 Loss=2.5730 mse=0.2129 v_opt=0.00507 v_mand=0.00000 ptv=0.0239 ring=0.01275 smooth=0.0350
+2026-05-19 12:28:29 [INFO] Step 45/54 Loss=4.1183 mse=0.3660 v_opt=0.00365 v_mand=0.00000 ptv=0.0212 ring=0.01564 smooth=0.0399
+2026-05-19 12:28:31 [INFO] Step 50/54 Loss=2.8640 mse=0.2415 v_opt=0.00004 v_mand=0.00000 ptv=0.0242 ring=0.01358 smooth=0.0326
+2026-05-19 12:28:33 [INFO] Step 54/54 Loss=3.6438 mse=0.3121 v_opt=0.02117 v_mand=0.00097 ptv=0.0242 ring=0.01407 smooth=0.0360
+2026-05-19 12:28:33 [INFO] Running validation at epoch 66...
+2026-05-19 12:28:55 [INFO] Epoch 66 Summary: Train=4.2703 Val=5.4557 PTV_D95=59.78Gy Bladder=26.16Gy Rectum=27.11Gy
+2026-05-19 12:28:55 [INFO] [PHYSICS] Saved best model val_loss=5.4557
+2026-05-19 12:28:55 [INFO] Epoch 67/100 started, lr=2.67e-05
+2026-05-19 12:29:00 [INFO] Step 5/54 Loss=3.2922 mse=0.2612 v_opt=0.03730 v_mand=0.00256 ptv=0.0275 ring=0.01753 smooth=0.0391
+2026-05-19 12:29:03 [INFO] Step 10/54 Loss=4.1008 mse=0.3481 v_opt=0.02911 v_mand=0.00346 ptv=0.0265 ring=0.01374 smooth=0.0376
+2026-05-19 12:29:05 [INFO] Step 15/54 Loss=4.8565 mse=0.4457 v_opt=0.00523 v_mand=0.00000 ptv=0.0201 ring=0.01226 smooth=0.0372
+2026-05-19 12:29:08 [INFO] Step 20/54 Loss=3.8341 mse=0.3186 v_opt=0.04160 v_mand=0.00429 ptv=0.0217 ring=0.01574 smooth=0.0418
+2026-05-19 12:29:12 [INFO] Step 25/54 Loss=4.1788 mse=0.3517 v_opt=0.00951 v_mand=0.00000 ptv=0.0400 ring=0.01592 smooth=0.0368
+2026-05-19 12:29:15 [INFO] Step 30/54 Loss=2.9120 mse=0.2424 v_opt=0.01495 v_mand=0.00049 ptv=0.0239 ring=0.01355 smooth=0.0346
+2026-05-19 12:29:17 [INFO] Step 35/54 Loss=3.0311 mse=0.2567 v_opt=0.01697 v_mand=0.00068 ptv=0.0231 ring=0.01194 smooth=0.0320
+2026-05-19 12:29:20 [INFO] Step 40/54 Loss=3.4109 mse=0.2911 v_opt=0.01417 v_mand=0.00028 ptv=0.0241 ring=0.01472 smooth=0.0344
+2026-05-19 12:29:24 [INFO] Step 45/54 Loss=4.1481 mse=0.3672 v_opt=0.01428 v_mand=0.00038 ptv=0.0239 ring=0.01301 smooth=0.0370
+2026-05-19 12:29:27 [INFO] Step 50/54 Loss=3.2779 mse=0.2832 v_opt=0.00684 v_mand=0.00000 ptv=0.0222 ring=0.01374 smooth=0.0322
+2026-05-19 12:29:29 [INFO] Step 54/54 Loss=4.5487 mse=0.4100 v_opt=0.00876 v_mand=0.00000 ptv=0.0173 ring=0.01692 smooth=0.0458
+2026-05-19 12:29:29 [INFO] Running validation at epoch 67...
+2026-05-19 12:29:51 [INFO] Epoch 67 Summary: Train=4.4669 Val=5.4303 PTV_D95=59.92Gy Bladder=26.65Gy Rectum=25.76Gy
+2026-05-19 12:29:51 [INFO] [PHYSICS] Saved best model val_loss=5.4303
+2026-05-19 12:29:51 [INFO] Epoch 68/100 started, lr=2.53e-05
+2026-05-19 12:29:56 [INFO] Step 5/54 Loss=3.0374 mse=0.2583 v_opt=0.00027 v_mand=0.00000 ptv=0.0274 ring=0.01175 smooth=0.0361
+2026-05-19 12:29:58 [INFO] Step 10/54 Loss=5.0959 mse=0.4636 v_opt=0.02080 v_mand=0.00182 ptv=0.0170 ring=0.01328 smooth=0.0391
+2026-05-19 12:30:01 [INFO] Step 15/54 Loss=4.7267 mse=0.4254 v_opt=0.00356 v_mand=0.00000 ptv=0.0258 ring=0.01358 smooth=0.0413
+2026-05-19 12:30:03 [INFO] Step 20/54 Loss=3.8542 mse=0.3431 v_opt=0.01391 v_mand=0.00032 ptv=0.0197 ring=0.01247 smooth=0.0374
+2026-05-19 12:30:08 [INFO] Step 25/54 Loss=3.0769 mse=0.2603 v_opt=0.00173 v_mand=0.00000 ptv=0.0268 ring=0.01325 smooth=0.0349
+2026-05-19 12:30:11 [INFO] Step 30/54 Loss=3.6247 mse=0.2773 v_opt=0.03887 v_mand=0.00905 ptv=0.0224 ring=0.02132 smooth=0.0416
+2026-05-19 12:30:13 [INFO] Step 35/54 Loss=2.7100 mse=0.2276 v_opt=0.00757 v_mand=0.00000 ptv=0.0219 ring=0.01312 smooth=0.0322
+2026-05-19 12:30:16 [INFO] Step 40/54 Loss=6.0839 mse=0.3754 v_opt=0.18236 v_mand=0.06106 ptv=0.0165 ring=0.01794 smooth=0.0421
+2026-05-19 12:30:20 [INFO] Step 45/54 Loss=3.5345 mse=0.2946 v_opt=0.02777 v_mand=0.00182 ptv=0.0266 ring=0.01450 smooth=0.0460
+2026-05-19 12:30:23 [INFO] Step 50/54 Loss=4.1455 mse=0.3701 v_opt=0.00827 v_mand=0.00000 ptv=0.0229 ring=0.01300 smooth=0.0357
+2026-05-19 12:30:25 [INFO] Step 54/54 Loss=4.5079 mse=0.3894 v_opt=0.02399 v_mand=0.00263 ptv=0.0276 ring=0.01466 smooth=0.0391
+2026-05-19 12:30:25 [INFO] Running validation at epoch 68...
+2026-05-19 12:30:47 [INFO] Epoch 68 Summary: Train=3.8690 Val=5.4856 PTV_D95=59.91Gy Bladder=27.21Gy Rectum=23.31Gy
+2026-05-19 12:30:47 [INFO] Epoch 69/100 started, lr=2.40e-05
+2026-05-19 12:30:52 [INFO] Step 5/54 Loss=4.2957 mse=0.3830 v_opt=0.01111 v_mand=0.00003 ptv=0.0226 ring=0.01421 smooth=0.0389
+2026-05-19 12:30:54 [INFO] Step 10/54 Loss=4.7884 mse=0.4332 v_opt=0.00456 v_mand=0.00000 ptv=0.0224 ring=0.01460 smooth=0.0438
+2026-05-19 12:30:57 [INFO] Step 15/54 Loss=4.4271 mse=0.4006 v_opt=0.00389 v_mand=0.00000 ptv=0.0208 ring=0.01343 smooth=0.0450
+2026-05-19 12:30:59 [INFO] Step 20/54 Loss=3.5225 mse=0.3122 v_opt=0.00137 v_mand=0.00000 ptv=0.0208 ring=0.01242 smooth=0.0340
+2026-05-19 12:31:04 [INFO] Step 25/54 Loss=3.9466 mse=0.3437 v_opt=0.01779 v_mand=0.00418 ptv=0.0174 ring=0.01280 smooth=0.0339
+2026-05-19 12:31:06 [INFO] Step 30/54 Loss=3.5744 mse=0.3128 v_opt=0.00291 v_mand=0.00000 ptv=0.0211 ring=0.01507 smooth=0.0372
+2026-05-19 12:31:08 [INFO] Step 35/54 Loss=3.9378 mse=0.2890 v_opt=0.08793 v_mand=0.01756 ptv=0.0207 ring=0.01486 smooth=0.0344
+2026-05-19 12:31:11 [INFO] Step 40/54 Loss=3.1181 mse=0.2516 v_opt=0.03758 v_mand=0.00418 ptv=0.0217 ring=0.01342 smooth=0.0384
+2026-05-19 12:31:16 [INFO] Step 45/54 Loss=3.9022 mse=0.3096 v_opt=0.04747 v_mand=0.00631 ptv=0.0296 ring=0.01683 smooth=0.0505
+2026-05-19 12:31:19 [INFO] Step 50/54 Loss=3.8177 mse=0.3105 v_opt=0.00000 v_mand=0.00000 ptv=0.0513 ring=0.01304 smooth=0.0374
+2026-05-19 12:31:21 [INFO] Step 54/54 Loss=4.1099 mse=0.3626 v_opt=0.00000 v_mand=0.00000 ptv=0.0285 ring=0.01304 smooth=0.0357
+2026-05-19 12:31:21 [INFO] Running validation at epoch 69...
+2026-05-19 12:31:43 [INFO] Epoch 69 Summary: Train=4.2046 Val=5.4013 PTV_D95=59.51Gy Bladder=26.40Gy Rectum=24.88Gy
+2026-05-19 12:31:43 [INFO] [PHYSICS] Saved best model val_loss=5.4013
+2026-05-19 12:31:43 [INFO] Epoch 70/100 started, lr=2.27e-05
+2026-05-19 12:31:48 [INFO] Step 5/54 Loss=4.2164 mse=0.3781 v_opt=0.00081 v_mand=0.00000 ptv=0.0255 ring=0.01164 smooth=0.0401
+2026-05-19 12:31:50 [INFO] Step 10/54 Loss=3.3794 mse=0.2950 v_opt=0.00834 v_mand=0.00000 ptv=0.0232 ring=0.01188 smooth=0.0329
+2026-05-19 12:31:53 [INFO] Step 15/54 Loss=3.1623 mse=0.2732 v_opt=0.00503 v_mand=0.00000 ptv=0.0230 ring=0.01242 smooth=0.0329
+2026-05-19 12:31:55 [INFO] Step 20/54 Loss=3.4438 mse=0.2822 v_opt=0.02886 v_mand=0.00457 ptv=0.0187 ring=0.01729 smooth=0.0363
+2026-05-19 12:31:59 [INFO] Step 25/54 Loss=4.5459 mse=0.4075 v_opt=0.01831 v_mand=0.00098 ptv=0.0181 ring=0.01498 smooth=0.0383
+2026-05-19 12:32:02 [INFO] Step 30/54 Loss=4.7714 mse=0.3047 v_opt=0.12630 v_mand=0.04042 ptv=0.0195 ring=0.01748 smooth=0.0424
+2026-05-19 12:32:04 [INFO] Step 35/54 Loss=5.4779 mse=0.4945 v_opt=0.02715 v_mand=0.00043 ptv=0.0232 ring=0.01554 smooth=0.0304
+2026-05-19 12:32:07 [INFO] Step 40/54 Loss=3.3900 mse=0.2951 v_opt=0.00785 v_mand=0.00000 ptv=0.0267 ring=0.01019 smooth=0.0367
+2026-05-19 12:32:11 [INFO] Step 45/54 Loss=4.4931 mse=0.4050 v_opt=0.00494 v_mand=0.00000 ptv=0.0223 ring=0.01369 smooth=0.0464
+2026-05-19 12:32:14 [INFO] Step 50/54 Loss=3.9457 mse=0.3295 v_opt=0.00770 v_mand=0.00000 ptv=0.0444 ring=0.01249 smooth=0.0390
+2026-05-19 12:32:16 [INFO] Step 54/54 Loss=3.5629 mse=0.3098 v_opt=0.01446 v_mand=0.00041 ptv=0.0210 ring=0.01415 smooth=0.0352
+2026-05-19 12:32:16 [INFO] Running validation at epoch 70...
+2026-05-19 12:32:39 [INFO] Epoch 70 Summary: Train=3.9728 Val=5.3743 PTV_D95=59.24Gy Bladder=26.08Gy Rectum=22.88Gy
+2026-05-19 12:32:39 [INFO] [PHYSICS] Saved best model val_loss=5.3743
+2026-05-19 12:32:39 [INFO] Epoch 71/100 started, lr=2.14e-05
+2026-05-19 12:32:44 [INFO] Step 5/54 Loss=3.0090 mse=0.2298 v_opt=0.03194 v_mand=0.00620 ptv=0.0207 ring=0.01882 smooth=0.0327
+2026-05-19 12:32:46 [INFO] Step 10/54 Loss=3.1809 mse=0.2414 v_opt=0.03821 v_mand=0.00722 ptv=0.0235 ring=0.01811 smooth=0.0363
+2026-05-19 12:32:49 [INFO] Step 15/54 Loss=3.6108 mse=0.2951 v_opt=0.01725 v_mand=0.00016 ptv=0.0341 ring=0.01851 smooth=0.0338
+2026-05-19 12:32:51 [INFO] Step 20/54 Loss=5.3474 mse=0.4926 v_opt=0.01159 v_mand=0.00004 ptv=0.0185 ring=0.01396 smooth=0.0319
+2026-05-19 12:32:56 [INFO] Step 25/54 Loss=2.9134 mse=0.2434 v_opt=0.02305 v_mand=0.00049 ptv=0.0213 ring=0.01367 smooth=0.0350
+2026-05-19 12:32:58 [INFO] Step 30/54 Loss=3.1876 mse=0.2604 v_opt=0.01474 v_mand=0.00027 ptv=0.0323 ring=0.01466 smooth=0.0416
+2026-05-19 12:33:00 [INFO] Step 35/54 Loss=4.5967 mse=0.4021 v_opt=0.02053 v_mand=0.00187 ptv=0.0271 ring=0.01412 smooth=0.0494
+2026-05-19 12:33:03 [INFO] Step 40/54 Loss=4.9626 mse=0.4549 v_opt=0.00212 v_mand=0.00000 ptv=0.0220 ring=0.01243 smooth=0.0322
+2026-05-19 12:33:07 [INFO] Step 45/54 Loss=2.6762 mse=0.2184 v_opt=0.00000 v_mand=0.00000 ptv=0.0307 ring=0.01215 smooth=0.0377
+2026-05-19 12:33:10 [INFO] Step 50/54 Loss=2.8285 mse=0.2306 v_opt=0.01952 v_mand=0.00138 ptv=0.0277 ring=0.01120 smooth=0.0321
+2026-05-19 12:33:12 [INFO] Step 54/54 Loss=3.8106 mse=0.3262 v_opt=0.02362 v_mand=0.00226 ptv=0.0211 ring=0.01538 smooth=0.0368
+2026-05-19 12:33:12 [INFO] Running validation at epoch 71...
+2026-05-19 12:33:35 [INFO] Epoch 71 Summary: Train=3.8649 Val=5.3949 PTV_D95=59.36Gy Bladder=26.32Gy Rectum=25.18Gy
+2026-05-19 12:33:35 [INFO] Epoch 72/100 started, lr=2.02e-05
+2026-05-19 12:33:39 [INFO] Step 5/54 Loss=3.0412 mse=0.2517 v_opt=0.00663 v_mand=0.00000 ptv=0.0256 ring=0.01680 smooth=0.0317
+2026-05-19 12:33:42 [INFO] Step 10/54 Loss=3.6022 mse=0.3172 v_opt=0.00939 v_mand=0.00000 ptv=0.0207 ring=0.01337 smooth=0.0352
+2026-05-19 12:33:45 [INFO] Step 15/54 Loss=4.1682 mse=0.3745 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.02799 smooth=0.0382
+2026-05-19 12:33:47 [INFO] Step 20/54 Loss=6.7752 mse=0.4406 v_opt=0.00186 v_mand=0.00000 ptv=0.2201 ring=0.01054 smooth=0.0592
+2026-05-19 12:33:50 [INFO] Step 25/54 Loss=2.6385 mse=0.2205 v_opt=0.00788 v_mand=0.00000 ptv=0.0220 ring=0.01299 smooth=0.0305
+2026-05-19 12:33:54 [INFO] Step 30/54 Loss=3.9296 mse=0.2802 v_opt=0.07247 v_mand=0.02189 ptv=0.0186 ring=0.01639 smooth=0.0332
+2026-05-19 12:33:56 [INFO] Step 35/54 Loss=3.1229 mse=0.2662 v_opt=0.00130 v_mand=0.00000 ptv=0.0287 ring=0.01124 smooth=0.0353
+2026-05-19 12:33:59 [INFO] Step 40/54 Loss=2.8270 mse=0.2423 v_opt=0.00335 v_mand=0.00000 ptv=0.0214 ring=0.01200 smooth=0.0317
+2026-05-19 12:34:02 [INFO] Step 45/54 Loss=3.1865 mse=0.2779 v_opt=0.00224 v_mand=0.00000 ptv=0.0224 ring=0.01170 smooth=0.0331
+2026-05-19 12:34:06 [INFO] Step 50/54 Loss=5.9517 mse=0.3989 v_opt=0.13846 v_mand=0.04819 ptv=0.0242 ring=0.01569 smooth=0.0371
+2026-05-19 12:34:08 [INFO] Step 54/54 Loss=5.3601 mse=0.4009 v_opt=0.06286 v_mand=0.01881 ptv=0.0388 ring=0.02425 smooth=0.0408
+2026-05-19 12:34:08 [INFO] Running validation at epoch 72...
+2026-05-19 12:34:31 [INFO] Epoch 72 Summary: Train=3.9525 Val=5.4737 PTV_D95=59.59Gy Bladder=27.63Gy Rectum=27.50Gy
+2026-05-19 12:34:31 [INFO] Epoch 73/100 started, lr=1.89e-05
+2026-05-19 12:34:35 [INFO] Step 5/54 Loss=4.6332 mse=0.4629 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0425
+2026-05-19 12:34:38 [INFO] Step 10/54 Loss=3.0479 mse=0.2608 v_opt=0.00157 v_mand=0.00000 ptv=0.0281 ring=0.01015 smooth=0.0318
+2026-05-19 12:34:40 [INFO] Step 15/54 Loss=3.1317 mse=0.2707 v_opt=0.00219 v_mand=0.00000 ptv=0.0236 ring=0.01206 smooth=0.0361
+2026-05-19 12:34:43 [INFO] Step 20/54 Loss=4.1501 mse=0.3602 v_opt=0.01520 v_mand=0.00001 ptv=0.0300 ring=0.01424 smooth=0.0362
+2026-05-19 12:34:47 [INFO] Step 25/54 Loss=3.8899 mse=0.2805 v_opt=0.07709 v_mand=0.01972 ptv=0.0166 ring=0.01788 smooth=0.0347
+2026-05-19 12:34:49 [INFO] Step 30/54 Loss=4.0840 mse=0.3609 v_opt=0.01002 v_mand=0.00000 ptv=0.0236 ring=0.01440 smooth=0.0363
+2026-05-19 12:34:52 [INFO] Step 35/54 Loss=4.2261 mse=0.3695 v_opt=0.02418 v_mand=0.00238 ptv=0.0183 ring=0.01575 smooth=0.0417
+2026-05-19 12:34:55 [INFO] Step 40/54 Loss=4.2169 mse=0.3809 v_opt=0.00717 v_mand=0.00000 ptv=0.0199 ring=0.01272 smooth=0.0382
+2026-05-19 12:34:59 [INFO] Step 45/54 Loss=7.9978 mse=0.3729 v_opt=0.22285 v_mand=0.12497 ptv=0.0405 ring=0.01928 smooth=0.0476
+2026-05-19 12:35:02 [INFO] Step 50/54 Loss=3.7388 mse=0.3072 v_opt=0.02561 v_mand=0.00301 ptv=0.0232 ring=0.02029 smooth=0.0408
+2026-05-19 12:35:04 [INFO] Step 54/54 Loss=3.4609 mse=0.3020 v_opt=0.00986 v_mand=0.00005 ptv=0.0209 ring=0.01382 smooth=0.0351
+2026-05-19 12:35:04 [INFO] Running validation at epoch 73...
+2026-05-19 12:35:26 [INFO] Epoch 73 Summary: Train=3.9628 Val=5.3450 PTV_D95=59.50Gy Bladder=26.68Gy Rectum=25.13Gy
+2026-05-19 12:35:26 [INFO] [PHYSICS] Saved best model val_loss=5.3450
+2026-05-19 12:35:26 [INFO] Epoch 74/100 started, lr=1.78e-05
+2026-05-19 12:35:32 [INFO] Step 5/54 Loss=3.8141 mse=0.3184 v_opt=0.04462 v_mand=0.00631 ptv=0.0195 ring=0.01234 smooth=0.0338
+2026-05-19 12:35:34 [INFO] Step 10/54 Loss=4.2641 mse=0.3692 v_opt=0.02947 v_mand=0.00144 ptv=0.0251 ring=0.01484 smooth=0.0374
+2026-05-19 12:35:37 [INFO] Step 15/54 Loss=4.3079 mse=0.3910 v_opt=0.00000 v_mand=0.00000 ptv=0.0251 ring=0.00953 smooth=0.0348
+2026-05-19 12:35:39 [INFO] Step 20/54 Loss=3.0220 mse=0.2604 v_opt=0.00170 v_mand=0.00000 ptv=0.0224 ring=0.01251 smooth=0.0350
+2026-05-19 12:35:44 [INFO] Step 25/54 Loss=2.6063 mse=0.2093 v_opt=0.01932 v_mand=0.00147 ptv=0.0213 ring=0.01477 smooth=0.0325
+2026-05-19 12:35:46 [INFO] Step 30/54 Loss=6.1844 mse=0.5674 v_opt=0.00921 v_mand=0.00000 ptv=0.0266 ring=0.01478 smooth=0.0411
+2026-05-19 12:35:49 [INFO] Step 35/54 Loss=4.2375 mse=0.3127 v_opt=0.07577 v_mand=0.02085 ptv=0.0192 ring=0.01608 smooth=0.0396
+2026-05-19 12:35:51 [INFO] Step 40/54 Loss=3.5625 mse=0.2984 v_opt=0.00497 v_mand=0.00000 ptv=0.0353 ring=0.01409 smooth=0.0389
+2026-05-19 12:35:55 [INFO] Step 45/54 Loss=4.6907 mse=0.4226 v_opt=0.00357 v_mand=0.00000 ptv=0.0211 ring=0.01613 smooth=0.0447
+2026-05-19 12:35:58 [INFO] Step 50/54 Loss=3.3646 mse=0.2891 v_opt=0.01632 v_mand=0.00077 ptv=0.0207 ring=0.01415 smooth=0.0308
+2026-05-19 12:36:00 [INFO] Step 54/54 Loss=3.5537 mse=0.2925 v_opt=0.00795 v_mand=0.00000 ptv=0.0375 ring=0.01556 smooth=0.0358
+2026-05-19 12:36:00 [INFO] Running validation at epoch 74...
+2026-05-19 12:36:22 [INFO] Epoch 74 Summary: Train=4.2137 Val=5.3282 PTV_D95=59.64Gy Bladder=25.94Gy Rectum=25.75Gy
+2026-05-19 12:36:22 [INFO] [PHYSICS] Saved best model val_loss=5.3282
+2026-05-19 12:36:22 [INFO] Epoch 75/100 started, lr=1.66e-05
+2026-05-19 12:36:27 [INFO] Step 5/54 Loss=3.5691 mse=0.2947 v_opt=0.02041 v_mand=0.00167 ptv=0.0289 ring=0.01647 smooth=0.0353
+2026-05-19 12:36:30 [INFO] Step 10/54 Loss=3.4617 mse=0.2890 v_opt=0.02727 v_mand=0.00118 ptv=0.0246 ring=0.01584 smooth=0.0381
+2026-05-19 12:36:32 [INFO] Step 15/54 Loss=4.2086 mse=0.3625 v_opt=0.03656 v_mand=0.00367 ptv=0.0192 ring=0.01484 smooth=0.0377
+2026-05-19 12:36:35 [INFO] Step 20/54 Loss=3.6705 mse=0.3152 v_opt=0.00000 v_mand=0.00000 ptv=0.0273 ring=0.01611 smooth=0.0386
+2026-05-19 12:36:39 [INFO] Step 25/54 Loss=3.0041 mse=0.2570 v_opt=0.00468 v_mand=0.00000 ptv=0.0223 ring=0.01323 smooth=0.0286
+2026-05-19 12:36:42 [INFO] Step 30/54 Loss=2.9154 mse=0.2499 v_opt=0.01012 v_mand=0.00000 ptv=0.0188 ring=0.01370 smooth=0.0325
+2026-05-19 12:36:44 [INFO] Step 35/54 Loss=3.9200 mse=0.3458 v_opt=0.01981 v_mand=0.00084 ptv=0.0185 ring=0.01417 smooth=0.0372
+2026-05-19 12:36:47 [INFO] Step 40/54 Loss=4.9623 mse=0.4417 v_opt=0.00287 v_mand=0.00000 ptv=0.0362 ring=0.01158 smooth=0.0393
+2026-05-19 12:36:51 [INFO] Step 45/54 Loss=5.1998 mse=0.4752 v_opt=0.00961 v_mand=0.00000 ptv=0.0221 ring=0.01366 smooth=0.0307
+2026-05-19 12:36:54 [INFO] Step 50/54 Loss=3.1359 mse=0.2664 v_opt=0.00473 v_mand=0.00000 ptv=0.0284 ring=0.01162 smooth=0.0331
+2026-05-19 12:36:55 [INFO] Step 54/54 Loss=4.2532 mse=0.3473 v_opt=0.04777 v_mand=0.01141 ptv=0.0199 ring=0.01314 smooth=0.0352
+2026-05-19 12:36:55 [INFO] Running validation at epoch 75...
+2026-05-19 12:37:18 [INFO] Epoch 75 Summary: Train=3.7311 Val=5.3677 PTV_D95=59.65Gy Bladder=27.13Gy Rectum=23.77Gy
+2026-05-19 12:37:18 [INFO] Epoch 76/100 started, lr=1.55e-05
+2026-05-19 12:37:22 [INFO] Step 5/54 Loss=2.9305 mse=0.2511 v_opt=0.00721 v_mand=0.00000 ptv=0.0190 ring=0.01414 smooth=0.0301
+2026-05-19 12:37:26 [INFO] Step 10/54 Loss=5.2140 mse=0.4233 v_opt=0.04458 v_mand=0.01133 ptv=0.0269 ring=0.02234 smooth=0.0459
+2026-05-19 12:37:28 [INFO] Step 15/54 Loss=2.8935 mse=0.2466 v_opt=0.00150 v_mand=0.00000 ptv=0.0234 ring=0.01249 smooth=0.0348
+2026-05-19 12:37:31 [INFO] Step 20/54 Loss=4.2073 mse=0.4067 v_opt=0.02793 v_mand=0.00084 ptv=0.0000 ring=0.00395 smooth=0.0447
+2026-05-19 12:37:35 [INFO] Step 25/54 Loss=2.9708 mse=0.2497 v_opt=0.00123 v_mand=0.00000 ptv=0.0274 ring=0.01292 smooth=0.0345
+2026-05-19 12:37:37 [INFO] Step 30/54 Loss=4.2802 mse=0.3495 v_opt=0.04578 v_mand=0.01185 ptv=0.0218 ring=0.01164 smooth=0.0421
+2026-05-19 12:37:40 [INFO] Step 35/54 Loss=2.8255 mse=0.2307 v_opt=0.02061 v_mand=0.00004 ptv=0.0228 ring=0.01635 smooth=0.0293
+2026-05-19 12:37:42 [INFO] Step 40/54 Loss=4.1810 mse=0.3688 v_opt=0.00071 v_mand=0.00000 ptv=0.0288 ring=0.01330 smooth=0.0421
+2026-05-19 12:37:47 [INFO] Step 45/54 Loss=4.5762 mse=0.4099 v_opt=0.01479 v_mand=0.00047 ptv=0.0195 ring=0.01574 smooth=0.0423
+2026-05-19 12:37:49 [INFO] Step 50/54 Loss=4.6695 mse=0.4275 v_opt=0.00728 v_mand=0.00000 ptv=0.0174 ring=0.01352 smooth=0.0322
+2026-05-19 12:37:51 [INFO] Step 54/54 Loss=4.1971 mse=0.3651 v_opt=0.01217 v_mand=0.00011 ptv=0.0305 ring=0.01399 smooth=0.0358
+2026-05-19 12:37:51 [INFO] Running validation at epoch 76...
+2026-05-19 12:38:13 [INFO] Epoch 76 Summary: Train=3.9145 Val=5.3634 PTV_D95=59.55Gy Bladder=27.48Gy Rectum=24.31Gy
+2026-05-19 12:38:13 [INFO] Epoch 77/100 started, lr=1.44e-05
+2026-05-19 12:38:19 [INFO] Step 5/54 Loss=3.6122 mse=0.3073 v_opt=0.02147 v_mand=0.00196 ptv=0.0222 ring=0.01481 smooth=0.0317
+2026-05-19 12:38:21 [INFO] Step 10/54 Loss=3.3978 mse=0.2670 v_opt=0.03911 v_mand=0.00880 ptv=0.0203 ring=0.01486 smooth=0.0347
+2026-05-19 12:38:24 [INFO] Step 15/54 Loss=5.0129 mse=0.3368 v_opt=0.12797 v_mand=0.03840 ptv=0.0179 ring=0.01637 smooth=0.0412
+2026-05-19 12:38:26 [INFO] Step 20/54 Loss=2.9988 mse=0.2579 v_opt=0.00370 v_mand=0.00000 ptv=0.0208 ring=0.01340 smooth=0.0332
+2026-05-19 12:38:30 [INFO] Step 25/54 Loss=3.9690 mse=0.3181 v_opt=0.04119 v_mand=0.01018 ptv=0.0152 ring=0.01972 smooth=0.0382
+2026-05-19 12:38:34 [INFO] Step 30/54 Loss=3.3100 mse=0.2735 v_opt=0.04166 v_mand=0.00227 ptv=0.0247 ring=0.01232 smooth=0.0337
+2026-05-19 12:38:36 [INFO] Step 35/54 Loss=3.8536 mse=0.3361 v_opt=0.01667 v_mand=0.00000 ptv=0.0209 ring=0.01646 smooth=0.0377
+2026-05-19 12:38:39 [INFO] Step 40/54 Loss=3.6026 mse=0.2950 v_opt=0.03883 v_mand=0.00682 ptv=0.0207 ring=0.01287 smooth=0.0425
+2026-05-19 12:38:42 [INFO] Step 45/54 Loss=3.4918 mse=0.3039 v_opt=0.00475 v_mand=0.00000 ptv=0.0276 ring=0.01088 smooth=0.0417
+2026-05-19 12:38:45 [INFO] Step 50/54 Loss=3.9063 mse=0.3510 v_opt=0.00006 v_mand=0.00000 ptv=0.0228 ring=0.01097 smooth=0.0428
+2026-05-19 12:38:47 [INFO] Step 54/54 Loss=4.0236 mse=0.3595 v_opt=0.00669 v_mand=0.00000 ptv=0.0213 ring=0.01316 smooth=0.0399
+2026-05-19 12:38:47 [INFO] Running validation at epoch 77...
+2026-05-19 12:39:09 [INFO] Epoch 77 Summary: Train=3.7762 Val=5.3203 PTV_D95=59.15Gy Bladder=26.19Gy Rectum=25.04Gy
+2026-05-19 12:39:10 [INFO] [PHYSICS] Saved best model val_loss=5.3203
+2026-05-19 12:39:10 [INFO] Epoch 78/100 started, lr=1.34e-05
+2026-05-19 12:39:14 [INFO] Step 5/54 Loss=2.6345 mse=0.2179 v_opt=0.00000 v_mand=0.00000 ptv=0.0267 ring=0.01236 smooth=0.0337
+2026-05-19 12:39:17 [INFO] Step 10/54 Loss=3.6013 mse=0.3112 v_opt=0.01151 v_mand=0.00000 ptv=0.0265 ring=0.01322 smooth=0.0326
+2026-05-19 12:39:20 [INFO] Step 15/54 Loss=2.6648 mse=0.2244 v_opt=0.00401 v_mand=0.00000 ptv=0.0191 ring=0.01458 smooth=0.0286
+2026-05-19 12:39:22 [INFO] Step 20/54 Loss=3.3053 mse=0.2808 v_opt=0.02619 v_mand=0.00200 ptv=0.0176 ring=0.01437 smooth=0.0321
+2026-05-19 12:39:27 [INFO] Step 25/54 Loss=2.6084 mse=0.2146 v_opt=0.00732 v_mand=0.00000 ptv=0.0265 ring=0.01198 smooth=0.0327
+2026-05-19 12:39:29 [INFO] Step 30/54 Loss=3.2251 mse=0.2625 v_opt=0.03022 v_mand=0.00058 ptv=0.0235 ring=0.01910 smooth=0.0318
+2026-05-19 12:39:32 [INFO] Step 35/54 Loss=4.6179 mse=0.4614 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0430
+2026-05-19 12:39:35 [INFO] Step 40/54 Loss=3.5269 mse=0.2989 v_opt=0.02280 v_mand=0.00230 ptv=0.0211 ring=0.01469 smooth=0.0327
+2026-05-19 12:39:39 [INFO] Step 45/54 Loss=3.9197 mse=0.3430 v_opt=0.02313 v_mand=0.00009 ptv=0.0221 ring=0.01441 smooth=0.0416
+2026-05-19 12:39:42 [INFO] Step 50/54 Loss=4.5320 mse=0.3480 v_opt=0.07865 v_mand=0.01955 ptv=0.0163 ring=0.01585 smooth=0.0453
+2026-05-19 12:39:44 [INFO] Step 54/54 Loss=3.8123 mse=0.3291 v_opt=0.00766 v_mand=0.00000 ptv=0.0285 ring=0.01449 smooth=0.0354
+2026-05-19 12:39:44 [INFO] Running validation at epoch 78...
+2026-05-19 12:40:06 [INFO] Epoch 78 Summary: Train=3.7841 Val=5.2935 PTV_D95=59.66Gy Bladder=25.80Gy Rectum=26.89Gy
+2026-05-19 12:40:06 [INFO] [PHYSICS] Saved best model val_loss=5.2935
+2026-05-19 12:40:06 [INFO] Epoch 79/100 started, lr=1.24e-05
+2026-05-19 12:40:11 [INFO] Step 5/54 Loss=3.5489 mse=0.3026 v_opt=0.02975 v_mand=0.00159 ptv=0.0199 ring=0.01478 smooth=0.0353
+2026-05-19 12:40:13 [INFO] Step 10/54 Loss=3.5308 mse=0.3072 v_opt=0.00667 v_mand=0.00000 ptv=0.0243 ring=0.01328 smooth=0.0351
+2026-05-19 12:40:16 [INFO] Step 15/54 Loss=3.4907 mse=0.2906 v_opt=0.01986 v_mand=0.00064 ptv=0.0252 ring=0.01824 smooth=0.0330
+2026-05-19 12:40:19 [INFO] Step 20/54 Loss=4.0977 mse=0.3493 v_opt=0.02963 v_mand=0.00379 ptv=0.0223 ring=0.01491 smooth=0.0428
+2026-05-19 12:40:23 [INFO] Step 25/54 Loss=2.5210 mse=0.2075 v_opt=0.01177 v_mand=0.00007 ptv=0.0245 ring=0.01145 smooth=0.0339
+2026-05-19 12:40:26 [INFO] Step 30/54 Loss=3.3272 mse=0.2922 v_opt=0.00190 v_mand=0.00000 ptv=0.0224 ring=0.01160 smooth=0.0344
+2026-05-19 12:40:28 [INFO] Step 35/54 Loss=3.8908 mse=0.3502 v_opt=0.00314 v_mand=0.00000 ptv=0.0219 ring=0.01068 smooth=0.0357
+2026-05-19 12:40:30 [INFO] Step 40/54 Loss=2.8996 mse=0.2474 v_opt=0.00011 v_mand=0.00000 ptv=0.0215 ring=0.01383 smooth=0.0283
+2026-05-19 12:40:35 [INFO] Step 45/54 Loss=4.8427 mse=0.4476 v_opt=0.00421 v_mand=0.00000 ptv=0.0182 ring=0.01152 smooth=0.0363
+2026-05-19 12:40:38 [INFO] Step 50/54 Loss=4.8543 mse=0.4385 v_opt=0.00517 v_mand=0.00000 ptv=0.0251 ring=0.01361 smooth=0.0336
+2026-05-19 12:40:40 [INFO] Step 54/54 Loss=4.5797 mse=0.3798 v_opt=0.03707 v_mand=0.00711 ptv=0.0330 ring=0.01309 smooth=0.0409
+2026-05-19 12:40:40 [INFO] Running validation at epoch 79...
+2026-05-19 12:41:02 [INFO] Epoch 79 Summary: Train=3.7454 Val=5.3424 PTV_D95=58.79Gy Bladder=27.24Gy Rectum=24.72Gy
+2026-05-19 12:41:02 [INFO] Epoch 80/100 started, lr=1.14e-05
+2026-05-19 12:41:08 [INFO] Step 5/54 Loss=3.7545 mse=0.3219 v_opt=0.02303 v_mand=0.00262 ptv=0.0229 ring=0.01274 smooth=0.0353
+2026-05-19 12:41:10 [INFO] Step 10/54 Loss=2.9410 mse=0.2487 v_opt=0.00653 v_mand=0.00000 ptv=0.0273 ring=0.01100 smooth=0.0308
+2026-05-19 12:41:13 [INFO] Step 15/54 Loss=3.8973 mse=0.3456 v_opt=0.01435 v_mand=0.00038 ptv=0.0181 ring=0.01460 smooth=0.0349
+2026-05-19 12:41:15 [INFO] Step 20/54 Loss=3.3357 mse=0.2923 v_opt=0.00221 v_mand=0.00000 ptv=0.0230 ring=0.01164 smooth=0.0333
+2026-05-19 12:41:19 [INFO] Step 25/54 Loss=3.9654 mse=0.3592 v_opt=0.00316 v_mand=0.00000 ptv=0.0194 ring=0.01132 smooth=0.0364
+2026-05-19 12:41:22 [INFO] Step 30/54 Loss=3.5388 mse=0.3098 v_opt=0.00540 v_mand=0.00000 ptv=0.0218 ring=0.01388 smooth=0.0318
+2026-05-19 12:41:24 [INFO] Step 35/54 Loss=4.2386 mse=0.3712 v_opt=0.02986 v_mand=0.00329 ptv=0.0183 ring=0.01316 smooth=0.0345
+2026-05-19 12:41:27 [INFO] Step 40/54 Loss=5.7122 mse=0.4749 v_opt=0.00027 v_mand=0.00000 ptv=0.0707 ring=0.01667 smooth=0.0527
+2026-05-19 12:41:30 [INFO] Step 45/54 Loss=4.5960 mse=0.4045 v_opt=0.03134 v_mand=0.00274 ptv=0.0190 ring=0.01508 smooth=0.0376
+2026-05-19 12:41:33 [INFO] Step 50/54 Loss=4.9587 mse=0.4579 v_opt=0.00557 v_mand=0.00000 ptv=0.0176 ring=0.01253 smooth=0.0406
+2026-05-19 12:41:35 [INFO] Step 54/54 Loss=3.5968 mse=0.3142 v_opt=0.01557 v_mand=0.00000 ptv=0.0246 ring=0.01161 smooth=0.0352
+2026-05-19 12:41:35 [INFO] Running validation at epoch 80...
+2026-05-19 12:41:57 [INFO] Epoch 80 Summary: Train=4.0946 Val=5.3021 PTV_D95=59.82Gy Bladder=27.07Gy Rectum=24.15Gy
+2026-05-19 12:41:57 [INFO] Epoch 81/100 started, lr=1.05e-05
+2026-05-19 12:42:03 [INFO] Step 5/54 Loss=2.6962 mse=0.2250 v_opt=0.01433 v_mand=0.00039 ptv=0.0194 ring=0.01404 smooth=0.0315
+2026-05-19 12:42:05 [INFO] Step 10/54 Loss=2.8593 mse=0.2414 v_opt=0.00966 v_mand=0.00000 ptv=0.0238 ring=0.01230 smooth=0.0303
+2026-05-19 12:42:08 [INFO] Step 15/54 Loss=4.8022 mse=0.4798 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0421
+2026-05-19 12:42:10 [INFO] Step 20/54 Loss=3.9200 mse=0.3532 v_opt=0.00227 v_mand=0.00000 ptv=0.0185 ring=0.01288 smooth=0.0442
+2026-05-19 12:42:14 [INFO] Step 25/54 Loss=4.2491 mse=0.3788 v_opt=0.02091 v_mand=0.00188 ptv=0.0172 ring=0.01310 smooth=0.0384
+2026-05-19 12:42:17 [INFO] Step 30/54 Loss=5.4257 mse=0.5018 v_opt=0.01005 v_mand=0.00000 ptv=0.0186 ring=0.01326 smooth=0.0340
+2026-05-19 12:42:19 [INFO] Step 35/54 Loss=3.8505 mse=0.3436 v_opt=0.00080 v_mand=0.00000 ptv=0.0230 ring=0.01196 smooth=0.0346
+2026-05-19 12:42:22 [INFO] Step 40/54 Loss=3.0604 mse=0.2579 v_opt=0.01518 v_mand=0.00000 ptv=0.0216 ring=0.01551 smooth=0.0292
+2026-05-19 12:42:26 [INFO] Step 45/54 Loss=2.5773 mse=0.2160 v_opt=0.00373 v_mand=0.00000 ptv=0.0219 ring=0.01255 smooth=0.0297
+2026-05-19 12:42:29 [INFO] Step 50/54 Loss=4.7901 mse=0.4274 v_opt=0.01296 v_mand=0.00019 ptv=0.0292 ring=0.01266 smooth=0.0415
+2026-05-19 12:42:31 [INFO] Step 54/54 Loss=3.2340 mse=0.2794 v_opt=0.01337 v_mand=0.00019 ptv=0.0206 ring=0.01322 smooth=0.0352
+2026-05-19 12:42:31 [INFO] Running validation at epoch 81...
+2026-05-19 12:42:53 [INFO] Epoch 81 Summary: Train=3.9876 Val=5.2955 PTV_D95=60.30Gy Bladder=27.07Gy Rectum=25.63Gy
+2026-05-19 12:42:53 [INFO] Epoch 82/100 started, lr=9.56e-06
+2026-05-19 12:42:59 [INFO] Step 5/54 Loss=4.4229 mse=0.3939 v_opt=0.00341 v_mand=0.00000 ptv=0.0234 ring=0.01597 smooth=0.0409
+2026-05-19 12:43:01 [INFO] Step 10/54 Loss=2.8318 mse=0.2379 v_opt=0.01361 v_mand=0.00026 ptv=0.0196 ring=0.01470 smooth=0.0309
+2026-05-19 12:43:04 [INFO] Step 15/54 Loss=3.1400 mse=0.2702 v_opt=0.01195 v_mand=0.00008 ptv=0.0197 ring=0.01408 smooth=0.0387
+2026-05-19 12:43:06 [INFO] Step 20/54 Loss=5.2419 mse=0.4844 v_opt=0.00626 v_mand=0.00000 ptv=0.0195 ring=0.01254 smooth=0.0277
+2026-05-19 12:43:11 [INFO] Step 25/54 Loss=3.2045 mse=0.2716 v_opt=0.02095 v_mand=0.00133 ptv=0.0214 ring=0.01309 smooth=0.0313
+2026-05-19 12:43:13 [INFO] Step 30/54 Loss=3.6666 mse=0.2959 v_opt=0.05174 v_mand=0.00795 ptv=0.0185 ring=0.01442 smooth=0.0379
+2026-05-19 12:43:16 [INFO] Step 35/54 Loss=3.3426 mse=0.2906 v_opt=0.00161 v_mand=0.00000 ptv=0.0228 ring=0.01341 smooth=0.0343
+2026-05-19 12:43:18 [INFO] Step 40/54 Loss=3.6648 mse=0.3218 v_opt=0.01459 v_mand=0.00039 ptv=0.0200 ring=0.01357 smooth=0.0445
+2026-05-19 12:43:23 [INFO] Step 45/54 Loss=4.2439 mse=0.3347 v_opt=0.05079 v_mand=0.01521 ptv=0.0228 ring=0.01222 smooth=0.0437
+2026-05-19 12:43:25 [INFO] Step 50/54 Loss=3.2415 mse=0.2801 v_opt=0.00596 v_mand=0.00000 ptv=0.0232 ring=0.01283 smooth=0.0362
+2026-05-19 12:43:27 [INFO] Step 54/54 Loss=3.9319 mse=0.3490 v_opt=0.00085 v_mand=0.00000 ptv=0.0237 ring=0.01324 smooth=0.0402
+2026-05-19 12:43:27 [INFO] Running validation at epoch 82...
+2026-05-19 12:43:50 [INFO] Epoch 82 Summary: Train=3.6713 Val=5.2909 PTV_D95=59.68Gy Bladder=26.70Gy Rectum=24.68Gy
+2026-05-19 12:43:50 [INFO] [PHYSICS] Saved best model val_loss=5.2909
+2026-05-19 12:43:50 [INFO] Epoch 83/100 started, lr=8.71e-06
+2026-05-19 12:43:55 [INFO] Step 5/54 Loss=4.5376 mse=0.4534 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0374
+2026-05-19 12:43:58 [INFO] Step 10/54 Loss=3.8075 mse=0.3412 v_opt=0.00918 v_mand=0.00000 ptv=0.0199 ring=0.01165 smooth=0.0331
+2026-05-19 12:44:00 [INFO] Step 15/54 Loss=3.8125 mse=0.2852 v_opt=0.07265 v_mand=0.01577 ptv=0.0184 ring=0.01553 smooth=0.0341
+2026-05-19 12:44:03 [INFO] Step 20/54 Loss=2.9569 mse=0.2493 v_opt=0.01570 v_mand=0.00042 ptv=0.0203 ring=0.01436 smooth=0.0343
+2026-05-19 12:44:06 [INFO] Step 25/54 Loss=2.3782 mse=0.1912 v_opt=0.00304 v_mand=0.00000 ptv=0.0279 ring=0.01193 smooth=0.0300
+2026-05-19 12:44:09 [INFO] Step 30/54 Loss=3.7664 mse=0.3156 v_opt=0.02450 v_mand=0.00292 ptv=0.0254 ring=0.01533 smooth=0.0401
+2026-05-19 12:44:12 [INFO] Step 35/54 Loss=3.0364 mse=0.2529 v_opt=0.00863 v_mand=0.00000 ptv=0.0250 ring=0.01578 smooth=0.0336
+2026-05-19 12:44:14 [INFO] Step 40/54 Loss=3.7267 mse=0.3049 v_opt=0.03711 v_mand=0.00696 ptv=0.0210 ring=0.01439 smooth=0.0387
+2026-05-19 12:44:17 [INFO] Step 45/54 Loss=2.8876 mse=0.2393 v_opt=0.01207 v_mand=0.00010 ptv=0.0256 ring=0.01397 smooth=0.0309
+2026-05-19 12:44:21 [INFO] Step 50/54 Loss=3.3056 mse=0.2455 v_opt=0.05695 v_mand=0.01003 ptv=0.0193 ring=0.01927 smooth=0.0327
+2026-05-19 12:44:23 [INFO] Step 54/54 Loss=3.1423 mse=0.2766 v_opt=0.00011 v_mand=0.00000 ptv=0.0201 ring=0.01141 smooth=0.0325
+2026-05-19 12:44:23 [INFO] Running validation at epoch 83...
+2026-05-19 12:44:46 [INFO] Epoch 83 Summary: Train=3.8696 Val=5.2598 PTV_D95=58.46Gy Bladder=25.57Gy Rectum=25.56Gy
+2026-05-19 12:44:46 [INFO] [PHYSICS] Saved best model val_loss=5.2598
+2026-05-19 12:44:46 [INFO] Epoch 84/100 started, lr=7.89e-06
+2026-05-19 12:44:51 [INFO] Step 5/54 Loss=5.2849 mse=0.4794 v_opt=0.02311 v_mand=0.00019 ptv=0.0210 ring=0.01512 smooth=0.0340
+2026-05-19 12:44:54 [INFO] Step 10/54 Loss=10.3055 mse=0.3604 v_opt=0.37076 v_mand=0.21542 ptv=0.0340 ring=0.01533 smooth=0.0438
+2026-05-19 12:44:56 [INFO] Step 15/54 Loss=2.6402 mse=0.1997 v_opt=0.03022 v_mand=0.00545 ptv=0.0195 ring=0.01661 smooth=0.0294
+2026-05-19 12:44:59 [INFO] Step 20/54 Loss=3.4677 mse=0.3018 v_opt=0.01548 v_mand=0.00047 ptv=0.0213 ring=0.01276 smooth=0.0364
+2026-05-19 12:45:03 [INFO] Step 25/54 Loss=4.2496 mse=0.3494 v_opt=0.05832 v_mand=0.00581 ptv=0.0293 ring=0.01310 smooth=0.0379
+2026-05-19 12:45:06 [INFO] Step 30/54 Loss=4.5729 mse=0.4196 v_opt=0.01172 v_mand=0.00007 ptv=0.0163 ring=0.01238 smooth=0.0317
+2026-05-19 12:45:08 [INFO] Step 35/54 Loss=4.4962 mse=0.4021 v_opt=0.01826 v_mand=0.00112 ptv=0.0200 ring=0.01378 smooth=0.0424
+2026-05-19 12:45:10 [INFO] Step 40/54 Loss=4.0934 mse=0.3607 v_opt=0.02052 v_mand=0.00175 ptv=0.0193 ring=0.01359 smooth=0.0425
+2026-05-19 12:45:14 [INFO] Step 45/54 Loss=3.7179 mse=0.3332 v_opt=0.00721 v_mand=0.00000 ptv=0.0208 ring=0.01067 smooth=0.0351
+2026-05-19 12:45:17 [INFO] Step 50/54 Loss=5.0961 mse=0.4092 v_opt=0.07451 v_mand=0.01775 ptv=0.0174 ring=0.01557 smooth=0.0369
+2026-05-19 12:45:19 [INFO] Step 54/54 Loss=3.7248 mse=0.3263 v_opt=0.00968 v_mand=0.00000 ptv=0.0213 ring=0.01509 smooth=0.0352
+2026-05-19 12:45:19 [INFO] Running validation at epoch 84...
+2026-05-19 12:45:42 [INFO] Epoch 84 Summary: Train=4.1162 Val=5.2551 PTV_D95=59.35Gy Bladder=26.00Gy Rectum=26.58Gy
+2026-05-19 12:45:42 [INFO] [PHYSICS] Saved best model val_loss=5.2551
+2026-05-19 12:45:42 [INFO] Epoch 85/100 started, lr=7.12e-06
+2026-05-19 12:45:48 [INFO] Step 5/54 Loss=3.3194 mse=0.2762 v_opt=0.03998 v_mand=0.00311 ptv=0.0184 ring=0.01420 smooth=0.0311
+2026-05-19 12:45:50 [INFO] Step 10/54 Loss=4.6661 mse=0.4275 v_opt=0.01387 v_mand=0.00024 ptv=0.0180 ring=0.01162 smooth=0.0318
+2026-05-19 12:45:52 [INFO] Step 15/54 Loss=4.6616 mse=0.4146 v_opt=0.00015 v_mand=0.00000 ptv=0.0316 ring=0.01298 smooth=0.0397
+2026-05-19 12:45:54 [INFO] Step 20/54 Loss=3.7677 mse=0.3290 v_opt=0.02123 v_mand=0.00209 ptv=0.0186 ring=0.01286 smooth=0.0440
+2026-05-19 12:45:59 [INFO] Step 25/54 Loss=3.8669 mse=0.3360 v_opt=0.01546 v_mand=0.00059 ptv=0.0225 ring=0.01549 smooth=0.0366
+2026-05-19 12:46:01 [INFO] Step 30/54 Loss=6.1576 mse=0.5759 v_opt=0.00474 v_mand=0.00000 ptv=0.0210 ring=0.01174 smooth=0.0330
+2026-05-19 12:46:04 [INFO] Step 35/54 Loss=3.5997 mse=0.3153 v_opt=0.01785 v_mand=0.00051 ptv=0.0168 ring=0.01507 smooth=0.0408
+2026-05-19 12:46:06 [INFO] Step 40/54 Loss=4.3445 mse=0.3956 v_opt=0.00329 v_mand=0.00000 ptv=0.0215 ring=0.01083 smooth=0.0397
+2026-05-19 12:46:10 [INFO] Step 45/54 Loss=3.5520 mse=0.2970 v_opt=0.02435 v_mand=0.00303 ptv=0.0183 ring=0.01804 smooth=0.0388
+2026-05-19 12:46:13 [INFO] Step 50/54 Loss=3.2403 mse=0.2643 v_opt=0.03592 v_mand=0.00228 ptv=0.0216 ring=0.01663 smooth=0.0364
+2026-05-19 12:46:15 [INFO] Step 54/54 Loss=4.9755 mse=0.4605 v_opt=0.00443 v_mand=0.00000 ptv=0.0175 ring=0.01212 smooth=0.0453
+2026-05-19 12:46:15 [INFO] Running validation at epoch 85...
+2026-05-19 12:46:37 [INFO] Epoch 85 Summary: Train=3.8076 Val=5.2583 PTV_D95=59.69Gy Bladder=26.95Gy Rectum=24.94Gy
+2026-05-19 12:46:37 [INFO] Epoch 86/100 started, lr=6.40e-06
+2026-05-19 12:46:42 [INFO] Step 5/54 Loss=4.0389 mse=0.3487 v_opt=0.01352 v_mand=0.00027 ptv=0.0286 ring=0.01520 smooth=0.0457
+2026-05-19 12:46:45 [INFO] Step 10/54 Loss=2.5018 mse=0.2074 v_opt=0.00025 v_mand=0.00000 ptv=0.0251 ring=0.01153 smooth=0.0324
+2026-05-19 12:46:48 [INFO] Step 15/54 Loss=5.2019 mse=0.3093 v_opt=0.15400 v_mand=0.05363 ptv=0.0192 ring=0.01758 smooth=0.0436
+2026-05-19 12:46:51 [INFO] Step 20/54 Loss=3.8186 mse=0.3075 v_opt=0.04633 v_mand=0.00902 ptv=0.0188 ring=0.01552 smooth=0.0497
+2026-05-19 12:46:54 [INFO] Step 25/54 Loss=3.2440 mse=0.2829 v_opt=0.01065 v_mand=0.00000 ptv=0.0204 ring=0.01238 smooth=0.0369
+2026-05-19 12:46:57 [INFO] Step 30/54 Loss=3.4198 mse=0.2973 v_opt=0.00304 v_mand=0.00000 ptv=0.0234 ring=0.01355 smooth=0.0330
+2026-05-19 12:47:00 [INFO] Step 35/54 Loss=3.3573 mse=0.2843 v_opt=0.01294 v_mand=0.00001 ptv=0.0243 ring=0.01615 smooth=0.0315
+2026-05-19 12:47:02 [INFO] Step 40/54 Loss=3.0589 mse=0.2488 v_opt=0.03331 v_mand=0.00149 ptv=0.0219 ring=0.01631 smooth=0.0339
+2026-05-19 12:47:06 [INFO] Step 45/54 Loss=3.2295 mse=0.2740 v_opt=0.01440 v_mand=0.00037 ptv=0.0264 ring=0.01225 smooth=0.0359
+2026-05-19 12:47:09 [INFO] Step 50/54 Loss=3.1536 mse=0.2734 v_opt=0.01255 v_mand=0.00014 ptv=0.0197 ring=0.01274 smooth=0.0341
+2026-05-19 12:47:11 [INFO] Step 54/54 Loss=4.2548 mse=0.3698 v_opt=0.01749 v_mand=0.00103 ptv=0.0242 ring=0.01662 smooth=0.0425
+2026-05-19 12:47:11 [INFO] Running validation at epoch 86...
+2026-05-19 12:47:34 [INFO] Epoch 86 Summary: Train=3.5919 Val=5.2624 PTV_D95=59.64Gy Bladder=27.00Gy Rectum=25.29Gy
+2026-05-19 12:47:34 [INFO] Epoch 87/100 started, lr=5.71e-06
+2026-05-19 12:47:39 [INFO] Step 5/54 Loss=3.1669 mse=0.2770 v_opt=0.00793 v_mand=0.00000 ptv=0.0207 ring=0.01143 smooth=0.0295
+2026-05-19 12:47:41 [INFO] Step 10/54 Loss=4.4465 mse=0.3670 v_opt=0.04470 v_mand=0.00392 ptv=0.0343 ring=0.01615 smooth=0.0374
+2026-05-19 12:47:44 [INFO] Step 15/54 Loss=3.9618 mse=0.3585 v_opt=0.00076 v_mand=0.00000 ptv=0.0178 ring=0.01290 smooth=0.0434
+2026-05-19 12:47:47 [INFO] Step 20/54 Loss=4.3899 mse=0.3763 v_opt=0.03332 v_mand=0.00604 ptv=0.0183 ring=0.01485 smooth=0.0373
+2026-05-19 12:47:52 [INFO] Step 25/54 Loss=2.5581 mse=0.2105 v_opt=0.00953 v_mand=0.00000 ptv=0.0209 ring=0.01482 smooth=0.0301
+2026-05-19 12:47:54 [INFO] Step 30/54 Loss=3.8352 mse=0.3340 v_opt=0.00212 v_mand=0.00000 ptv=0.0280 ring=0.01382 smooth=0.0343
+2026-05-19 12:47:56 [INFO] Step 35/54 Loss=4.1262 mse=0.3058 v_opt=0.07709 v_mand=0.01887 ptv=0.0161 ring=0.01845 smooth=0.0421
+2026-05-19 12:47:58 [INFO] Step 40/54 Loss=3.3814 mse=0.2910 v_opt=0.00900 v_mand=0.00000 ptv=0.0257 ring=0.01278 smooth=0.0431
+2026-05-19 12:48:03 [INFO] Step 45/54 Loss=3.7768 mse=0.3194 v_opt=0.02967 v_mand=0.00471 ptv=0.0187 ring=0.01422 smooth=0.0524
+2026-05-19 12:48:06 [INFO] Step 50/54 Loss=2.9034 mse=0.2102 v_opt=0.06345 v_mand=0.01036 ptv=0.0196 ring=0.01446 smooth=0.0297
+2026-05-19 12:48:08 [INFO] Step 54/54 Loss=4.4530 mse=0.4007 v_opt=0.00024 v_mand=0.00000 ptv=0.0231 ring=0.01399 smooth=0.0413
+2026-05-19 12:48:08 [INFO] Running validation at epoch 87...
+2026-05-19 12:48:30 [INFO] Epoch 87 Summary: Train=3.7546 Val=5.2629 PTV_D95=59.27Gy Bladder=26.15Gy Rectum=26.30Gy
+2026-05-19 12:48:30 [INFO] Epoch 88/100 started, lr=5.07e-06
+2026-05-19 12:48:35 [INFO] Step 5/54 Loss=3.0738 mse=0.2587 v_opt=0.03109 v_mand=0.00111 ptv=0.0189 ring=0.01362 smooth=0.0334
+2026-05-19 12:48:38 [INFO] Step 10/54 Loss=2.7702 mse=0.2274 v_opt=0.02387 v_mand=0.00005 ptv=0.0221 ring=0.01493 smooth=0.0307
+2026-05-19 12:48:40 [INFO] Step 15/54 Loss=4.7744 mse=0.4770 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0417
+2026-05-19 12:48:43 [INFO] Step 20/54 Loss=4.2346 mse=0.3686 v_opt=0.00681 v_mand=0.00000 ptv=0.0315 ring=0.01438 smooth=0.0372
+2026-05-19 12:48:48 [INFO] Step 25/54 Loss=3.3935 mse=0.2828 v_opt=0.00764 v_mand=0.00000 ptv=0.0377 ring=0.01129 smooth=0.0394
+2026-05-19 12:48:51 [INFO] Step 30/54 Loss=4.8145 mse=0.4310 v_opt=0.02055 v_mand=0.00185 ptv=0.0219 ring=0.01294 smooth=0.0430
+2026-05-19 12:48:53 [INFO] Step 35/54 Loss=5.1689 mse=0.4765 v_opt=0.01257 v_mand=0.00012 ptv=0.0177 ring=0.01300 smooth=0.0320
+2026-05-19 12:48:55 [INFO] Step 40/54 Loss=3.8573 mse=0.3000 v_opt=0.07244 v_mand=0.01094 ptv=0.0172 ring=0.01757 smooth=0.0335
+2026-05-19 12:49:00 [INFO] Step 45/54 Loss=2.9398 mse=0.2544 v_opt=0.00354 v_mand=0.00000 ptv=0.0214 ring=0.01141 smooth=0.0330
+2026-05-19 12:49:02 [INFO] Step 50/54 Loss=5.1559 mse=0.4623 v_opt=0.02416 v_mand=0.00013 ptv=0.0265 ring=0.01425 smooth=0.0328
+2026-05-19 12:49:03 [INFO] Step 54/54 Loss=3.0859 mse=0.2686 v_opt=0.00000 v_mand=0.00000 ptv=0.0228 ring=0.01116 smooth=0.0377
+2026-05-19 12:49:03 [INFO] Running validation at epoch 88...
+2026-05-19 12:49:26 [INFO] Epoch 88 Summary: Train=3.9518 Val=5.2444 PTV_D95=59.21Gy Bladder=26.00Gy Rectum=25.73Gy
+2026-05-19 12:49:26 [INFO] [PHYSICS] Saved best model val_loss=5.2444
+2026-05-19 12:49:26 [INFO] Epoch 89/100 started, lr=4.48e-06
+2026-05-19 12:49:31 [INFO] Step 5/54 Loss=3.9112 mse=0.3378 v_opt=0.00798 v_mand=0.00000 ptv=0.0269 ring=0.01629 smooth=0.0365
+2026-05-19 12:49:33 [INFO] Step 10/54 Loss=3.0758 mse=0.2613 v_opt=0.00610 v_mand=0.00000 ptv=0.0239 ring=0.01387 smooth=0.0351
+2026-05-19 12:49:36 [INFO] Step 15/54 Loss=3.0783 mse=0.2652 v_opt=0.00049 v_mand=0.00000 ptv=0.0213 ring=0.01394 smooth=0.0340
+2026-05-19 12:49:38 [INFO] Step 20/54 Loss=3.9018 mse=0.3350 v_opt=0.01985 v_mand=0.00164 ptv=0.0244 ring=0.01493 smooth=0.0365
+2026-05-19 12:49:43 [INFO] Step 25/54 Loss=4.6361 mse=0.3396 v_opt=0.09296 v_mand=0.02565 ptv=0.0176 ring=0.01556 smooth=0.0342
+2026-05-19 12:49:46 [INFO] Step 30/54 Loss=5.3036 mse=0.4830 v_opt=0.02174 v_mand=0.00196 ptv=0.0184 ring=0.01297 smooth=0.0309
+2026-05-19 12:49:48 [INFO] Step 35/54 Loss=2.0181 mse=0.1585 v_opt=0.00050 v_mand=0.00000 ptv=0.0238 ring=0.01275 smooth=0.0287
+2026-05-19 12:49:51 [INFO] Step 40/54 Loss=4.8285 mse=0.4425 v_opt=0.00507 v_mand=0.00000 ptv=0.0199 ring=0.01271 smooth=0.0354
+2026-05-19 12:49:55 [INFO] Step 45/54 Loss=2.7594 mse=0.2346 v_opt=0.00667 v_mand=0.00000 ptv=0.0228 ring=0.01124 smooth=0.0318
+2026-05-19 12:49:57 [INFO] Step 50/54 Loss=2.5131 mse=0.2049 v_opt=0.00092 v_mand=0.00000 ptv=0.0274 ring=0.01230 smooth=0.0346
+2026-05-19 12:49:59 [INFO] Step 54/54 Loss=2.9977 mse=0.2632 v_opt=0.00000 v_mand=0.00000 ptv=0.0211 ring=0.01009 smooth=0.0358
+2026-05-19 12:49:59 [INFO] Running validation at epoch 89...
+2026-05-19 12:50:21 [INFO] Epoch 89 Summary: Train=3.8579 Val=5.2494 PTV_D95=59.56Gy Bladder=26.31Gy Rectum=26.89Gy
+2026-05-19 12:50:21 [INFO] Epoch 90/100 started, lr=3.93e-06
+2026-05-19 12:50:27 [INFO] Step 5/54 Loss=6.0195 mse=0.5620 v_opt=0.00065 v_mand=0.00000 ptv=0.0207 ring=0.01256 smooth=0.0333
+2026-05-19 12:50:29 [INFO] Step 10/54 Loss=5.3986 mse=0.4971 v_opt=0.00510 v_mand=0.00000 ptv=0.0190 ring=0.01492 smooth=0.0351
+2026-05-19 12:50:32 [INFO] Step 15/54 Loss=3.2822 mse=0.2849 v_opt=0.01422 v_mand=0.00000 ptv=0.0200 ring=0.01344 smooth=0.0326
+2026-05-19 12:50:34 [INFO] Step 20/54 Loss=3.9313 mse=0.3138 v_opt=0.04810 v_mand=0.01169 ptv=0.0185 ring=0.01444 smooth=0.0353
+2026-05-19 12:50:38 [INFO] Step 25/54 Loss=3.1665 mse=0.2774 v_opt=0.00754 v_mand=0.00000 ptv=0.0202 ring=0.01152 smooth=0.0283
+2026-05-19 12:50:41 [INFO] Step 30/54 Loss=3.4703 mse=0.3043 v_opt=0.00485 v_mand=0.00000 ptv=0.0237 ring=0.01181 smooth=0.0381
+2026-05-19 12:50:43 [INFO] Step 35/54 Loss=2.9024 mse=0.2387 v_opt=0.02785 v_mand=0.00078 ptv=0.0268 ring=0.01126 smooth=0.0321
+2026-05-19 12:50:45 [INFO] Step 40/54 Loss=3.8108 mse=0.3302 v_opt=0.01588 v_mand=0.00011 ptv=0.0222 ring=0.01659 smooth=0.0339
+2026-05-19 12:50:49 [INFO] Step 45/54 Loss=3.5655 mse=0.3031 v_opt=0.02920 v_mand=0.00303 ptv=0.0189 ring=0.01385 smooth=0.0338
+2026-05-19 12:50:53 [INFO] Step 50/54 Loss=3.1464 mse=0.2728 v_opt=0.01465 v_mand=0.00010 ptv=0.0201 ring=0.01213 smooth=0.0313
+2026-05-19 12:50:55 [INFO] Step 54/54 Loss=3.3882 mse=0.2983 v_opt=0.00077 v_mand=0.00000 ptv=0.0196 ring=0.01363 smooth=0.0357
+2026-05-19 12:50:55 [INFO] Running validation at epoch 90...
+2026-05-19 12:51:17 [INFO] Epoch 90 Summary: Train=3.6834 Val=5.2451 PTV_D95=59.64Gy Bladder=26.84Gy Rectum=24.67Gy
+2026-05-19 12:51:17 [INFO] Epoch 91/100 started, lr=3.42e-06
+2026-05-19 12:51:22 [INFO] Step 5/54 Loss=3.3674 mse=0.2837 v_opt=0.00747 v_mand=0.00001 ptv=0.0241 ring=0.01808 smooth=0.0326
+2026-05-19 12:51:24 [INFO] Step 10/54 Loss=3.8929 mse=0.3493 v_opt=0.01335 v_mand=0.00023 ptv=0.0173 ring=0.01274 smooth=0.0378
+2026-05-19 12:51:27 [INFO] Step 15/54 Loss=2.8025 mse=0.2342 v_opt=0.00375 v_mand=0.00000 ptv=0.0251 ring=0.01331 smooth=0.0308
+2026-05-19 12:51:29 [INFO] Step 20/54 Loss=2.8388 mse=0.2466 v_opt=0.00207 v_mand=0.00000 ptv=0.0189 ring=0.01174 smooth=0.0347
+2026-05-19 12:51:34 [INFO] Step 25/54 Loss=4.6957 mse=0.3584 v_opt=0.06471 v_mand=0.02145 ptv=0.0184 ring=0.01723 smooth=0.0398
+2026-05-19 12:51:37 [INFO] Step 30/54 Loss=5.4609 mse=0.3665 v_opt=0.06772 v_mand=0.02327 ptv=0.0688 ring=0.02563 smooth=0.0606
+2026-05-19 12:51:39 [INFO] Step 35/54 Loss=4.6896 mse=0.4109 v_opt=0.00000 v_mand=0.00000 ptv=0.0471 ring=0.00705 smooth=0.0368
+2026-05-19 12:51:41 [INFO] Step 40/54 Loss=3.9955 mse=0.3552 v_opt=0.00156 v_mand=0.00000 ptv=0.0236 ring=0.01335 smooth=0.0392
+2026-05-19 12:51:46 [INFO] Step 45/54 Loss=3.8473 mse=0.3272 v_opt=0.00063 v_mand=0.00000 ptv=0.0393 ring=0.01183 smooth=0.0423
+2026-05-19 12:51:48 [INFO] Step 50/54 Loss=4.5144 mse=0.4511 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0386
+2026-05-19 12:51:50 [INFO] Step 54/54 Loss=2.5502 mse=0.2081 v_opt=0.01231 v_mand=0.00000 ptv=0.0213 ring=0.01521 smooth=0.0289
+2026-05-19 12:51:50 [INFO] Running validation at epoch 91...
+2026-05-19 12:52:13 [INFO] Epoch 91 Summary: Train=4.4282 Val=5.2516 PTV_D95=59.82Gy Bladder=26.94Gy Rectum=25.40Gy
+2026-05-19 12:52:13 [INFO] Epoch 92/100 started, lr=2.97e-06
+2026-05-19 12:52:18 [INFO] Step 5/54 Loss=4.1362 mse=0.3514 v_opt=0.02941 v_mand=0.00490 ptv=0.0227 ring=0.01395 smooth=0.0480
+2026-05-19 12:52:20 [INFO] Step 10/54 Loss=3.4740 mse=0.3066 v_opt=0.01277 v_mand=0.00000 ptv=0.0197 ring=0.01214 smooth=0.0326
+2026-05-19 12:52:23 [INFO] Step 15/54 Loss=3.5081 mse=0.2961 v_opt=0.03415 v_mand=0.00306 ptv=0.0182 ring=0.01446 smooth=0.0327
+2026-05-19 12:52:25 [INFO] Step 20/54 Loss=3.3318 mse=0.2898 v_opt=0.01468 v_mand=0.00030 ptv=0.0193 ring=0.01339 smooth=0.0306
+2026-05-19 12:52:30 [INFO] Step 25/54 Loss=3.6499 mse=0.3013 v_opt=0.03702 v_mand=0.00763 ptv=0.0188 ring=0.01202 smooth=0.0327
+2026-05-19 12:52:32 [INFO] Step 30/54 Loss=3.8685 mse=0.2932 v_opt=0.06879 v_mand=0.01585 ptv=0.0159 ring=0.01604 smooth=0.0326
+2026-05-19 12:52:35 [INFO] Step 35/54 Loss=4.7978 mse=0.4792 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0555
+2026-05-19 12:52:37 [INFO] Step 40/54 Loss=4.3083 mse=0.3899 v_opt=0.00641 v_mand=0.00000 ptv=0.0201 ring=0.01280 smooth=0.0412
+2026-05-19 12:52:42 [INFO] Step 45/54 Loss=3.1347 mse=0.2686 v_opt=0.01096 v_mand=0.00002 ptv=0.0209 ring=0.01419 smooth=0.0403
+2026-05-19 12:52:44 [INFO] Step 50/54 Loss=2.5897 mse=0.2222 v_opt=0.00021 v_mand=0.00000 ptv=0.0199 ring=0.01101 smooth=0.0341
+2026-05-19 12:52:46 [INFO] Step 54/54 Loss=3.4082 mse=0.2854 v_opt=0.02568 v_mand=0.00356 ptv=0.0215 ring=0.01299 smooth=0.0333
+2026-05-19 12:52:46 [INFO] Running validation at epoch 92...
+2026-05-19 12:53:09 [INFO] Epoch 92 Summary: Train=4.2372 Val=5.2600 PTV_D95=59.69Gy Bladder=26.88Gy Rectum=25.73Gy
+2026-05-19 12:53:09 [INFO] Epoch 93/100 started, lr=2.56e-06
+2026-05-19 12:53:14 [INFO] Step 5/54 Loss=4.4100 mse=0.3807 v_opt=0.03442 v_mand=0.00334 ptv=0.0191 ring=0.01701 smooth=0.0404
+2026-05-19 12:53:17 [INFO] Step 10/54 Loss=3.3116 mse=0.2864 v_opt=0.00038 v_mand=0.00000 ptv=0.0239 ring=0.01358 smooth=0.0336
+2026-05-19 12:53:19 [INFO] Step 15/54 Loss=3.5825 mse=0.3154 v_opt=0.01134 v_mand=0.00000 ptv=0.0219 ring=0.01217 smooth=0.0356
+2026-05-19 12:53:21 [INFO] Step 20/54 Loss=4.5479 mse=0.3030 v_opt=0.11463 v_mand=0.03310 ptv=0.0220 ring=0.01571 smooth=0.0488
+2026-05-19 12:53:25 [INFO] Step 25/54 Loss=3.4827 mse=0.2850 v_opt=0.03747 v_mand=0.00619 ptv=0.0213 ring=0.01249 smooth=0.0327
+2026-05-19 12:53:28 [INFO] Step 30/54 Loss=3.1531 mse=0.2618 v_opt=0.03647 v_mand=0.00148 ptv=0.0201 ring=0.01477 smooth=0.0288
+2026-05-19 12:53:30 [INFO] Step 35/54 Loss=2.9388 mse=0.2497 v_opt=0.00581 v_mand=0.00000 ptv=0.0247 ring=0.01199 smooth=0.0320
+2026-05-19 12:53:33 [INFO] Step 40/54 Loss=5.0771 mse=0.4622 v_opt=0.01125 v_mand=0.00000 ptv=0.0233 ring=0.01311 smooth=0.0320
+2026-05-19 12:53:36 [INFO] Step 45/54 Loss=3.7150 mse=0.3254 v_opt=0.01006 v_mand=0.00000 ptv=0.0270 ring=0.01111 smooth=0.0427
+2026-05-19 12:53:40 [INFO] Step 50/54 Loss=2.9248 mse=0.2476 v_opt=0.01630 v_mand=0.00068 ptv=0.0207 ring=0.01261 smooth=0.0306
+2026-05-19 12:53:42 [INFO] Step 54/54 Loss=3.8890 mse=0.3297 v_opt=0.02479 v_mand=0.00328 ptv=0.0218 ring=0.01586 smooth=0.0449
+2026-05-19 12:53:42 [INFO] Running validation at epoch 93...
+2026-05-19 12:54:05 [INFO] Epoch 93 Summary: Train=3.7416 Val=5.2572 PTV_D95=59.86Gy Bladder=26.88Gy Rectum=25.76Gy
+2026-05-19 12:54:05 [INFO] Epoch 94/100 started, lr=2.19e-06
+2026-05-19 12:54:10 [INFO] Step 5/54 Loss=5.4026 mse=0.4995 v_opt=0.00476 v_mand=0.00000 ptv=0.0169 ring=0.01508 smooth=0.0318
+2026-05-19 12:54:13 [INFO] Step 10/54 Loss=4.1381 mse=0.3611 v_opt=0.00966 v_mand=0.00000 ptv=0.0326 ring=0.01182 smooth=0.0405
+2026-05-19 12:54:15 [INFO] Step 15/54 Loss=3.2330 mse=0.2658 v_opt=0.03890 v_mand=0.00352 ptv=0.0206 ring=0.01328 smooth=0.0335
+2026-05-19 12:54:17 [INFO] Step 20/54 Loss=4.3552 mse=0.4352 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0347
+2026-05-19 12:54:22 [INFO] Step 25/54 Loss=5.2844 mse=0.3684 v_opt=0.11153 v_mand=0.03604 ptv=0.0192 ring=0.01868 smooth=0.0398
+2026-05-19 12:54:24 [INFO] Step 30/54 Loss=4.2350 mse=0.3685 v_opt=0.03359 v_mand=0.00164 ptv=0.0210 ring=0.01521 smooth=0.0405
+2026-05-19 12:54:27 [INFO] Step 35/54 Loss=5.6716 mse=0.5262 v_opt=0.00476 v_mand=0.00000 ptv=0.0193 ring=0.01353 smooth=0.0390
+2026-05-19 12:54:29 [INFO] Step 40/54 Loss=3.0342 mse=0.2563 v_opt=0.01183 v_mand=0.00004 ptv=0.0278 ring=0.01096 smooth=0.0335
+2026-05-19 12:54:34 [INFO] Step 45/54 Loss=4.1193 mse=0.3631 v_opt=0.02138 v_mand=0.00149 ptv=0.0213 ring=0.01278 smooth=0.0356
+2026-05-19 12:54:36 [INFO] Step 50/54 Loss=3.4042 mse=0.2971 v_opt=0.00411 v_mand=0.00000 ptv=0.0241 ring=0.01205 smooth=0.0393
+2026-05-19 12:54:38 [INFO] Step 54/54 Loss=3.6973 mse=0.3219 v_opt=0.01097 v_mand=0.00000 ptv=0.0266 ring=0.01244 smooth=0.0368
+2026-05-19 12:54:38 [INFO] Running validation at epoch 94...
+2026-05-19 12:55:01 [INFO] Epoch 94 Summary: Train=3.9106 Val=5.2590 PTV_D95=59.64Gy Bladder=26.97Gy Rectum=25.30Gy
+2026-05-19 12:55:01 [INFO] Epoch 95/100 started, lr=1.88e-06
+2026-05-19 12:55:06 [INFO] Step 5/54 Loss=2.4819 mse=0.2034 v_opt=0.01645 v_mand=0.00078 ptv=0.0193 ring=0.01324 smooth=0.0301
+2026-05-19 12:55:08 [INFO] Step 10/54 Loss=3.0576 mse=0.2658 v_opt=0.00412 v_mand=0.00000 ptv=0.0210 ring=0.01185 smooth=0.0307
+2026-05-19 12:55:11 [INFO] Step 15/54 Loss=4.0270 mse=0.3613 v_opt=0.00548 v_mand=0.00000 ptv=0.0223 ring=0.01174 smooth=0.0416
+2026-05-19 12:55:14 [INFO] Step 20/54 Loss=3.6529 mse=0.3272 v_opt=0.00864 v_mand=0.00000 ptv=0.0189 ring=0.01128 smooth=0.0503
+2026-05-19 12:55:17 [INFO] Step 25/54 Loss=3.7992 mse=0.3371 v_opt=0.00456 v_mand=0.00000 ptv=0.0214 ring=0.01348 smooth=0.0352
+2026-05-19 12:55:20 [INFO] Step 30/54 Loss=4.4183 mse=0.4414 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0398
+2026-05-19 12:55:23 [INFO] Step 35/54 Loss=4.0341 mse=0.3373 v_opt=0.04172 v_mand=0.00235 ptv=0.0320 ring=0.01300 smooth=0.0345
+2026-05-19 12:55:25 [INFO] Step 40/54 Loss=2.7862 mse=0.2405 v_opt=0.00693 v_mand=0.00000 ptv=0.0187 ring=0.01178 smooth=0.0300
+2026-05-19 12:55:28 [INFO] Step 45/54 Loss=3.1992 mse=0.2598 v_opt=0.03458 v_mand=0.00548 ptv=0.0203 ring=0.01260 smooth=0.0326
+2026-05-19 12:55:31 [INFO] Step 50/54 Loss=3.7354 mse=0.3203 v_opt=0.01966 v_mand=0.00008 ptv=0.0238 ring=0.01669 smooth=0.0321
+2026-05-19 12:55:34 [INFO] Step 54/54 Loss=4.2205 mse=0.2796 v_opt=0.10848 v_mand=0.03212 ptv=0.0168 ring=0.01554 smooth=0.0341
+2026-05-19 12:55:34 [INFO] Running validation at epoch 95...
+2026-05-19 12:55:56 [INFO] Epoch 95 Summary: Train=3.7328 Val=5.2596 PTV_D95=59.82Gy Bladder=27.04Gy Rectum=25.44Gy
+2026-05-19 12:55:56 [INFO] Epoch 96/100 started, lr=1.61e-06
+2026-05-19 12:56:02 [INFO] Step 5/54 Loss=3.1002 mse=0.2514 v_opt=0.02977 v_mand=0.00461 ptv=0.0188 ring=0.01471 smooth=0.0321
+2026-05-19 12:56:04 [INFO] Step 10/54 Loss=2.3141 mse=0.1919 v_opt=0.00687 v_mand=0.00000 ptv=0.0197 ring=0.01206 smooth=0.0305
+2026-05-19 12:56:07 [INFO] Step 15/54 Loss=2.9223 mse=0.2367 v_opt=0.03405 v_mand=0.00390 ptv=0.0194 ring=0.01286 smooth=0.0307
+2026-05-19 12:56:09 [INFO] Step 20/54 Loss=3.1830 mse=0.2659 v_opt=0.03519 v_mand=0.00236 ptv=0.0186 ring=0.01372 smooth=0.0298
+2026-05-19 12:56:13 [INFO] Step 25/54 Loss=2.9124 mse=0.2316 v_opt=0.03259 v_mand=0.00235 ptv=0.0240 ring=0.01532 smooth=0.0339
+2026-05-19 12:56:16 [INFO] Step 30/54 Loss=2.8039 mse=0.2392 v_opt=0.00359 v_mand=0.00000 ptv=0.0206 ring=0.01310 smooth=0.0270
+2026-05-19 12:56:18 [INFO] Step 35/54 Loss=2.5791 mse=0.2185 v_opt=0.00049 v_mand=0.00000 ptv=0.0220 ring=0.01129 smooth=0.0331
+2026-05-19 12:56:21 [INFO] Step 40/54 Loss=5.8890 mse=0.4642 v_opt=0.00466 v_mand=0.00000 ptv=0.0959 ring=0.01828 smooth=0.0463
+2026-05-19 12:56:24 [INFO] Step 45/54 Loss=4.0478 mse=0.3643 v_opt=0.00425 v_mand=0.00000 ptv=0.0208 ring=0.01227 smooth=0.0409
+2026-05-19 12:56:27 [INFO] Step 50/54 Loss=3.8611 mse=0.3282 v_opt=0.02847 v_mand=0.00082 ptv=0.0236 ring=0.01753 smooth=0.0361
+2026-05-19 12:56:29 [INFO] Step 54/54 Loss=3.6007 mse=0.3180 v_opt=0.00245 v_mand=0.00000 ptv=0.0261 ring=0.01009 smooth=0.0362
+2026-05-19 12:56:29 [INFO] Running validation at epoch 96...
+2026-05-19 12:56:51 [INFO] Epoch 96 Summary: Train=3.8579 Val=5.2425 PTV_D95=59.39Gy Bladder=26.59Gy Rectum=25.83Gy
+2026-05-19 12:56:51 [INFO] [PHYSICS] Saved best model val_loss=5.2425
+2026-05-19 12:56:51 [INFO] Epoch 97/100 started, lr=1.39e-06
+2026-05-19 12:56:56 [INFO] Step 5/54 Loss=3.7149 mse=0.2860 v_opt=0.06911 v_mand=0.01195 ptv=0.0164 ring=0.01666 smooth=0.0381
+2026-05-19 12:56:59 [INFO] Step 10/54 Loss=4.6562 mse=0.4295 v_opt=0.00651 v_mand=0.00000 ptv=0.0180 ring=0.01096 smooth=0.0390
+2026-05-19 12:57:01 [INFO] Step 15/54 Loss=3.0738 mse=0.2650 v_opt=0.00526 v_mand=0.00000 ptv=0.0258 ring=0.01018 smooth=0.0324
+2026-05-19 12:57:05 [INFO] Step 20/54 Loss=3.2308 mse=0.2782 v_opt=0.00270 v_mand=0.00000 ptv=0.0263 ring=0.01187 smooth=0.0309
+2026-05-19 12:57:07 [INFO] Step 25/54 Loss=4.0355 mse=0.4031 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0433
+2026-05-19 12:57:11 [INFO] Step 30/54 Loss=3.1044 mse=0.2690 v_opt=0.00822 v_mand=0.00000 ptv=0.0202 ring=0.01288 smooth=0.0328
+2026-05-19 12:57:14 [INFO] Step 35/54 Loss=2.8319 mse=0.2393 v_opt=0.01085 v_mand=0.00002 ptv=0.0220 ring=0.01289 smooth=0.0292
+2026-05-19 12:57:16 [INFO] Step 40/54 Loss=4.1141 mse=0.3701 v_opt=0.01125 v_mand=0.00004 ptv=0.0176 ring=0.01403 smooth=0.0340
+2026-05-19 12:57:19 [INFO] Step 45/54 Loss=3.5078 mse=0.3078 v_opt=0.01111 v_mand=0.00000 ptv=0.0204 ring=0.01337 smooth=0.0329
+2026-05-19 12:57:22 [INFO] Step 50/54 Loss=3.0272 mse=0.2525 v_opt=0.03560 v_mand=0.00189 ptv=0.0187 ring=0.01295 smooth=0.0291
+2026-05-19 12:57:24 [INFO] Step 54/54 Loss=5.2077 mse=0.4811 v_opt=0.00593 v_mand=0.00000 ptv=0.0171 ring=0.01401 smooth=0.0402
+2026-05-19 12:57:24 [INFO] Running validation at epoch 97...
+2026-05-19 12:57:46 [INFO] Epoch 97 Summary: Train=4.2767 Val=5.2417 PTV_D95=59.84Gy Bladder=26.71Gy Rectum=25.43Gy
+2026-05-19 12:57:46 [INFO] [PHYSICS] Saved best model val_loss=5.2417
+2026-05-19 12:57:46 [INFO] Epoch 98/100 started, lr=1.22e-06
+2026-05-19 12:57:51 [INFO] Step 5/54 Loss=2.8304 mse=0.2418 v_opt=0.00400 v_mand=0.00000 ptv=0.0217 ring=0.01233 smooth=0.0285
+2026-05-19 12:57:54 [INFO] Step 10/54 Loss=2.2310 mse=0.1831 v_opt=0.00729 v_mand=0.00000 ptv=0.0195 ring=0.01248 smooth=0.0302
+2026-05-19 12:57:56 [INFO] Step 15/54 Loss=4.6463 mse=0.3756 v_opt=0.06752 v_mand=0.01391 ptv=0.0183 ring=0.01468 smooth=0.0410
+2026-05-19 12:57:59 [INFO] Step 20/54 Loss=2.8247 mse=0.2402 v_opt=0.00044 v_mand=0.00000 ptv=0.0230 ring=0.01256 smooth=0.0316
+2026-05-19 12:58:03 [INFO] Step 25/54 Loss=4.5297 mse=0.4166 v_opt=0.00905 v_mand=0.00000 ptv=0.0167 ring=0.01169 smooth=0.0313
+2026-05-19 12:58:06 [INFO] Step 30/54 Loss=2.5900 mse=0.2138 v_opt=0.01392 v_mand=0.00031 ptv=0.0222 ring=0.01279 smooth=0.0333
+2026-05-19 12:58:09 [INFO] Step 35/54 Loss=4.3672 mse=0.3909 v_opt=0.00922 v_mand=0.00000 ptv=0.0195 ring=0.01604 smooth=0.0405
+2026-05-19 12:58:11 [INFO] Step 40/54 Loss=3.3849 mse=0.3375 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00034 smooth=0.0430
+2026-05-19 12:58:15 [INFO] Step 45/54 Loss=3.8301 mse=0.3405 v_opt=0.01361 v_mand=0.00000 ptv=0.0210 ring=0.01230 smooth=0.0364
+2026-05-19 12:58:18 [INFO] Step 50/54 Loss=2.9509 mse=0.2557 v_opt=0.00910 v_mand=0.00000 ptv=0.0202 ring=0.01135 smooth=0.0317
+2026-05-19 12:58:20 [INFO] Step 54/54 Loss=3.7546 mse=0.3298 v_opt=0.00851 v_mand=0.00000 ptv=0.0234 ring=0.01341 smooth=0.0362
+2026-05-19 12:58:20 [INFO] Running validation at epoch 98...
+2026-05-19 12:58:42 [INFO] Epoch 98 Summary: Train=3.7776 Val=5.2582 PTV_D95=59.73Gy Bladder=27.13Gy Rectum=25.40Gy
+2026-05-19 12:58:42 [INFO] Epoch 99/100 started, lr=1.10e-06
+2026-05-19 12:58:47 [INFO] Step 5/54 Loss=3.3289 mse=0.2863 v_opt=0.01964 v_mand=0.00106 ptv=0.0209 ring=0.01249 smooth=0.0311
+2026-05-19 12:58:50 [INFO] Step 10/54 Loss=3.0603 mse=0.2642 v_opt=0.00872 v_mand=0.00000 ptv=0.0205 ring=0.01284 smooth=0.0306
+2026-05-19 12:58:52 [INFO] Step 15/54 Loss=3.9901 mse=0.2900 v_opt=0.07884 v_mand=0.02163 ptv=0.0177 ring=0.01403 smooth=0.0361
+2026-05-19 12:58:55 [INFO] Step 20/54 Loss=5.7753 mse=0.5378 v_opt=0.00639 v_mand=0.00000 ptv=0.0212 ring=0.01121 smooth=0.0412
+2026-05-19 12:58:58 [INFO] Step 25/54 Loss=3.6666 mse=0.3099 v_opt=0.04159 v_mand=0.00256 ptv=0.0198 ring=0.01463 smooth=0.0331
+2026-05-19 12:59:01 [INFO] Step 30/54 Loss=3.4629 mse=0.2264 v_opt=0.07304 v_mand=0.02411 ptv=0.0188 ring=0.01726 smooth=0.0339
+2026-05-19 12:59:04 [INFO] Step 35/54 Loss=3.1782 mse=0.2753 v_opt=0.00522 v_mand=0.00000 ptv=0.0210 ring=0.01345 smooth=0.0327
+2026-05-19 12:59:06 [INFO] Step 40/54 Loss=4.7935 mse=0.2706 v_opt=0.15621 v_mand=0.05428 ptv=0.0161 ring=0.01691 smooth=0.0356
+2026-05-19 12:59:10 [INFO] Step 45/54 Loss=3.5073 mse=0.3079 v_opt=0.01021 v_mand=0.00000 ptv=0.0190 ring=0.01425 smooth=0.0396
+2026-05-19 12:59:13 [INFO] Step 50/54 Loss=3.7181 mse=0.3291 v_opt=0.01110 v_mand=0.00001 ptv=0.0190 ring=0.01405 smooth=0.0360
+2026-05-19 12:59:15 [INFO] Step 54/54 Loss=3.4656 mse=0.3028 v_opt=0.01109 v_mand=0.00000 ptv=0.0226 ring=0.01244 smooth=0.0329
+2026-05-19 12:59:15 [INFO] Running validation at epoch 99...
+2026-05-19 12:59:37 [INFO] Epoch 99 Summary: Train=3.9157 Val=5.2437 PTV_D95=59.61Gy Bladder=26.75Gy Rectum=25.10Gy
+2026-05-19 12:59:37 [INFO] Epoch 100/100 started, lr=1.02e-06
+2026-05-19 12:59:42 [INFO] Step 5/54 Loss=3.1076 mse=0.2667 v_opt=0.01697 v_mand=0.00001 ptv=0.0219 ring=0.01227 smooth=0.0316
+2026-05-19 12:59:45 [INFO] Step 10/54 Loss=4.3088 mse=0.4305 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ring=0.00000 smooth=0.0353
+2026-05-19 12:59:47 [INFO] Step 15/54 Loss=3.3768 mse=0.2944 v_opt=0.00817 v_mand=0.00000 ptv=0.0216 ring=0.01315 smooth=0.0345
+2026-05-19 12:59:50 [INFO] Step 20/54 Loss=4.1120 mse=0.3541 v_opt=0.03247 v_mand=0.00400 ptv=0.0175 ring=0.01516 smooth=0.0395
+2026-05-19 12:59:54 [INFO] Step 25/54 Loss=4.1099 mse=0.3698 v_opt=0.01249 v_mand=0.00014 ptv=0.0201 ring=0.01188 smooth=0.0380
+2026-05-19 12:59:57 [INFO] Step 30/54 Loss=3.1909 mse=0.2808 v_opt=0.00260 v_mand=0.00000 ptv=0.0203 ring=0.01146 smooth=0.0333
+2026-05-19 12:59:59 [INFO] Step 35/54 Loss=3.5429 mse=0.3021 v_opt=0.01773 v_mand=0.00000 ptv=0.0219 ring=0.01760 smooth=0.0332
+2026-05-19 13:00:01 [INFO] Step 40/54 Loss=4.6379 mse=0.4266 v_opt=0.00945 v_mand=0.00000 ptv=0.0172 ring=0.01184 smooth=0.0312
+2026-05-19 13:00:06 [INFO] Step 45/54 Loss=3.8897 mse=0.3475 v_opt=0.01260 v_mand=0.00015 ptv=0.0173 ring=0.01396 smooth=0.0318
+2026-05-19 13:00:08 [INFO] Step 50/54 Loss=4.1512 mse=0.3654 v_opt=0.00252 v_mand=0.00000 ptv=0.0246 ring=0.01613 smooth=0.0410
+2026-05-19 13:00:11 [INFO] Step 54/54 Loss=4.3570 mse=0.3478 v_opt=0.05407 v_mand=0.01041 ptv=0.0299 ring=0.01392 smooth=0.0386
+2026-05-19 13:00:11 [INFO] Running validation at epoch 100...
+2026-05-19 13:00:33 [INFO] Epoch 100 Summary: Train=3.8502 Val=5.2499 PTV_D95=59.82Gy Bladder=26.97Gy Rectum=25.49Gy
+2026-05-19 13:00:33 [INFO] Training complete. Best val loss: 5.2417 Best clinical score: 32.5223

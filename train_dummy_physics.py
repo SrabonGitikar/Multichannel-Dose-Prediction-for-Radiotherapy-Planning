@@ -16,6 +16,8 @@ import os
 import glob
 import math
 import csv
+import logging
+from datetime import datetime
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -58,12 +60,19 @@ LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
 CHANNELS = ["0000", "0001", "0002", "0003", "0004"]  # CT, PTV, Bladder SDM, Anorectum SDM, IMRT Beam Prior
 TARGET_SPACING = (1.27, 1.27, 2.5)
-PATCH_SIZE = (96, 96, 96)
+PATCH_SIZE = (128, 128, 64)  # Optimized for 12GB VRAM: larger XY, smaller Z
 
 PRESCRIPTION_DOSE_GY = 75.0  # Normalisation factor (Gy -> [0,1]); headroom above 66.34 Gy max Rx
 CONSTRAINT_CSV = os.environ.get(
     "CONSTRAINT_CSV", "./prostate_prime_constraints_v2.csv"
 )
+
+# Gradient accumulation: effective batch size = actual_batch * GRAD_ACCUM_STEPS
+# Set to 2 to simulate double batch size without increasing VRAM usage
+GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", "2"))
+
+# Validation frequency: run validation every N epochs (1=every epoch, 2=every 2nd, etc.)
+VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", "1"))  # Validate every epoch
 
 # ===================================================================
 # 2. Constraint Parsing  (Step 1)
@@ -517,17 +526,15 @@ train_transforms = Compose(
         CreateFalloffRingd(keys=["ch_1"]),
         # ── Balanced 5-class patch sampling ──────────────────────────────
         # ratios=[0,1,1,1,1] → Air never sampled; 25% per active class.
-        # num_samples=4 → exactly 1 patch per active class per patient,
-        # preventing the model from ignoring healthy tissue (the "brachytherapy
-        # loophole" where unpenalised dose floods lateral hip tissue).
-        # If CUDA OOM occurs, reduce num_samples to 2 (stochastic 50/50).
+        # num_samples=2 → 2 patches per patient (reduced from 4 for 12GB VRAM).
+        # Use gradient accumulation to simulate larger effective batch if needed.
         RandCropByLabelClassesd(
             keys=ALL_KEYS + ["ring_mask"],   # ring_mask must be cropped too
             label_key="crop_mask",
             spatial_size=PATCH_SIZE,
             num_classes=5,
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
-            num_samples=4,
+            num_samples=2,  # Reduced from 4 for 12GB VRAM
         ),
         ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
         ToTensord(keys=["image", "dose_label", "ring_mask"]),
@@ -575,7 +582,27 @@ def extract_binary_masks(inputs):
 # ===================================================================
 
 def main():
+    # ---- Setup logging ---------------------------------------------
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"training_{timestamp}.log"
+    log_format = "%(asctime)s [%(levelname)s] %(message)s"
+    date_format = "%Y-%m-%d %H:%M:%S"
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format=log_format,
+        datefmt=date_format,
+        handlers=[
+            logging.FileHandler(log_filename),
+            logging.StreamHandler()  # Console output
+        ]
+    )
+    logger = logging.getLogger(__name__)
+    logger.info(f"Training log started: {log_filename}")
+    logger.info(f"PATCH_SIZE={PATCH_SIZE}, GRAD_ACCUM_STEPS={GRAD_ACCUM_STEPS}")
+
     # ---- Load constraints ------------------------------------------
+    logger.info(f"Loading clinical constraints from {CONSTRAINT_CSV} ...")
     print(f"Loading clinical constraints from {CONSTRAINT_CSV} ...")
     constraints = load_clinical_constraints(CONSTRAINT_CSV, patient_class="N0")
 
@@ -610,11 +637,19 @@ def main():
     # BATCH_SIZE=2 doubles VRAM usage (each sample = 4 crops of 96³).
     # For a 24 GB GPU, BATCH_SIZE=1 is safe; BATCH_SIZE=2 may work.
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
-    num_workers  = min(os.cpu_count() or 4, 8)
-    print(f"Batch size={batch_size}  num_workers={num_workers}")
+    # Reduced from 8 to 4 to prevent RAM accumulation (67GB system)
+    num_workers  = min(int(os.environ.get("NUM_WORKERS", "4")), 6)
+    prefetch_factor = int(os.environ.get("PREFETCH_FACTOR", "2"))  # Limit prefetch to control RAM
+    print(f"Batch size={batch_size}  num_workers={num_workers}  prefetch={prefetch_factor}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
     os.makedirs(cache_dir, exist_ok=True)
+
+    # Warn about cache clearing when patch size changes
+    print(f"\n  Cache dir: {cache_dir}")
+    print(f"  Patch size: {PATCH_SIZE}")
+    print(f"  NOTE: If you see 'RuntimeError: PytorchStreamReader failed reading zip archive',")
+    print(f"        clear the cache with: rm -rf {cache_dir}/*")
 
     train_ds = PersistentDataset(
         data=train_files, transform=train_transforms, cache_dir=cache_dir
@@ -624,8 +659,11 @@ def main():
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
+        prefetch_factor=prefetch_factor,  # Limit RAM usage from prefetching
+        persistent_workers=False,  # Release worker memory between epochs
         pin_memory=torch.cuda.is_available(),
         collate_fn=list_data_collate,
+        drop_last=True,  # Drop incomplete batches for stable training speed
     )
 
     val_ds = PersistentDataset(
@@ -635,7 +673,9 @@ def main():
         val_ds,
         batch_size=1,              # always 1 for val — sliding window handles the patch
         shuffle=False,
-        num_workers=min(num_workers, 4),
+        num_workers=min(num_workers, 2),  # Fewer workers for validation to save RAM
+        prefetch_factor=1,  # Minimal prefetch for validation
+        persistent_workers=False,  # Release memory after validation
         pin_memory=torch.cuda.is_available(),
     )
 
@@ -643,12 +683,19 @@ def main():
     print("Building 3D U-Net...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # CUDA optimizations for RTX 4070 12GB
+    if torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = True  # Faster convolutions for fixed input sizes
+        torch.backends.cuda.matmul.allow_tf32 = True  # Use TF32 on Ampere/Ada Lovelace
+        torch.backends.cudnn.allow_tf32 = True
+        print(f"  CUDA: cuDNN benchmark=ON, TF32=ON")
+
     model = UNet(
         spatial_dims=3,
         in_channels=5,
         out_channels=1,
-        channels=(16, 32, 64, 128, 256),
-        strides=(2, 2, 2, 2),
+        channels=(16, 32, 64, 128),  # Reduced from 5 levels (16,32,64,128,256) for 12GB VRAM
+        strides=(2, 2, 2),           # One less stride for 4-level UNet
         num_res_units=2,
     ).to(device)
 
@@ -676,26 +723,32 @@ def main():
     print(f"Model and dataloaders ready on {device}!")
     print(f"Epochs={epochs}  Scheduler=CosineAnnealingLR  "
           f"AMP={'ON' if torch.cuda.is_available() else 'OFF'}\n")
+    logger.info(f"Model ready on {device}, epochs={epochs}, AMP={'ON' if torch.cuda.is_available() else 'OFF'}")
 
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
 
     for epoch in range(epochs):
-        print(f"\nEpoch {epoch + 1}/{epochs}  "
-              f"(lr={optimizer.param_groups[0]['lr']:.2e})")
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"\nEpoch {epoch + 1}/{epochs}  (lr={current_lr:.2e})")
+        logger.info(f"Epoch {epoch + 1}/{epochs} started, lr={current_lr:.2e}")
 
         # ---- Train -------------------------------------------------
         model.train()
         train_loss_sum = 0.0
         step = 0
 
+        accum_counter = 0  # Gradient accumulation counter
+
         for batch in train_loader:
             step += 1
-            inputs  = batch["image"].to(device)
-            targets = batch["dose_label"].to(device)
+            accum_counter += 1
+            # non_blocking=True enables async GPU transfer (faster data loading)
+            inputs  = batch["image"].to(device, non_blocking=True)
+            targets = batch["dose_label"].to(device, non_blocking=True)
             # ring_mask is pre-cropped to the patch size by RandCropByLabelClassesd
-            ring_mask_batch = batch["ring_mask"].to(device)
+            ring_mask_batch = batch["ring_mask"].to(device, non_blocking=True)
 
             # Normalise dose targets to [0, 1]
             normalized_targets = targets / PRESCRIPTION_DOSE_GY
@@ -703,7 +756,9 @@ def main():
             # SDM -> binary masks
             ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
 
-            optimizer.zero_grad()
+            # Zero gradients only at start of accumulation cycle
+            if accum_counter == 1:
+                optimizer.zero_grad()
 
             with torch.amp.autocast(
                 "cuda",
@@ -729,138 +784,154 @@ def main():
                 ring_mask_batch.float(),
             )
 
-            scaler.scale(loss).backward()
-            
-            # Unscale gradients before clipping for mixed precision
-            scaler.unscale_(optimizer)
-            # Clip gradients to prevent exploding gradients from custom physics loss
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            
-            scaler.step(optimizer)
-            scaler.update()
+            # Scale loss for gradient accumulation (divide by steps)
+            loss_scaled = loss / GRAD_ACCUM_STEPS
+            scaler.scale(loss_scaled).backward()
+
+            # Only update weights after accumulating enough gradients
+            if accum_counter % GRAD_ACCUM_STEPS == 0:
+                # Unscale gradients before clipping for mixed precision
+                scaler.unscale_(optimizer)
+                # Clip gradients to prevent exploding gradients from custom physics loss
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+                scaler.step(optimizer)
+                scaler.update()
+                accum_counter = 0  # Reset counter
 
             train_loss_sum += loss.item()
             if step % 5 == 0 or step == len(train_loader):
-                print(
-                    f"  Step {step}/{len(train_loader)}  "
-                    f"Loss={loss.item():.4f}  "
-                    f"[mse={components['mse']:.4f}  "
-                    f"v_opt={components['v_opt']:.5f}  "
-                    f"v_mand={components['v_mand']:.5f}  "
-                    f"ptv={components['ptv']:.4f}  "
-                    f"ring={components['ring']:.5f}  "
-                    f"smooth={components['smooth']:.4f}]"
+                log_msg = (
+                    f"Step {step}/{len(train_loader)} Loss={loss.item():.4f} "
+                    f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "
+                    f"v_mand={components['v_mand']:.5f} ptv={components['ptv']:.4f} "
+                    f"ring={components['ring']:.5f} smooth={components['smooth']:.4f}"
                 )
+                print(f"  {log_msg}")
+                logger.info(log_msg)
+
+        # Handle any remaining accumulated gradients at end of epoch
+        if accum_counter % GRAD_ACCUM_STEPS != 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad()
 
         train_loss_avg = train_loss_sum / max(len(train_loader), 1)
 
         # Step scheduler AFTER each epoch
         scheduler.step()
 
-        # ---- Validation --------------------------------------------
-        model.eval()
-        val_loss_sum = 0.0
-        val_d95_sum = 0.0
-        val_bladder_mean_sum = 0.0
-        val_rectum_mean_sum = 0.0
-        n_val = 0
+        # ---- Validation (skip if not every N epochs) -----------------
+        val_loss_avg = float('nan')
+        avg_d95 = avg_bladder = avg_rectum = float('nan')
 
-        with torch.no_grad():
-            for batch in val_loader:
-                inputs = batch["image"].to(device)
-                targets = batch["dose_label"].to(device)
+        if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
+            model.eval()
+            val_loss_sum = 0.0
+            val_d95_sum = 0.0
+            val_bladder_mean_sum = 0.0
+            val_rectum_mean_sum = 0.0
+            n_val = 0
 
-                with torch.amp.autocast(
-                    "cuda",
-                    enabled=torch.cuda.is_available(),
-                    dtype=torch.float16,
-                ):
-                    outputs = sliding_window_inference(
-                        inputs=inputs,
-                        roi_size=PATCH_SIZE,
-                        sw_batch_size=1,
-                        predictor=model,
-                        overlap=0.25,
+            logger.info(f"Running validation at epoch {epoch + 1}...")
+            with torch.no_grad():
+                for batch in val_loader:
+                    inputs = batch["image"].to(device)
+                    targets = batch["dose_label"].to(device)
+
+                    with torch.amp.autocast(
+                        "cuda",
+                        enabled=torch.cuda.is_available(),
+                        dtype=torch.float16,
+                    ):
+                        outputs = sliding_window_inference(
+                            inputs=inputs,
+                            roi_size=PATCH_SIZE,
+                            sw_batch_size=1,
+                            predictor=model,
+                            overlap=0.25,
+                        )
+
+                    # Softplus in float32, outside AMP (same reason as training loop)
+                    outputs_activated = F.softplus(outputs.float())
+
+                    normalized_targets = targets / PRESCRIPTION_DOSE_GY
+                    ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
+
+                    # Ring mask computed on-the-fly for validation.
+                    ring_mask_val = compute_ring_mask(ptv_mask)
+
+                    loss, _ = loss_function(
+                        outputs_activated,
+                        normalized_targets.float(),
+                        bladder_mask.float(),
+                        rectum_mask.float(),
+                        ptv_mask.float(),
+                        ring_mask_val.float(),
                     )
+                    val_loss_sum += loss.item()
 
-                # Softplus in float32, outside AMP (same reason as training loop)
-                outputs_activated = F.softplus(outputs.float())
+                    # Clinical metrics
+                    outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
 
-                normalized_targets = targets / PRESCRIPTION_DOSE_GY
-                ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
+                    ptv_dose = outputs_gy[ptv_mask.bool()]
+                    if len(ptv_dose) > 0:
+                        val_d95_sum += torch.quantile(ptv_dose, 0.05).item()
 
-                # Ring mask computed on-the-fly for validation.
-                # val_transforms has no cropping, so the full-volume ptv_mask
-                # already matches the full-volume sliding-window outputs.
-                ring_mask_val = compute_ring_mask(ptv_mask)
+                    bladder_dose = outputs_gy[bladder_mask.bool()]
+                    if len(bladder_dose) > 0:
+                        val_bladder_mean_sum += bladder_dose.mean().item()
 
-                loss, _ = loss_function(
-                    outputs_activated,
-                    normalized_targets.float(),
-                    bladder_mask.float(),
-                    rectum_mask.float(),
-                    ptv_mask.float(),
-                    ring_mask_val.float(),
+                    rectum_dose = outputs_gy[rectum_mask.bool()]
+                    if len(rectum_dose) > 0:
+                        val_rectum_mean_sum += rectum_dose.mean().item()
+
+                    n_val += 1
+
+            val_loss_avg = val_loss_sum / max(n_val, 1)
+            avg_d95 = val_d95_sum / max(n_val, 1)
+            avg_bladder = val_bladder_mean_sum / max(n_val, 1)
+            avg_rectum = val_rectum_mean_sum / max(n_val, 1)
+
+        epoch_summary = (
+            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} "
+            f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
+        )
+        print(f"  --> {epoch_summary}")
+        logger.info(epoch_summary)
+
+        # -- Physics checkpoint: best validation loss (only on validation epochs) ----
+        if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
+            if val_loss_avg < best_val_loss:
+                best_val_loss = val_loss_avg
+                torch.save(model.state_dict(), "best_dose_model_physics.pth")
+                checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
+                print(f"  --> {checkpoint_msg}")
+                logger.info(checkpoint_msg)
+
+            # -- Clinical checkpoint: soft-margin exchange-rate score --------
+            current_worst_oar = max(avg_bladder, avg_rectum)
+            ptv_deficit = max(0.0, 62.4 - avg_d95)
+            clinical_score = current_worst_oar + (ptv_deficit * 3.0)
+
+            if clinical_score < best_clinical_score:
+                best_clinical_score = clinical_score
+                torch.save(model.state_dict(), "best_dose_model_clinical.pth")
+                clinical_msg = (
+                    f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
+                    f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
                 )
-                val_loss_sum += loss.item()
+                print(f"  --> {clinical_msg}")
+                logger.info(clinical_msg)
 
-                # Clinical metrics — denormalise the Softplus-activated output
-                outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
-
-                ptv_dose = outputs_gy[ptv_mask.bool()]
-                if len(ptv_dose) > 0:
-                    val_d95_sum += torch.quantile(ptv_dose, 0.05).item()
-
-                bladder_dose = outputs_gy[bladder_mask.bool()]
-                if len(bladder_dose) > 0:
-                    val_bladder_mean_sum += bladder_dose.mean().item()
-
-                rectum_dose = outputs_gy[rectum_mask.bool()]
-                if len(rectum_dose) > 0:
-                    val_rectum_mean_sum += rectum_dose.mean().item()
-
-                n_val += 1
-
-        val_loss_avg = val_loss_sum / max(n_val, 1)
-        avg_d95 = val_d95_sum / max(n_val, 1)
-        avg_bladder = val_bladder_mean_sum / max(n_val, 1)
-        avg_rectum = val_rectum_mean_sum / max(n_val, 1)
-
-        print(
-            f"  --> Epoch {epoch + 1} Summary:  "
-            f"Train={train_loss_avg:.4f}  Val={val_loss_avg:.4f}"
-        )
-        print(
-            f"      Clinical:  PTV D95={avg_d95:.2f} Gy  "
-            f"Bladder Mean={avg_bladder:.2f} Gy  "
-            f"Rectum Mean={avg_rectum:.2f} Gy"
-        )
-
-        # -- Physics checkpoint: best validation loss --------------------
-        if val_loss_avg < best_val_loss:
-            best_val_loss = val_loss_avg
-            torch.save(model.state_dict(), "best_dose_model_physics.pth")
-            print(f"  --> [PHYSICS]  Saved best PHYSICS model  "
-                  f"(val_loss={best_val_loss:.4f})")
-
-        # -- Clinical checkpoint: soft-margin exchange-rate score --------
-        # Penalises OAR toxicity AND PTV underdose simultaneously.
-        # Exchange rate: 1 Gy PTV deficit = 3 Gy penalty.
-        current_worst_oar = max(avg_bladder, avg_rectum)
-        ptv_deficit       = max(0.0, 62.4 - avg_d95)      # deficit below 62.4 Gy ideal
-        clinical_score    = current_worst_oar + (ptv_deficit * 3.0)
-
-        if clinical_score < best_clinical_score:
-            best_clinical_score = clinical_score
-            torch.save(model.state_dict(), "best_dose_model_clinical.pth")
-            print(f"  --> [CLINICAL] Saved best CLINICAL model  "
-                  f"Score={clinical_score:.3f}  "
-                  f"PTV_D95={avg_d95:.2f} Gy  "
-                  f"Bladder={avg_bladder:.2f} Gy  "
-                  f"Rectum={avg_rectum:.2f} Gy")
-
-    print(f"\nTraining complete.  Best val loss: {best_val_loss:.4f}  "
-          f"Best clinical score: {best_clinical_score:.4f}")
+    completion_msg = (
+        f"Training complete. Best val loss: {best_val_loss:.4f} "
+        f"Best clinical score: {best_clinical_score:.4f}"
+    )
+    print(f"\n{completion_msg}")
+    logger.info(completion_msg)
 
     # ====================================================================
     # FINAL CLINICAL EVALUATION BLOCK
