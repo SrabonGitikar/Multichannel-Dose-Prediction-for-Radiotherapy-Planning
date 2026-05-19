@@ -241,6 +241,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_ptv = lambda_ptv
         self.lambda_smooth = lambda_smooth
         self.lambda_ring = lambda_ring
+        self.lambda_anticollapse = 50.0
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -316,6 +317,13 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 underdose = torch.relu(frac - pred_dose) * ptv_mask
                 loss_ptv = loss_ptv + (underdose ** 2).sum() / ptv_n
 
+        # ------ 3b. Anti-Collapse Safety Net ------------------------
+        loss_anticollapse = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        if ptv_n > 0:
+            mean_ptv_dose = (pred_dose * ptv_mask).sum() / ptv_n
+            # Penalize heavily if the mean dose inside the PTV is below 50%
+            loss_anticollapse = torch.relu(0.50 - mean_ptv_dose) ** 2
+
         # ------ 4. L_D-Type max dose (PTV max) ----------------------
         max_gy = self.constraints["d_type"]["PTV_max_dose_gy"]
         if max_gy is not None:
@@ -353,6 +361,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_ptv     * loss_ptv
             + self.lambda_ring    * loss_ring
             + self.lambda_smooth  * loss_smooth
+            + self.lambda_anticollapse * loss_anticollapse
         )
         return total, {
             "mse":    loss_mse.item(),
@@ -493,7 +502,7 @@ train_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear", "bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "bilinear"),
         ),
         # ── Build 5-class crop mask BEFORE CT normalisation ──────────────
         # ch_0 must still contain raw HU values here so the body/air
@@ -532,7 +541,7 @@ val_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "bilinear", "bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest","bilinear"),
         ),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
