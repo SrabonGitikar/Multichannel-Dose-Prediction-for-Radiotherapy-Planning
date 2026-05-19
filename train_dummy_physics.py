@@ -251,6 +251,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_smooth = lambda_smooth
         self.lambda_ring = lambda_ring
         self.lambda_anticollapse = 50.0
+        self.lambda_beam = 5.0
+        self.lambda_ptv_max = 50.0
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -277,7 +279,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
     # --- Forward pass ------------------------------------------------
     def forward(self, pred_dose, true_dose, bladder_mask, rectum_mask,
-                ptv_mask, ring_mask):
+                ptv_mask, ring_mask, inputs):
         """
         Parameters
         ----------
@@ -287,6 +289,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         rectum_mask : (B, 1, D, H, W)  — binary float
         ptv_mask    : (B, 1, D, H, W)  — binary float
         ring_mask   : (B, 1, D, H, W)  — binary float, 5mm shell around PTV
+        inputs      : (B, 5, D, H, W)  — full input tensor (CT, PTV, Bladder, Rectum, Beam)
         """
         # ------ 1. L_MSE  -------------------------------------------
         loss_mse = self.mse(pred_dose, true_dose)
@@ -334,12 +337,16 @@ class PhysicsGuidedDoseLoss(nn.Module):
             loss_anticollapse = torch.relu(0.50 - mean_ptv_dose) ** 2
 
         # ------ 4. L_D-Type max dose (PTV max) ----------------------
-        max_gy = self.constraints["d_type"]["PTV_max_dose_gy"]
-        if max_gy is not None:
-            max_norm = max_gy / PRESCRIPTION_DOSE_GY
-            if ptv_n > 0:
-                overdose = torch.relu(pred_dose - max_norm) * ptv_mask
-                loss_ptv = loss_ptv + (overdose ** 2).sum() / ptv_n
+        # ------ 4. L_D-Type max dose (Hotspot Smasher) --------------
+        # Hard clinical ceiling: 66.34 Gy
+        HARD_MAX_GY = 66.34
+        hard_max_norm = HARD_MAX_GY / PRESCRIPTION_DOSE_GY
+        
+        loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        if ptv_n > 0:
+            # Heavily penalize any voxel inside the PTV that exceeds 66.34 Gy
+            overdose = torch.relu(pred_dose - hard_max_norm) * ptv_mask
+            loss_ptv_max = (overdose ** 2).sum() / ptv_n
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Any ring voxel exceeding 55% of prescription (41.25/75 Gy = 0.55
@@ -355,6 +362,13 @@ class PhysicsGuidedDoseLoss(nn.Module):
             loss_ring = torch.tensor(0.0, device=pred_dose.device,
                                      dtype=pred_dose.dtype)
 
+        # ------ 5b. L_Beam (Anti-Brachytherapy Suppression) --------------
+        beam_mask = inputs[:, 4:5, ...]
+        # beam_mask is 1.0 inside the LINAC beams, and 0.0 outside.
+        outside_beam_mask = 1.0 - beam_mask
+        rogue_dose = pred_dose * outside_beam_mask
+        loss_beam_suppression = (rogue_dose ** 2).mean()
+
         # ------ 6. L_smooth (Total Variation) -----------------------
         gd = pred_dose[:, :, 1:, :, :] - pred_dose[:, :, :-1, :, :]
         gh = pred_dose[:, :, :, 1:, :] - pred_dose[:, :, :, :-1, :]
@@ -368,17 +382,21 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_optimal * loss_optional
             + self.lambda_mandatory * loss_mandatory
             + self.lambda_ptv     * loss_ptv
+            + self.lambda_ptv_max * loss_ptv_max
             + self.lambda_ring    * loss_ring
             + self.lambda_smooth  * loss_smooth
             + self.lambda_anticollapse * loss_anticollapse
+            + self.lambda_beam    * loss_beam_suppression
         )
         return total, {
             "mse":    loss_mse.item(),
             "v_opt":  loss_optional.item(),
             "v_mand": loss_mandatory.item(),
             "ptv":    loss_ptv.item(),
+            "ptv_max": loss_ptv_max.item(),
             "ring":   loss_ring.item(),
             "smooth": loss_smooth.item(),
+            "beam_suppression": loss_beam_suppression.item(),
         }
 
 
@@ -782,6 +800,7 @@ def main():
                 rectum_mask.float(),
                 ptv_mask.float(),
                 ring_mask_batch.float(),
+                inputs,
             )
 
             # Scale loss for gradient accumulation (divide by steps)
@@ -805,7 +824,9 @@ def main():
                     f"Step {step}/{len(train_loader)} Loss={loss.item():.4f} "
                     f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "
                     f"v_mand={components['v_mand']:.5f} ptv={components['ptv']:.4f} "
-                    f"ring={components['ring']:.5f} smooth={components['smooth']:.4f}"
+                    f"ptv_max={components['ptv_max']:.5f} ring={components['ring']:.5f} "
+                    f"smooth={components['smooth']:.4f} "
+                    f"beam={components['beam_suppression']:.5f}"
                 )
                 print(f"  {log_msg}")
                 logger.info(log_msg)
@@ -870,6 +891,7 @@ def main():
                         rectum_mask.float(),
                         ptv_mask.float(),
                         ring_mask_val.float(),
+                        inputs,
                     )
                     val_loss_sum += loss.item()
 
