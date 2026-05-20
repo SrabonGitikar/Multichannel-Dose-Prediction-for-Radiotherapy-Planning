@@ -233,13 +233,17 @@ class PhysicsGuidedDoseLoss(nn.Module):
     def __init__(
         self,
         constraints_dict,
-        lambda_mse=10.0,        # Anchors the dose to the human ground truth
-        lambda_optimal=2.0,     # A gentle nudge to keep OARs as low as possible
-        lambda_mandatory=10.0,  # A strict brick wall to protect the organs
-        lambda_ptv=10.0,        # Fiercely forces the model to hit the 57+ Gy target
-        lambda_smooth=0.1,      # Prevents jagged isodose lines
-        lambda_ring=15.0,       # Penalises hot-spots in the 5mm PTV falloff ring
-        k_steepness=50.0,       # Perfect for [0, 1] normalized space
+        lambda_mse=10.0,            # Anchors the dose to the human ground truth
+        lambda_optimal=2.0,         # A gentle nudge to keep OARs as low as possible
+        lambda_mandatory=50.0,      # A strict brick wall to protect the organs
+        lambda_ptv=10.0,            # Fiercely forces the model to hit the 57+ Gy target
+        lambda_smooth=0.1,          # Prevents jagged isodose lines
+        lambda_ring=15.0,           # Penalises hot-spots in the 5mm PTV falloff ring
+        lambda_anticollapse=50.0,   # Prevents zero-dose collapse in early training
+        lambda_beam=5.0,            # Suppresses dose predicted outside beam corridors
+        lambda_ptv_max=50.0,        # Penalises PTV voxels exceeding 66.34 Gy ceiling
+        lambda_homogeneity=20.0,    # Forces PTV dose to cluster around 62.4 Gy target
+        k_steepness=50.0,           # Sigmoid steepness for differentiable DVH
     ):
         super().__init__()
         self.mse = nn.MSELoss()
@@ -250,9 +254,10 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_ptv = lambda_ptv
         self.lambda_smooth = lambda_smooth
         self.lambda_ring = lambda_ring
-        self.lambda_anticollapse = 50.0
-        self.lambda_beam = 5.0
-        self.lambda_ptv_max = 50.0
+        self.lambda_anticollapse = lambda_anticollapse
+        self.lambda_beam = lambda_beam
+        self.lambda_ptv_max = lambda_ptv_max
+        self.lambda_homogeneity = lambda_homogeneity
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -329,6 +334,14 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 underdose = torch.relu(frac - pred_dose) * ptv_mask
                 loss_ptv = loss_ptv + (underdose ** 2).sum() / ptv_n
 
+        # ------ 3a. Homogeneity Penalty (Target exactly 62.4 Gy) ----
+        TARGET_GY = 62.4
+        target_norm = TARGET_GY / PRESCRIPTION_DOSE_GY
+        loss_homogeneity = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        if ptv_n > 0:
+            deviation = (pred_dose - target_norm) * ptv_mask
+            loss_homogeneity = (deviation ** 2).sum() / ptv_n
+
         # ------ 3b. Anti-Collapse Safety Net ------------------------
         loss_anticollapse = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
@@ -387,6 +400,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_smooth  * loss_smooth
             + self.lambda_anticollapse * loss_anticollapse
             + self.lambda_beam    * loss_beam_suppression
+            + self.lambda_homogeneity * loss_homogeneity
         )
         return total, {
             "mse":    loss_mse.item(),
@@ -397,6 +411,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "ring":   loss_ring.item(),
             "smooth": loss_smooth.item(),
             "beam_suppression": loss_beam_suppression.item(),
+            "homogeneity": loss_homogeneity.item(),
         }
 
 
@@ -722,7 +737,7 @@ def main():
         constraints_dict=constraints,
         lambda_mse=10.0,
         lambda_optimal=2.0,
-        lambda_mandatory=25.0,
+        lambda_mandatory=50.0,
         lambda_ptv=10.0,
         lambda_ring=15.0,       # falloff shell penalty
         lambda_smooth=0.1,
@@ -826,7 +841,8 @@ def main():
                     f"v_mand={components['v_mand']:.5f} ptv={components['ptv']:.4f} "
                     f"ptv_max={components['ptv_max']:.5f} ring={components['ring']:.5f} "
                     f"smooth={components['smooth']:.4f} "
-                    f"beam={components['beam_suppression']:.5f}"
+                    f"beam={components['beam_suppression']:.5f} "
+                    f"homogeneity={components['homogeneity']:.4f}"
                 )
                 print(f"  {log_msg}")
                 logger.info(log_msg)
