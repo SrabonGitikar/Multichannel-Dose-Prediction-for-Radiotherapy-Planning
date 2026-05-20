@@ -1,6 +1,10 @@
 ````markdown id="f2m8vx"
 # Physics-Guided Deep Learning for Prostate Radiotherapy Dose Prediction
 
+DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
+OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
+DATASET_NAME = "Dataset001_ProstateDose"
+
 ## Overview
 
 This project focuses on developing a deep learning framework for predicting three-dimensional radiotherapy dose distributions for prostate cancer treatment planning.
