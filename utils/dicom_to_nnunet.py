@@ -33,8 +33,8 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
-OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
@@ -202,7 +202,7 @@ def numpy_to_sitk(array, reference_image):
 # IMRT BEAM PRIOR GENERATION (Channel 5)
 # ===========================================================================
 
-def generate_beam_mask(plan_files, ct_image, cylinder_radius_mm=35.0):
+def generate_beam_mask(plan_files, ct_image, ptv_mask):
     if not plan_files:
         print("         WARNING: No RTPlan found for beam mask generation. Outputting empty mask.")
         return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
@@ -230,6 +230,20 @@ def generate_beam_mask(plan_files, ct_image, cylinder_radius_mm=35.0):
 
     print(f"         Isocenter (mm): {isocenter_mm}")
     print(f"         Gantry Angles: {gantry_angles_deg}")
+
+    ptv_z, ptv_y, ptv_x = np.where(ptv_mask > 0.5)
+    ptv_physical_points = []
+    for x, y, z in zip(ptv_x, ptv_y, ptv_z):
+        ptv_physical_points.append(ct_image.TransformIndexToPhysicalPoint((int(x), int(y), int(z))))
+    
+    if len(ptv_physical_points) > 0:
+        ptv_physical_points = np.array(ptv_physical_points)
+        distances = np.linalg.norm(ptv_physical_points - isocenter_mm, axis=1)
+        cylinder_radius_mm = np.max(distances) + 10.0
+        print(f"         Dynamic Beam Radius (mm): {cylinder_radius_mm:.2f}")
+    else:
+        cylinder_radius_mm = 50.0
+        print(f"         WARNING: Empty PTV, defaulting Beam Radius to {cylinder_radius_mm} mm")
 
     # Vectorized SimpleITK physical mapping
     shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
@@ -344,7 +358,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     dose_array = sitk.GetArrayFromImage(dose_image)
 
     print("  [6/7] Generating IMRT Beam Prior (Channel 5)...")
-    beam_mask = generate_beam_mask(plan_files, ct_image, cylinder_radius_mm=35.0)
+    beam_mask = generate_beam_mask(plan_files, ct_image, ptv_mask)
     print(f"         Beam Prior Voxels: {beam_mask.sum():,}")
 
     print("  [7/7] Saving NIfTI files...")
