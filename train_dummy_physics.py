@@ -58,7 +58,7 @@ DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
-CHANNELS = ["0000", "0001", "0002", "0003", "0004"]  # CT, PTV, Bladder SDM, Anorectum SDM, IMRT Beam Prior
+CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005"]  # CT, PTV, Bladder SDM, Anorectum SDM, IMRT Beam Prior, Body Mask
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (128, 128, 64)  # Optimized for 12GB VRAM: larger XY, smaller Z
 
@@ -73,6 +73,12 @@ GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", "2"))
 
 # Validation frequency: run validation every N epochs (1=every epoch, 2=every 2nd, etc.)
 VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", "1"))  # Validate every epoch
+
+# Curriculum learning: number of MSE-only warmup epochs before physics activates.
+# During warmup the model learns basic dose anatomy (where dose is high vs zero)
+# without interference from the physics wall.  After WARMUP_EPOCHS the full
+# PhysicsGuidedDoseLoss activates with lambda_mse raised to 25.0.
+WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "30"))
 
 # ===================================================================
 # 2. Constraint Parsing  (Step 1)
@@ -237,12 +243,15 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_optimal=2.0,         # A gentle nudge to keep OARs as low as possible
         lambda_mandatory=50.0,      # A strict brick wall to protect the organs
         lambda_ptv=10.0,            # Fiercely forces the model to hit the 57+ Gy target
-        lambda_smooth=0.1,          # Prevents jagged isodose lines
-        lambda_ring=15.0,           # Penalises hot-spots in the 5mm PTV falloff ring
+        lambda_smooth=1.0,          # TV smoothness — strengthened to fight cliff edges
+        lambda_ring=15.0,           # Penalises true hotspots (>66 Gy) in the 5mm ring
         lambda_anticollapse=50.0,   # Prevents zero-dose collapse in early training
         lambda_beam=5.0,            # Suppresses dose predicted outside beam corridors
         lambda_ptv_max=50.0,        # Penalises PTV voxels exceeding 66.34 Gy ceiling
         lambda_homogeneity=20.0,    # Forces PTV dose to cluster around 62.4 Gy target
+        lambda_laplacian=5.0,       # Penalises curvature/kinks — kills step-function edges
+        lambda_bowel=15.0,          # Bag_Bowel V45Gy < 30% mandatory constraint
+        lambda_femur=10.0,          # Femur heads V50Gy < 5% mandatory constraint
         k_steepness=50.0,           # Sigmoid steepness for differentiable DVH
     ):
         super().__init__()
@@ -258,6 +267,10 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_beam = lambda_beam
         self.lambda_ptv_max = lambda_ptv_max
         self.lambda_homogeneity = lambda_homogeneity
+        self.lambda_laplacian = lambda_laplacian
+        self.lambda_bowel = lambda_bowel
+        self.lambda_femur = lambda_femur
+        self.lambda_body = 20.0    # Eliminates ghost dose predicted in air outside the patient body
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -284,7 +297,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
     # --- Forward pass ------------------------------------------------
     def forward(self, pred_dose, true_dose, bladder_mask, rectum_mask,
-                ptv_mask, ring_mask, inputs):
+                ptv_mask, ring_mask, inputs, bowel_mask, femur_mask):
         """
         Parameters
         ----------
@@ -294,10 +307,21 @@ class PhysicsGuidedDoseLoss(nn.Module):
         rectum_mask : (B, 1, D, H, W)  — binary float
         ptv_mask    : (B, 1, D, H, W)  — binary float
         ring_mask   : (B, 1, D, H, W)  — binary float, 5mm shell around PTV
-        inputs      : (B, 5, D, H, W)  — full input tensor (CT, PTV, Bladder, Rectum, Beam)
+        inputs      : (B, 6, D, H, W)  — full input tensor
+        bowel_mask  : (B, 1, D, H, W)  — Bag_Bowel binary float (may be all zeros)
+        femur_mask  : (B, 1, D, H, W)  — merged Femur_Head_L+R binary float
         """
-        # ------ 1. L_MSE  -------------------------------------------
-        loss_mse = self.mse(pred_dose, true_dose)
+        # ------ 1. L_MSE (dose-weighted) --------------------------------
+        # Vanilla MSE gives equal weight to every voxel. Because 87% of the
+        # ground truth volume is 0 Gy (outside the patient or far from beams),
+        # the optimizer minimises by predicting a flat ~10 Gy field everywhere.
+        # Dose-weighting gives each voxel a weight of (1 + 9 * true_dose_norm),
+        # so a voxel at 66 Gy (norm=0.88) gets weight ~8.9 — nearly 9x more
+        # gradient signal than a zero-dose voxel.  This forces the model to
+        # learn the PTV and penumbra first, rather than fitting background noise.
+        DOSE_WEIGHT_SCALE = 9.0
+        dose_weight = 1.0 + DOSE_WEIGHT_SCALE * true_dose
+        loss_mse = ((pred_dose - true_dose) ** 2 * dose_weight).mean()
 
         # ------ 2. L_V-Type (Dual-Tier DVH) -------------------------
         loss_optional = torch.tensor(0.0, device=pred_dose.device,
@@ -362,11 +386,12 @@ class PhysicsGuidedDoseLoss(nn.Module):
             loss_ptv_max = (overdose ** 2).sum() / ptv_n
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
-        # Any ring voxel exceeding 55% of prescription (41.25/75 Gy = 0.55
-        # in normalised space) is penalised with a squared hinge loss.
-        # This prevents the EBRT model from simulating an isotropic
-        # brachytherapy-like dose cloud that floods lateral healthy tissue.
-        RING_THRESH = 0.55  # = 41.25 Gy / 75 Gy
+        # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
+        # Previously at 0.55 (41.25 Gy) this was cutting off the natural
+        # radiotherapy penumbra: dose at 5mm outside the PTV should be 55-65 Gy,
+        # which the old threshold was actively suppressing. With 0.88, the ring
+        # penalty only fires when voxels exceed the prescription — a true hotspot.
+        RING_THRESH = 0.88  # = 66 Gy / 75 Gy — only supratherapeutic dose
         ring_n = ring_mask.sum()
         if ring_n > 0:
             ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
@@ -382,36 +407,106 @@ class PhysicsGuidedDoseLoss(nn.Module):
         rogue_dose = pred_dose * outside_beam_mask
         loss_beam_suppression = (rogue_dose ** 2).mean()
 
+        # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
+        # body_mask is 1.0 inside the patient body (CT HU > -300), 0.0 in air.
+        # Any dose predicted outside the body is physically impossible for EBRT.
+        body_mask = (inputs[:, 5:6, ...] > 0.5).float()
+        outside_body_mask = 1.0 - body_mask
+        ghost_dose = pred_dose * outside_body_mask
+        n_outside_body = outside_body_mask.sum().clamp(min=1.0)
+        loss_body = (ghost_dose ** 2).sum() / n_outside_body
+
         # ------ 6. L_smooth (Total Variation) -----------------------
+        # TV penalises the first derivative — discourages jagged voxel-to-voxel
+        # oscillations. Weight raised to 1.0 (was 0.1) to better suppress noise.
         gd = pred_dose[:, :, 1:, :, :] - pred_dose[:, :, :-1, :, :]
         gh = pred_dose[:, :, :, 1:, :] - pred_dose[:, :, :, :-1, :]
         gw = pred_dose[:, :, :, :, 1:] - pred_dose[:, :, :, :, :-1]
         loss_smooth = (torch.mean(gd ** 2) + torch.mean(gh ** 2)
                        + torch.mean(gw ** 2))
 
+        # ------ 6b. L_Laplacian (Penumbra Continuity) ----------------
+        # The Laplacian (second derivative) fires at kinks and cliff edges.
+        # Ground truth has max dose jump of 9.8 Gy/vox; the old prediction had
+        # 57.9 Gy/vox cliffs and 278K voxels with jumps > 10 Gy (GT had zero).
+        # Penalising curvature directly enforces C1-continuity at the PTV edge,
+        # producing the smooth penumbra a medical physicist expects to see.
+        # Uses central-difference (f[i+1] - 2*f[i] + f[i-1]) — dimensionally safe.
+        laplacian_d = (pred_dose[:, :, 2:, :, :]
+                       - 2 * pred_dose[:, :, 1:-1, :, :]
+                       + pred_dose[:, :, :-2, :, :])
+        laplacian_h = (pred_dose[:, :, :, 2:, :]
+                       - 2 * pred_dose[:, :, :, 1:-1, :]
+                       + pred_dose[:, :, :, :-2, :])
+        laplacian_w = (pred_dose[:, :, :, :, 2:]
+                       - 2 * pred_dose[:, :, :, :, 1:-1]
+                       + pred_dose[:, :, :, :, :-2])
+        loss_laplacian = (torch.mean(laplacian_d ** 2)
+                          + torch.mean(laplacian_h ** 2)
+                          + torch.mean(laplacian_w ** 2))
+
+        # ------ 7. L_Bowel (Bag_Bowel — dual-tier) -------------------
+        # Institutional constraints (two separate dose/volume thresholds):
+        #   Optimal:    V45Gy < 30%  — gentle nudge, same sigmoid DVH
+        #   Mandatory:  V50Gy < 50%  — hard clinical wall, 5× weighted
+        #
+        # Note: different dose thresholds per tier require two DVH evaluations.
+        BOWEL_OPT_THRESH  = 45.0 / PRESCRIPTION_DOSE_GY   # = 0.600
+        BOWEL_OPT_LIMIT   = 0.30
+        BOWEL_MAND_THRESH = 50.0 / PRESCRIPTION_DOSE_GY   # = 0.667
+        BOWEL_MAND_LIMIT  = 0.50
+        MANDATORY_SCALE   = 5.0   # mandatory breach is 5× more severe
+
+        bowel_v45 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_OPT_THRESH)
+        bowel_v50 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_MAND_THRESH)
+        loss_bowel_opt  = torch.relu(bowel_v45 - BOWEL_OPT_LIMIT)  ** 2
+        loss_bowel_mand = torch.relu(bowel_v50 - BOWEL_MAND_LIMIT) ** 2
+        loss_bowel = loss_bowel_opt + MANDATORY_SCALE * loss_bowel_mand
+
+        # ------ 8. L_Femur (merged Femur_Head_L+R — dual-tier) ------
+        # Institutional constraints (same V50Gy threshold, different limits):
+        #   Optimal:    V50Gy < 5%   — sparing goal
+        #   Mandatory:  V50Gy < 50%  — hard clinical wall, 5× weighted
+        FEMUR_THRESH_NORM = 50.0 / PRESCRIPTION_DOSE_GY   # = 0.667
+        FEMUR_OPT_LIMIT   = 0.05
+        FEMUR_MAND_LIMIT  = 0.50
+
+        femur_v50 = self.calculate_dvh_volume(pred_dose, femur_mask, FEMUR_THRESH_NORM)
+        loss_femur_opt  = torch.relu(femur_v50 - FEMUR_OPT_LIMIT)  ** 2
+        loss_femur_mand = torch.relu(femur_v50 - FEMUR_MAND_LIMIT) ** 2
+        loss_femur = loss_femur_opt + MANDATORY_SCALE * loss_femur_mand
+
         # ------ Total -----------------------------------------------
         total = (
-            self.lambda_mse       * loss_mse
-            + self.lambda_optimal * loss_optional
-            + self.lambda_mandatory * loss_mandatory
-            + self.lambda_ptv     * loss_ptv
-            + self.lambda_ptv_max * loss_ptv_max
-            + self.lambda_ring    * loss_ring
-            + self.lambda_smooth  * loss_smooth
+            self.lambda_mse          * loss_mse
+            + self.lambda_optional   * loss_optional
+            + self.lambda_mandatory  * loss_mandatory
+            + self.lambda_ptv        * loss_ptv
+            + self.lambda_ptv_max    * loss_ptv_max
+            + self.lambda_ring       * loss_ring
+            + self.lambda_smooth     * loss_smooth
+            + self.lambda_laplacian  * loss_laplacian
             + self.lambda_anticollapse * loss_anticollapse
-            + self.lambda_beam    * loss_beam_suppression
+            + self.lambda_beam       * loss_beam_suppression
             + self.lambda_homogeneity * loss_homogeneity
+            + self.lambda_body       * loss_body
+            + self.lambda_bowel      * loss_bowel
+            + self.lambda_femur      * loss_femur
         )
         return total, {
-            "mse":    loss_mse.item(),
-            "v_opt":  loss_optional.item(),
-            "v_mand": loss_mandatory.item(),
-            "ptv":    loss_ptv.item(),
-            "ptv_max": loss_ptv_max.item(),
-            "ring":   loss_ring.item(),
-            "smooth": loss_smooth.item(),
-            "beam_suppression": loss_beam_suppression.item(),
+            "mse":        loss_mse.item(),
+            "v_opt":      loss_optional.item(),
+            "v_mand":     loss_mandatory.item(),
+            "ptv":        loss_ptv.item(),
+            "ptv_max":    loss_ptv_max.item(),
+            "ring":       loss_ring.item(),
+            "smooth":     loss_smooth.item(),
+            "laplacian":  loss_laplacian.item(),
+            "beam":       loss_beam_suppression.item(),
             "homogeneity": loss_homogeneity.item(),
+            "body":       loss_body.item(),
+            "bowel":      loss_bowel.item(),
+            "femur":      loss_femur.item(),
         }
 
 
@@ -429,6 +524,10 @@ def get_data_dicts():
             pt_dict[f"ch_{i}"] = os.path.join(
                 IMAGES_DIR, f"{patient_id}_{ch}.nii.gz"
             )
+        # Auxiliary OAR masks — saved by dicom_to_nnunet.py alongside channels.
+        # Empty mask files are used for patients where these structures are absent.
+        pt_dict["bowel_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_bowel.nii.gz")
+        pt_dict["femur_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_femur.nii.gz")
         data_dicts.append(pt_dict)
     return data_dicts
 
@@ -535,7 +634,9 @@ class CreateFalloffRingd(MapTransform):
         return d
 
 
-ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "dose_label"]
+ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5",
+            "bowel_mask", "femur_mask",  # auxiliary OAR masks (loss-only)
+            "dose_label"]
 
 train_transforms = Compose(
     [
@@ -544,7 +645,9 @@ train_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",
+                  "nearest", "nearest",   # bowel_mask, femur_mask
+                  "bilinear"),             # dose_label
         ),
         # ── Build 5-class crop mask BEFORE CT normalisation ──────────────
         # ch_0 must still contain raw HU values here so the body/air
@@ -569,8 +672,8 @@ train_transforms = Compose(
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
             num_samples=2,  # Reduced from 4 for 12GB VRAM
         ),
-        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
-        ToTensord(keys=["image", "dose_label", "ring_mask"]),
+        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
+        ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask"]),
     ]
 )
 
@@ -581,11 +684,13 @@ val_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest","bilinear"),
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",
+                  "nearest", "nearest",   # bowel_mask, femur_mask
+                  "bilinear"),             # dose_label
         ),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
-        ToTensord(keys=["image", "dose_label"]),
+        ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
+        ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
     ]
 )
 
@@ -725,7 +830,7 @@ def main():
 
     model = UNet(
         spatial_dims=3,
-        in_channels=5,
+        in_channels=6,  # CT, PTV, Bladder SDM, Anorectum SDM, Beam Prior, Body Mask
         out_channels=1,
         channels=(16, 32, 64, 128),  # Reduced from 5 levels (16,32,64,128,256) for 12GB VRAM
         strides=(2, 2, 2),           # One less stride for 4-level UNet
@@ -733,15 +838,54 @@ def main():
     ).to(device)
 
     # ---- Loss / Optimizer / Scheduler ------------------------------
+    # lambda_mse is constant at 25.0 for the entire 100-epoch run.
+    # All other physics lambdas ramp linearly from 0 to their target over
+    # WARMUP_EPOCHS (default 30), then stay fixed.  The ramp prevents the
+    # sudden gradient spike that jumping e.g. lambda_mandatory from 0 to 50
+    # in a single epoch would cause (Adam momentum would carry the shock
+    # through several subsequent epochs).
     loss_function = PhysicsGuidedDoseLoss(
         constraints_dict=constraints,
-        lambda_mse=10.0,
-        lambda_optimal=2.0,
-        lambda_mandatory=50.0,
-        lambda_ptv=10.0,
-        lambda_ring=15.0,       # falloff shell penalty
-        lambda_smooth=0.1,
+        lambda_mse=25.0,            # constant throughout all 100 epochs
+        lambda_optimal=0.0,         # starts at 0 — ramped per epoch
+        lambda_mandatory=0.0,       # starts at 0 — ramped per epoch
+        lambda_ptv=0.0,             # starts at 0 — ramped per epoch
+        lambda_ring=0.0,            # starts at 0 — ramped per epoch
+        lambda_smooth=0.0,          # starts at 0 — ramped per epoch
+        lambda_laplacian=0.0,       # starts at 0 — ramped per epoch
+        lambda_anticollapse=0.0,    # starts at 0 — ramped per epoch
+        lambda_beam=0.0,            # starts at 0 — ramped per epoch
+        lambda_ptv_max=0.0,         # starts at 0 — ramped per epoch
+        lambda_homogeneity=0.0,     # starts at 0 — ramped per epoch
         k_steepness=50.0,
+    )
+    loss_function.lambda_body = 0.0  # hardcoded in __init__ at 20 — start at 0
+
+    # Target (fully-ramped) values reached at epoch WARMUP_EPOCHS.
+    # To adjust any penalty without touching the loss class, change it here.
+    PHYSICS_TARGET_LAMBDAS = {
+        "lambda_optional":      2.0,
+        "lambda_mandatory":    50.0,
+        "lambda_ptv":          10.0,
+        "lambda_ptv_max":      50.0,
+        "lambda_ring":         15.0,
+        "lambda_smooth":        1.0,
+        "lambda_laplacian":     5.0,
+        "lambda_anticollapse": 50.0,
+        "lambda_beam":          5.0,
+        "lambda_homogeneity":  20.0,
+        "lambda_body":         20.0,
+        "lambda_bowel":        15.0,  # Bag_Bowel V45Gy < 30%
+        "lambda_femur":        10.0,  # Femur V50Gy < 5%
+    }
+
+    print(f"\n{'='*60}")
+    print(f"CURRICULUM RAMP: physics lambdas grow linearly over {WARMUP_EPOCHS} epochs")
+    print(f"lambda_mse = 25.0  (constant throughout)")
+    print(f"{'='*60}")
+    logger.info(
+        f"Curriculum ramp: lambda_mse=25.0 constant, "
+        f"physics lambdas 0 -> target over {WARMUP_EPOCHS} epochs"
     )
 
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -764,8 +908,22 @@ def main():
 
     for epoch in range(epochs):
         current_lr = optimizer.param_groups[0]['lr']
-        print(f"\nEpoch {epoch + 1}/{epochs}  (lr={current_lr:.2e})")
-        logger.info(f"Epoch {epoch + 1}/{epochs} started, lr={current_lr:.2e}")
+
+        # ---- Lambda ramp (curriculum learning) ----------------------
+        # ramp_frac rises linearly from 1/WARMUP_EPOCHS at epoch 0
+        # to 1.0 at epoch (WARMUP_EPOCHS-1), then stays at 1.0 forever.
+        ramp_frac = min((epoch + 1) / WARMUP_EPOCHS, 1.0)
+        for attr, target in PHYSICS_TARGET_LAMBDAS.items():
+            setattr(loss_function, attr, target * ramp_frac)
+
+        if epoch < WARMUP_EPOCHS:
+            phase_tag = (f"RAMP {epoch + 1}/{WARMUP_EPOCHS} "
+                         f"({100 * ramp_frac:.0f}% of physics)")
+        else:
+            phase_tag = "FULL PHYSICS"
+
+        print(f"\nEpoch {epoch + 1}/{epochs}  [{phase_tag}]  (lr={current_lr:.2e})")
+        logger.info(f"Epoch {epoch + 1}/{epochs} [{phase_tag}] ramp={ramp_frac:.3f} lr={current_lr:.2e}")
 
         # ---- Train -------------------------------------------------
         model.train()
@@ -782,6 +940,9 @@ def main():
             targets = batch["dose_label"].to(device, non_blocking=True)
             # ring_mask is pre-cropped to the patch size by RandCropByLabelClassesd
             ring_mask_batch = batch["ring_mask"].to(device, non_blocking=True)
+            # Auxiliary OAR masks (loss-only: not model inputs)
+            bowel_mask_batch = batch["bowel_mask"].to(device, non_blocking=True)
+            femur_mask_batch = batch["femur_mask"].to(device, non_blocking=True)
 
             # Normalise dose targets to [0, 1]
             normalized_targets = targets / PRESCRIPTION_DOSE_GY
@@ -807,6 +968,13 @@ def main():
             # while maintaining full gradient flow, unlike Sigmoid which saturates.
             outputs_activated = F.softplus(outputs.float())
 
+            # Hard-zero dose outside the patient body (CT HU > -300 → body_mask=1).
+            # This is physically correct — external air cannot receive dose in EBRT.
+            # Multiplying by body_mask also zeroes all gradients for air voxels,
+            # so the optimizer never wastes capacity trying to model air regions.
+            body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+            outputs_activated = outputs_activated * body_mask_hard
+
             # Physics loss receives the Softplus-activated, float32 output
             loss, components = loss_function(
                 outputs_activated,
@@ -816,6 +984,8 @@ def main():
                 ptv_mask.float(),
                 ring_mask_batch.float(),
                 inputs,
+                bowel_mask_batch.float(),
+                femur_mask_batch.float(),
             )
 
             # Scale loss for gradient accumulation (divide by steps)
@@ -840,9 +1010,11 @@ def main():
                     f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "
                     f"v_mand={components['v_mand']:.5f} ptv={components['ptv']:.4f} "
                     f"ptv_max={components['ptv_max']:.5f} ring={components['ring']:.5f} "
-                    f"smooth={components['smooth']:.4f} "
-                    f"beam={components['beam_suppression']:.5f} "
-                    f"homogeneity={components['homogeneity']:.4f}"
+                    f"smooth={components['smooth']:.4f} laplacian={components['laplacian']:.4f} "
+                    f"beam={components['beam']:.5f} "
+                    f"homogeneity={components['homogeneity']:.4f} "
+                    f"body={components['body']:.5f} "
+                    f"bowel={components['bowel']:.5f} femur={components['femur']:.5f}"
                 )
                 print(f"  {log_msg}")
                 logger.info(log_msg)
@@ -894,8 +1066,15 @@ def main():
                     # Softplus in float32, outside AMP (same reason as training loop)
                     outputs_activated = F.softplus(outputs.float())
 
+                    # Hard-zero dose outside body — same as training loop.
+                    body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+                    outputs_activated = outputs_activated * body_mask_hard
+
                     normalized_targets = targets / PRESCRIPTION_DOSE_GY
                     ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
+                    # Auxiliary OAR masks for validation loss
+                    bowel_mask_val = batch["bowel_mask"].to(device)
+                    femur_mask_val = batch["femur_mask"].to(device)
 
                     # Ring mask computed on-the-fly for validation.
                     ring_mask_val = compute_ring_mask(ptv_mask)
@@ -908,6 +1087,8 @@ def main():
                         ptv_mask.float(),
                         ring_mask_val.float(),
                         inputs,
+                        bowel_mask_val.float(),
+                        femur_mask_val.float(),
                     )
                     val_loss_sum += loss.item()
 
