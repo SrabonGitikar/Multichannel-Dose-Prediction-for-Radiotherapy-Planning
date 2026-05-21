@@ -1034,14 +1034,18 @@ def main():
 
         # ---- Validation (skip if not every N epochs) -----------------
         val_loss_avg = float('nan')
-        avg_d95 = avg_bladder = avg_rectum = float('nan')
+        avg_d95 = avg_bladder = avg_rectum = avg_dmax = avg_bg = avg_mse = avg_ring = float('nan')
 
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             model.eval()
             val_loss_sum = 0.0
+            val_mse_sum = 0.0
             val_d95_sum = 0.0
             val_bladder_mean_sum = 0.0
             val_rectum_mean_sum = 0.0
+            val_ring_mean_sum = 0.0
+            val_dmax_sum = 0.0
+            val_bg_mean_sum = 0.0
             n_val = 0
 
             logger.info(f"Running validation at epoch {epoch + 1}...")
@@ -1079,7 +1083,7 @@ def main():
                     # Ring mask computed on-the-fly for validation.
                     ring_mask_val = compute_ring_mask(ptv_mask)
 
-                    loss, _ = loss_function(
+                    loss, components = loss_function(
                         outputs_activated,
                         normalized_targets.float(),
                         bladder_mask.float(),
@@ -1091,6 +1095,7 @@ def main():
                         femur_mask_val.float(),
                     )
                     val_loss_sum += loss.item()
+                    val_mse_sum += components["mse"]
 
                     # Clinical metrics
                     outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
@@ -1107,16 +1112,35 @@ def main():
                     if len(rectum_dose) > 0:
                         val_rectum_mean_sum += rectum_dose.mean().item()
 
+                    ring_dose = outputs_gy[ring_mask_val.bool()]
+                    if len(ring_dose) > 0:
+                        val_ring_mean_sum += ring_dose.mean().item()
+
+                    val_dmax_sum += outputs_gy.max().item()
+
+                    # Background mask: inside body, but outside PTV and OARs
+                    bg_mask = (body_mask_hard.bool() & ~ptv_mask.bool() & 
+                               ~bladder_mask.bool() & ~rectum_mask.bool() & 
+                               ~bowel_mask_val.bool() & ~femur_mask_val.bool())
+                    bg_dose = outputs_gy[bg_mask]
+                    if len(bg_dose) > 0:
+                        val_bg_mean_sum += bg_dose.mean().item()
+
                     n_val += 1
 
             val_loss_avg = val_loss_sum / max(n_val, 1)
+            avg_mse = val_mse_sum / max(n_val, 1)
             avg_d95 = val_d95_sum / max(n_val, 1)
             avg_bladder = val_bladder_mean_sum / max(n_val, 1)
             avg_rectum = val_rectum_mean_sum / max(n_val, 1)
+            avg_ring = val_ring_mean_sum / max(n_val, 1)
+            avg_dmax = val_dmax_sum / max(n_val, 1)
+            avg_bg = val_bg_mean_sum / max(n_val, 1)
 
         epoch_summary = (
-            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} "
-            f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
+            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
+            f"          Metrics: PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy\n"
+            f"          Metrics: Ring={avg_ring:.2f}Gy Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy"
         )
         print(f"  --> {epoch_summary}")
         logger.info(epoch_summary)
