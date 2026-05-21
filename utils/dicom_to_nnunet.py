@@ -6,10 +6,11 @@ regression format.
 
 Input channels:
   0 = CT (Hounsfield Units)
-  1 = PTV binary mask (highest-dose target)
+  1 = PTV binary mask (union of all target volumes)
   2 = Bladder signed distance map (mm, negative inside organ)
   3 = Anorectum signed distance map (mm, negative inside organ)
-  4 = IMRT Beam Prior (binary mask, 50mm cylinders along gantry angles)
+  4 = IMRT Beam Prior (binary mask, dynamic-radius cylinders along gantry angles)
+  5 = Body Mask (binary: 1 = inside patient, 0 = air outside body)
 
 Label:
   RTDose in Gy (continuous values for regression)
@@ -33,8 +34,8 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
-OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
@@ -50,6 +51,18 @@ STRUCTURE_PATTERNS = {
     ],
     "Anorectum": [
         r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$",
+    ],
+    # Auxiliary OARs — used ONLY in the loss function, not as model input channels.
+    # Saved as separate NIfTI files (_bowel.nii.gz, _femur.nii.gz).
+    # Missing in any patient → empty mask (no skip).
+    "Bag_Bowel": [
+        r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*",
+    ],
+    "Femur_L": [
+        r"^Femur_?Head_?L.*", r"^L_?Femur.*", r"^Left_?Femur.*",
+    ],
+    "Femur_R": [
+        r"^Femur_?Head_?R.*", r"^R_?Femur.*", r"^Right_?Femur.*",
     ],
 }
 
@@ -122,6 +135,34 @@ def match_structure_name(roi_names, structure_type):
             if re.match(pattern, name, re.IGNORECASE):
                 return name
     return None
+
+def match_all_structure_names(roi_names, structure_type):
+    """
+    Returns ALL roi_names that match any pattern for the given structure_type.
+    Used for merging dual PTVs (e.g., prostate PTV_62 + pelvic node CTV_44)
+    into a single union mask for ch_1.
+    """
+    patterns = STRUCTURE_PATTERNS[structure_type]
+    matched = []
+    for name in roi_names:
+        for pattern in patterns:
+            if re.match(pattern, name, re.IGNORECASE):
+                matched.append(name)
+                break  # avoid double-counting the same name
+    return matched
+
+def rtstruct_all_contours_to_mask(rs_ds, roi_names_list, ct_image):
+    """
+    Union-rasterize all contours in roi_names_list into a single binary mask.
+    Any voxel inside ANY of the named structures is set to 1.
+    This correctly handles patients with dual PTVs.
+    """
+    ct_array = sitk.GetArrayFromImage(ct_image)
+    union_mask = np.zeros(ct_array.shape, dtype=np.uint8)
+    for roi_name in roi_names_list:
+        single = rtstruct_contour_to_mask(rs_ds, roi_name, ct_image)
+        union_mask = np.maximum(union_mask, single)  # element-wise OR
+    return union_mask
 
 def rtstruct_contour_to_mask(rs_ds, roi_name, ct_image):
     ct_array = sitk.GetArrayFromImage(ct_image)
@@ -331,18 +372,44 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     rs_ds = pydicom.dcmread(rs_file)
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
 
-    ptv_name = match_structure_name(roi_names, "PTV")
-    bladder_name = match_structure_name(roi_names, "Bladder")
+    ptv_names   = match_all_structure_names(roi_names, "PTV")
+    bladder_name  = match_structure_name(roi_names, "Bladder")
     anorectum_name = match_structure_name(roi_names, "Anorectum")
 
-    if not all([ptv_name, bladder_name, anorectum_name]):
-        print(f"  *** SKIPPING: Could not match all required structures ***")
+    if not ptv_names:
+        print(f"  *** SKIPPING: Could not match any PTV/CTV structure ***")
         return False
+    if not all([bladder_name, anorectum_name]):
+        print(f"  *** SKIPPING: Could not match Bladder or Anorectum ***")
+        return False
+    print(f"         PTV structures found ({len(ptv_names)}): {ptv_names}")
 
-    print("  [3/7] Rasterizing contour masks...")
-    ptv_mask = rtstruct_contour_to_mask(rs_ds, ptv_name, ct_image)
+    print("  [3/7] Rasterizing contour masks (union of all PTVs)...")
+    ptv_mask = rtstruct_all_contours_to_mask(rs_ds, ptv_names, ct_image)
     bladder_mask = rtstruct_contour_to_mask(rs_ds, bladder_name, ct_image)
     anorectum_mask = rtstruct_contour_to_mask(rs_ds, anorectum_name, ct_image)
+
+    # Auxiliary OARs: Bag_Bowel and Femur heads.
+    # These are optional — if missing in a patient, an empty mask is used.
+    # They are NOT model input channels; saved separately for loss enforcement only.
+    bowel_name   = match_structure_name(roi_names, "Bag_Bowel")
+    femur_l_name = match_structure_name(roi_names, "Femur_L")
+    femur_r_name = match_structure_name(roi_names, "Femur_R")
+
+    if bowel_name:
+        bowel_mask = rtstruct_contour_to_mask(rs_ds, bowel_name, ct_image)
+        print(f"         Bag_Bowel: {bowel_name}  ({bowel_mask.sum():,} voxels)")
+    else:
+        bowel_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
+        print("         Bag_Bowel: NOT FOUND — using empty mask")
+
+    femur_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
+    for fname in [femur_l_name, femur_r_name]:
+        if fname:
+            femur_mask = np.maximum(femur_mask,
+                                    rtstruct_contour_to_mask(rs_ds, fname, ct_image))
+    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, "
+          f"R={femur_r_name or 'NOT FOUND'}  ({femur_mask.sum():,} voxels)")
 
     if ptv_mask.sum() == 0:
         print(f"  *** SKIPPING: PTV mask is empty ***")
@@ -357,11 +424,19 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     dose_image = load_rtdose_as_sitk(dose_files, ct_image)
     dose_array = sitk.GetArrayFromImage(dose_image)
 
-    print("  [6/7] Generating IMRT Beam Prior (Channel 5)...")
+    print("  [6/8] Generating IMRT Beam Prior (Channel 5)...")
     beam_mask = generate_beam_mask(plan_files, ct_image, ptv_mask)
     print(f"         Beam Prior Voxels: {beam_mask.sum():,}")
 
-    print("  [7/7] Saving NIfTI files...")
+    print("  [7/8] Computing Body Mask from CT (Channel 6)...")
+    # Body mask: any voxel with HU > -300 is considered inside the patient.
+    # This threshold reliably separates external air (-1000 HU) from soft tissue.
+    # The model uses this channel to learn that dose outside the body is always 0.
+    BODY_HU_THRESHOLD = -300.0
+    body_mask_array = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
+    print(f"         Body Mask Voxels: {int(body_mask_array.sum()):,}")
+
+    print("  [8/8] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
 
     sitk.WriteImage(numpy_to_sitk(ct_array.astype(np.float32), ct_image),
@@ -380,10 +455,22 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(beam_mask.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_0004.nii.gz"))
 
+    # Channel 5: Body Mask
+    sitk.WriteImage(numpy_to_sitk(body_mask_array, ct_image),
+                    os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
+
+    # Auxiliary OAR masks (loss-only, NOT model input channels).
+    # Bag_Bowel: V45Gy < 30% constraint in loss function.
+    # Femur (merged L+R): V50Gy < 5% constraint in loss function.
+    sitk.WriteImage(numpy_to_sitk(bowel_mask.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_bowel.nii.gz"))
+    sitk.WriteImage(numpy_to_sitk(femur_mask.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_femur.nii.gz"))
+
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    print(f"  ✓ Done! Saved 5 input channels + 1 label for {case_name}")
+    print(f"  ✓ Done! Saved 6 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
     return True
 
 def create_dataset_json(output_dir, num_cases):
@@ -393,7 +480,8 @@ def create_dataset_json(output_dir, num_cases):
             "1": "PTV_mask",
             "2": "Bladder_SDM",
             "3": "Anorectum_SDM",
-            "4": "IMRT_Beam_Prior"
+            "4": "IMRT_Beam_Prior",
+            "5": "Body_Mask"
         },
         "labels": {"0": "dose"},
         "numTraining": num_cases,
