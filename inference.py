@@ -4,6 +4,8 @@ import argparse
 # pyrefly: ignore [missing-import]
 import torch
 # pyrefly: ignore [missing-import]
+import torch.nn.functional as F
+# pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
 import SimpleITK as sitk
@@ -34,20 +36,26 @@ PATCH_SIZE = (128, 128, 64)  # Must match training
 MODEL_PATH = "best_dose_model_physics.pth"
 PRESCRIPTION_DOSE_GY = 75.0
 
-# Input channels (must match training)
-CHANNELS = ["0000", "0001", "0002", "0003", "0004"]  # CT, PTV, Bladder, Anorectum, Beam
+# Input channels — must stay in sync with CHANNELS in train_dummy_physics_new.py
+CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005"]  # CT, PTV, Bladder SDM, Anorectum SDM, Beam, Body Mask
+
+# Spacingd interpolation modes — binary masks use 'nearest', continuous fields 'bilinear'
+# Order matches CHANNELS: CT=bilinear, PTV=nearest, Bladder SDM=bilinear,
+#   Anorectum SDM=bilinear, Beam Mask=nearest, Body Mask=nearest
+_CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"]
+_CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest")
 
 inference_transforms = Compose([
-    LoadImaged(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
-    EnsureChannelFirstd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
+    LoadImaged(keys=_CH_KEYS),
+    EnsureChannelFirstd(keys=_CH_KEYS),
     Spacingd(
-        keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"],
+        keys=_CH_KEYS,
         pixdim=TARGET_SPACING,
-        mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest")
+        mode=_CH_MODES,
     ),
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-    ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
-    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
+    ConcatItemsd(keys=_CH_KEYS, name="image"),
+    DeleteItemsd(keys=_CH_KEYS),
     ToTensord(keys=["image"])
 ])
 
@@ -71,9 +79,9 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     print(f"Loading model on {device}...")
     model = UNet(
         spatial_dims=3,
-        in_channels=5,  # Must match training: CT, PTV, Bladder, Rectum, Beam
+        in_channels=6,  # CT, PTV, Bladder SDM, Anorectum SDM, Beam Prior, Body Mask
         out_channels=1,
-        channels=(16, 32, 64, 128),  # Must match training (4-level UNet for 12GB VRAM)
+        channels=(16, 32, 64, 128),  # 4-level UNet — must match training
         strides=(2, 2, 2),
         num_res_units=2,
     ).to(device)
@@ -88,7 +96,7 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
 
     print(f"\nRunning inference for {patient_id}...")
     
-    # Build input dictionary with 5 channels
+    # Build input dictionary with all 6 channels
     pt_dict = {}
     for i, ch in enumerate(CHANNELS):
         ch_path = os.path.join(IMAGES_DIR, f"{patient_id}_{ch}.nii.gz")
@@ -119,26 +127,33 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     grid_origin    = ct_resampled.GetOrigin()
     grid_direction = ct_resampled.GetDirection()
 
-    print(f"Input tensor shape: {inputs.shape}")  # [1, 5, D, H, W]
-    
-    # Run inference with mixed precision if on GPU
+    print(f"Input tensor shape: {inputs.shape}")  # [1, 6, D, H, W]
+
+    # Run inference with sliding window + mixed precision
     with torch.no_grad():
         with torch.amp.autocast('cuda', enabled=device.type == 'cuda'):
             outputs = sliding_window_inference(
-                inputs=inputs, 
-                roi_size=PATCH_SIZE, 
-                sw_batch_size=2, 
+                inputs=inputs,
+                roi_size=PATCH_SIZE,
+                sw_batch_size=2,
                 predictor=model,
                 overlap=0.5,
                 mode="gaussian",
             )
-    
-    # outputs shape: [1, 1, H, W, D] (MONAI spatial order after Spacingd)
-    # Transpose to (D, H, W) = (Z, Y, X) to match SimpleITK/NIfTI convention
-    pred_dose = outputs[0, 0].cpu().numpy()          # (H, W, D)
-    pred_dose = np.transpose(pred_dose, (2, 0, 1))   # -> (D, H, W) = (Z, Y, X)
-    pred_dose = pred_dose * PRESCRIPTION_DOSE_GY     # denormalise to Gy
-    pred_dose = np.clip(pred_dose, 0.0, None)        # dose cannot be negative
+
+    # Apply Softplus outside autocast in float32 — matches the training loop exactly.
+    # (float16 saturates at ~65504; Softplus inside AMP could silently overflow.)
+    # MONAI's Spacingd preserves (Z, Y, X) = (D, H, W) ordering, so no transpose needed.
+    outputs_activated = F.softplus(outputs.float())  # (1, 1, D, H, W)
+
+    # Hard-zero dose outside the patient body — mirrors training loop.
+    # ch_5 = body mask: 1.0 inside body (CT > -300 HU), 0.0 in air.
+    body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+    outputs_activated = outputs_activated * body_mask_hard
+
+    pred_dose = outputs_activated[0, 0].cpu().numpy()  # (D, H, W)
+    pred_dose = pred_dose * PRESCRIPTION_DOSE_GY        # denormalise to Gy
+    pred_dose = np.clip(pred_dose, 0.0, None)           # dose cannot be negative
     
     print(f"Prediction complete. Shape: {pred_dose.shape}")
     print(f"Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
