@@ -38,6 +38,7 @@ python train_monai.py
 Once training is complete, you can use the trained model to generate predictions using sliding window inference.
 ```bash
 python inference.py
+python inference.py --patient prostate_000 --output-dir data/output --model best_dose_model_physics.pth
 ```
 
 ```bash

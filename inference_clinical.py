@@ -49,19 +49,19 @@ PATCH_SIZE = (128, 128, 64)  # Must match training
 MODEL_PATH = "best_dose_model_physics.pth"
 PRESCRIPTION_DOSE_GY = 75.0
 
-CHANNELS = ["0000", "0001", "0002", "0003"]  # CT, PTV, Bladder SDM, Anorectum SDM
+CHANNELS = ["0000", "0001", "0002", "0003", "0004"]  # CT, PTV, Bladder SDM, Anorectum SDM, IMRT Beam Prior
 
 inference_transforms = Compose([
-    LoadImaged(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
-    EnsureChannelFirstd(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
+    LoadImaged(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
+    EnsureChannelFirstd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
     Spacingd(
-        keys=["ch_0", "ch_1", "ch_2", "ch_3"],
+        keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"],
         pixdim=TARGET_SPACING,
-        mode=("bilinear", "nearest", "bilinear", "bilinear")
+        mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest")
     ),
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-    ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"], name="image"),
-    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3"]),
+    ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"], name="image"),
+    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4"]),
     ToTensord(keys=["image"])
 ])
 
@@ -139,11 +139,11 @@ def run_inference(patient_id, output_dir=".", save_nifti=True, smooth_sigma=1.0)
     print(f"Loading model on {device}...")
     model = UNet(
         spatial_dims=3,
-        in_channels=4,
+        in_channels=5,  # Must match training: CT, PTV, Bladder, Rectum, Beam
         out_channels=1,
-        channels=(32, 64, 128, 256, 512),
-        strides=(2, 2, 2, 2),
-        num_res_units=3,
+        channels=(16, 32, 64, 128),  # Must match training (4-level UNet for 12GB VRAM)
+        strides=(2, 2, 2),
+        num_res_units=2,
     ).to(device)
     
     if os.path.exists(MODEL_PATH):
