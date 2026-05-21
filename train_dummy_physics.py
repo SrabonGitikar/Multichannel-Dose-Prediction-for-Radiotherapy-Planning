@@ -1080,22 +1080,18 @@ def main():
                     bowel_mask_val = batch["bowel_mask"].to(device)
                     femur_mask_val = batch["femur_mask"].to(device)
 
-                    # Ring mask computed on-the-fly for validation.
+                    # Ring mask computed on-the-fly for validation metrics.
                     ring_mask_val = compute_ring_mask(ptv_mask)
 
-                    loss, components = loss_function(
-                        outputs_activated,
-                        normalized_targets.float(),
-                        bladder_mask.float(),
-                        rectum_mask.float(),
-                        ptv_mask.float(),
-                        ring_mask_val.float(),
-                        inputs,
-                        bowel_mask_val.float(),
-                        femur_mask_val.float(),
-                    )
-                    val_loss_sum += loss.item()
-                    val_mse_sum += components["mse"]
+                    # --- FIX FOR OOM: -----------------------------------------------------
+                    # Running the full physics loss function (with Laplacians, TV gradients, 
+                    # and DVH sigmoids) on the uncropped full-size CT volume consumes massive 
+                    # memory. Since we don't backpropagate validation loss, we skip the physics 
+                    # penalty computation and ONLY compute the pure MSE and clinical metrics.
+                    mse_loss = ((outputs_activated - normalized_targets.float()) ** 2).mean()
+                    
+                    val_loss_sum += mse_loss.item()
+                    val_mse_sum += mse_loss.item()
 
                     # Clinical metrics
                     outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
