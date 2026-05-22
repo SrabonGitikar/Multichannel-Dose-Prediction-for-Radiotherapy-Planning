@@ -381,9 +381,10 @@ class PhysicsGuidedDoseLoss(nn.Module):
         
         loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
-            # Heavily penalize any voxel inside the PTV that exceeds 66.34 Gy
+            # L1 penalty isolated strictly to violating voxels to prevent dilution
             overdose = torch.relu(pred_dose - hard_max_norm) * ptv_mask
-            loss_ptv_max = (overdose ** 2).sum() / ptv_n
+            violating_voxels = (overdose > 0).float().sum().clamp(min=1.0)
+            loss_ptv_max = overdose.sum() / violating_voxels
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
@@ -395,17 +396,23 @@ class PhysicsGuidedDoseLoss(nn.Module):
         ring_n = ring_mask.sum()
         if ring_n > 0:
             ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
-            loss_ring = (ring_overdose ** 2).sum() / ring_n
+            loss_ring = ring_overdose.sum() / ring_n
         else:
             loss_ring = torch.tensor(0.0, device=pred_dose.device,
                                      dtype=pred_dose.dtype)
 
         # ------ 5b. L_Beam (Anti-Brachytherapy Suppression) --------------
         beam_mask = inputs[:, 4:5, ...]
+        body_mask = (inputs[:, 5:6, ...] > 0.5).float()
         # beam_mask is 1.0 inside the LINAC beams, and 0.0 outside.
-        outside_beam_mask = 1.0 - beam_mask
-        rogue_dose = pred_dose * outside_beam_mask
-        loss_beam_suppression = (rogue_dose ** 2).mean()
+        # Restrict to BODY voxels only — air is already zeroed by body_mask_hard
+        # but .mean() was dividing by ALL voxels (including ~87% air and ~15%
+        # inside-beam), diluting the gradient by ~9×. Now we divide only by the
+        # outside-beam body voxels, giving a ~9× stronger per-voxel gradient.
+        outside_beam_body = (1.0 - beam_mask) * body_mask
+        rogue_dose = pred_dose * outside_beam_body
+        n_rogue = outside_beam_body.sum().clamp(min=1.0)
+        loss_beam_suppression = rogue_dose.sum() / n_rogue
 
         # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
         # body_mask is 1.0 inside the patient body (CT HU > -300), 0.0 in air.
@@ -414,7 +421,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         outside_body_mask = 1.0 - body_mask
         ghost_dose = pred_dose * outside_body_mask
         n_outside_body = outside_body_mask.sum().clamp(min=1.0)
-        loss_body = (ghost_dose ** 2).sum() / n_outside_body
+        loss_body = ghost_dose.sum() / n_outside_body
 
         # ------ 6. L_smooth (Total Variation) -----------------------
         # TV penalises the first derivative — discourages jagged voxel-to-voxel
@@ -872,7 +879,7 @@ def main():
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
         "lambda_anticollapse": 50.0,
-        "lambda_beam":          5.0,
+        "lambda_beam":         25.0,
         "lambda_homogeneity":  20.0,
         "lambda_body":         20.0,
         "lambda_bowel":        15.0,  # Bag_Bowel V45Gy < 30%
@@ -1145,7 +1152,7 @@ def main():
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             if val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
-                torch.save(model.state_dict(), "best_dose_model_physics.pth")
+                torch.save(model.state_dict(), "best_dose_model_physics_L1.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
@@ -1157,7 +1164,7 @@ def main():
 
             if clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
-                torch.save(model.state_dict(), "best_dose_model_clinical.pth")
+                torch.save(model.state_dict(), "best_dose_model_clinical_L1.pth")
                 clinical_msg = (
                     f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
                     f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
@@ -1208,8 +1215,8 @@ def main():
 
     # ---- Dual-model evaluation loop ------------------------------------
     for model_path, csv_name in [
-        ("best_dose_model_physics.pth",  "validation_physics_summary.csv"),
-        ("best_dose_model_clinical.pth", "validation_clinical_summary.csv"),
+        ("best_dose_model_physics_L1.pth",  "validation_physics_summary_L1.csv"),
+        ("best_dose_model_clinical_L1.pth", "validation_clinical_summary_L1.csv"),
     ]:
         print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
