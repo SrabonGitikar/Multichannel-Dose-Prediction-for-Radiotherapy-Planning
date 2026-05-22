@@ -1,0 +1,174 @@
+2026-05-22 15:01:18 [INFO] Training log started: training_20260522_150118.log
+2026-05-22 15:01:18 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-05-22 15:01:18 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v2.csv ...
+2026-05-22 15:01:18 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-05-22 15:01:18 [INFO] Model ready on cuda, epochs=100, AMP=ON
+2026-05-22 15:01:18 [INFO] Epoch 1/100 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
+2026-05-22 15:01:24 [INFO] Step 5/54 Loss=91.4381 mse=3.1800 v_opt=4.59722 v_mand=3.90972 ptv=0.1121 ptv_max=0.43665 ring=0.22003 smooth=2.5650 laplacian=10.1435 beam=1.31299 homogeneity=0.1915 body=0.00000 bowel=1.17410 femur=1.96392
+2026-05-22 15:01:27 [INFO] Step 10/54 Loss=104.3279 mse=3.6400 v_opt=5.02772 v_mand=4.32659 ptv=0.1106 ptv_max=0.39602 ring=0.22534 smooth=3.1652 laplacian=12.5927 beam=1.46420 homogeneity=0.1853 body=0.00000 bowel=1.50714 femur=2.00964
+2026-05-22 15:01:30 [INFO] Step 15/54 Loss=85.5911 mse=2.9675 v_opt=4.20532 v_mand=3.53513 ptv=0.1194 ptv_max=0.46869 ring=0.15929 smooth=2.5087 laplacian=9.9233 beam=1.38926 homogeneity=0.2264 body=0.00000 bowel=1.19962 femur=2.05683
+2026-05-22 15:01:33 [INFO] Step 20/54 Loss=57.5635 mse=1.8067 v_opt=4.65538 v_mand=3.96698 ptv=0.0933 ptv_max=0.36709 ring=0.17631 smooth=2.5842 laplacian=10.2813 beam=1.59541 homogeneity=0.1559 body=0.00000 bowel=1.65908 femur=2.04122
+2026-05-22 15:01:37 [INFO] Step 25/54 Loss=101.7477 mse=3.5972 v_opt=4.49964 v_mand=3.81520 ptv=0.1187 ptv_max=0.30922 ring=0.13888 smooth=2.7015 laplacian=10.7476 beam=1.42903 homogeneity=0.0899 body=0.00000 bowel=1.49130 femur=1.97365
+2026-05-22 15:01:41 [INFO] Step 30/54 Loss=76.2586 mse=2.6448 v_opt=3.73851 v_mand=3.10778 ptv=0.1201 ptv_max=0.34351 ring=0.13679 smooth=2.1575 laplacian=8.5682 beam=1.25362 homogeneity=0.1210 body=0.00000 bowel=1.39806 femur=2.11133
+2026-05-22 15:01:43 [INFO] Step 35/54 Loss=80.6948 mse=2.8639 v_opt=3.31757 v_mand=2.74955 ptv=0.1651 ptv_max=0.26299 ring=0.08523 smooth=2.0006 laplacian=7.8873 beam=1.45987 homogeneity=0.0861 body=0.00000 bowel=0.80969 femur=2.09075
+2026-05-22 15:01:46 [INFO] Step 40/54 Loss=64.0389 mse=2.2069 v_opt=3.28119 v_mand=2.70028 ptv=0.1221 ptv_max=0.34005 ring=0.13026 smooth=1.3513 laplacian=5.2858 beam=1.18675 homogeneity=0.1220 body=0.00000 bowel=1.56114 femur=2.09395
+2026-05-22 15:01:51 [INFO] Step 45/54 Loss=79.0478 mse=2.8061 v_opt=3.55116 v_mand=2.92477 ptv=0.1976 ptv_max=0.26213 ring=0.10007 smooth=1.3617 laplacian=5.3068 beam=1.42560 homogeneity=0.0708 body=0.00000 bowel=0.72804 femur=2.10683
+2026-05-22 15:01:54 [INFO] Step 50/54 Loss=59.8052 mse=2.0184 v_opt=3.81981 v_mand=3.17274 ptv=0.1119 ptv_max=0.25748 ring=0.09729 smooth=1.1920 laplacian=4.6777 beam=1.32881 homogeneity=0.0687 body=0.00000 bowel=1.20421 femur=2.14082
+2026-05-22 15:01:56 [INFO] Step 54/54 Loss=51.4088 mse=1.7031 v_opt=3.66028 v_mand=3.02661 ptv=0.1580 ptv_max=0.16742 ring=0.06517 smooth=0.8323 laplacian=3.2154 beam=1.36510 homogeneity=0.0245 body=0.00000 bowel=1.49641 femur=2.14180
+2026-05-22 15:01:56 [INFO] Running validation at epoch 1...
+2026-05-22 15:02:26 [INFO] Epoch 1 Summary: Train=69.2420 Val=0.1774 (MSE=0.1774)
+          Metrics: PTV_D95=50.83Gy Bladder=59.46Gy Rectum=57.39Gy
+          Metrics: Ring=64.68Gy Dmax=239.78Gy BG=84.90Gy
+2026-05-22 15:02:26 [INFO] [PHYSICS] Saved best model val_loss=0.1774
+2026-05-22 15:02:26 [INFO] [CLINICAL] Saved best model Score=94.173 PTV_D95=50.83Gy Bladder=59.46Gy Rectum=57.39Gy
+2026-05-22 15:02:26 [INFO] Epoch 2/100 [RAMP 2/30 (7% of physics)] ramp=0.067 lr=1.00e-04
+2026-05-22 15:02:32 [INFO] Step 5/54 Loss=62.3536 mse=1.7787 v_opt=3.63315 v_mand=3.00077 ptv=0.1672 ptv_max=0.16008 ring=0.03872 smooth=0.9352 laplacian=3.6236 beam=1.48234 homogeneity=0.0227 body=0.00000 bowel=1.53296 femur=2.11815
+2026-05-22 15:02:35 [INFO] Step 10/54 Loss=55.1886 mse=1.5446 v_opt=3.68894 v_mand=3.05287 ptv=0.1539 ptv_max=0.11942 ring=0.02799 smooth=1.0859 laplacian=4.2318 beam=1.23464 homogeneity=0.0149 body=0.00000 bowel=0.38424 femur=2.14739
+2026-05-22 15:02:38 [INFO] Step 15/54 Loss=49.9455 mse=1.4553 v_opt=3.36260 v_mand=2.75569 ptv=0.2265 ptv_max=0.06846 ring=0.00697 smooth=1.1434 laplacian=4.5140 beam=1.16480 homogeneity=0.0158 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:02:41 [INFO] Step 20/54 Loss=63.3543 mse=1.8307 v_opt=3.45317 v_mand=2.84766 ptv=0.1425 ptv_max=0.22878 ring=0.08267 smooth=0.9598 laplacian=3.7329 beam=1.52346 homogeneity=0.0479 body=0.00000 bowel=1.35778 femur=2.13852
+2026-05-22 15:02:44 [INFO] Step 25/54 Loss=75.8854 mse=2.3761 v_opt=3.26947 v_mand=2.66932 ptv=0.1731 ptv_max=0.18220 ring=0.05175 smooth=1.1256 laplacian=4.4189 beam=1.33616 homogeneity=0.0298 body=0.00000 bowel=1.12909 femur=2.14788
+2026-05-22 15:02:48 [INFO] Step 30/54 Loss=67.3355 mse=2.0112 v_opt=3.54891 v_mand=2.91745 ptv=0.1818 ptv_max=0.15232 ring=0.06018 smooth=1.0525 laplacian=4.1390 beam=1.20639 homogeneity=0.0229 body=0.00000 bowel=1.30282 femur=2.06120
+2026-05-22 15:02:51 [INFO] Step 35/54 Loss=57.9556 mse=1.6655 v_opt=3.22993 v_mand=2.63332 ptv=0.1461 ptv_max=0.25901 ring=0.09930 smooth=0.8443 laplacian=3.2966 beam=1.10618 homogeneity=0.0567 body=0.00000 bowel=1.55102 femur=2.13798
+2026-05-22 15:02:55 [INFO] Step 40/54 Loss=53.8850 mse=1.5386 v_opt=3.27039 v_mand=2.66737 ptv=0.1505 ptv_max=0.20793 ring=0.05981 smooth=0.5579 laplacian=2.1357 beam=1.27840 homogeneity=0.0421 body=0.00000 bowel=0.88224 femur=2.13124
+2026-05-22 15:02:57 [INFO] Step 45/54 Loss=64.9952 mse=2.0573 v_opt=3.23508 v_mand=2.63105 ptv=0.2776 ptv_max=0.04389 ring=0.00394 smooth=1.4179 laplacian=5.5778 beam=1.22532 homogeneity=0.0219 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:03:02 [INFO] Step 50/54 Loss=48.4698 mse=1.3915 v_opt=2.76345 v_mand=2.23330 ptv=0.2119 ptv_max=0.15383 ring=0.03528 smooth=0.5839 laplacian=2.2359 beam=1.34882 homogeneity=0.0304 body=0.00000 bowel=0.69404 femur=2.11905
+2026-05-22 15:03:04 [INFO] Step 54/54 Loss=33.8662 mse=0.9255 v_opt=1.77822 v_mand=1.49944 ptv=0.2704 ptv_max=0.03475 ring=0.00281 smooth=0.6008 laplacian=2.3378 beam=1.13879 homogeneity=0.0214 body=0.00000 bowel=1.22472 femur=1.83516
+2026-05-22 15:03:04 [INFO] Running validation at epoch 2...
+2026-05-22 15:03:33 [INFO] Epoch 2 Summary: Train=67.5772 Val=0.1533 (MSE=0.1533)
+          Metrics: PTV_D95=49.08Gy Bladder=54.07Gy Rectum=52.96Gy
+          Metrics: Ring=60.24Gy Dmax=234.38Gy BG=80.33Gy
+2026-05-22 15:03:33 [INFO] [PHYSICS] Saved best model val_loss=0.1533
+2026-05-22 15:03:33 [INFO] [CLINICAL] Saved best model Score=94.034 PTV_D95=49.08Gy Bladder=54.07Gy Rectum=52.96Gy
+2026-05-22 15:03:33 [INFO] Epoch 3/100 [RAMP 3/30 (10% of physics)] ramp=0.100 lr=9.99e-05
+2026-05-22 15:03:39 [INFO] Step 5/54 Loss=58.0625 mse=1.4909 v_opt=2.70911 v_mand=2.15999 ptv=0.1764 ptv_max=0.30107 ring=0.12254 smooth=0.7240 laplacian=2.7912 beam=1.14230 homogeneity=0.0699 body=0.00000 bowel=1.15738 femur=1.38247
+2026-05-22 15:03:42 [INFO] Step 10/54 Loss=51.0401 mse=1.2294 v_opt=2.82211 v_mand=2.25965 ptv=0.2203 ptv_max=0.11848 ring=0.02400 smooth=0.5342 laplacian=2.0304 beam=1.12725 homogeneity=0.0208 body=0.00000 bowel=1.04085 femur=2.10347
+2026-05-22 15:03:45 [INFO] Step 15/54 Loss=42.8187 mse=1.0608 v_opt=2.06662 v_mand=1.61448 ptv=0.2423 ptv_max=0.11435 ring=0.01830 smooth=0.3562 laplacian=1.3588 beam=1.05511 homogeneity=0.0231 body=0.00000 bowel=1.08910 femur=1.93851
+2026-05-22 15:03:48 [INFO] Step 20/54 Loss=48.9118 mse=1.1339 v_opt=2.93730 v_mand=2.37049 ptv=0.3135 ptv_max=0.16845 ring=0.00057 smooth=0.4944 laplacian=1.9136 beam=1.16290 homogeneity=0.0269 body=0.00000 bowel=0.72553 femur=1.91305
+2026-05-22 15:03:53 [INFO] Step 25/54 Loss=63.2873 mse=1.7221 v_opt=2.62159 v_mand=2.07602 ptv=0.1887 ptv_max=0.14993 ring=0.06023 smooth=0.6281 laplacian=2.4095 beam=1.16693 homogeneity=0.0279 body=0.00000 bowel=1.27893 femur=2.14245
+2026-05-22 15:03:56 [INFO] Step 30/54 Loss=37.4648 mse=0.7815 v_opt=2.62190 v_mand=2.08095 ptv=0.1671 ptv_max=0.17531 ring=0.05583 smooth=0.2137 laplacian=0.8102 beam=1.00058 homogeneity=0.0344 body=0.00000 bowel=0.48880 femur=2.14042
+2026-05-22 15:04:00 [INFO] Step 35/54 Loss=68.6760 mse=1.9483 v_opt=2.54004 v_mand=1.99452 ptv=0.2360 ptv_max=0.10670 ring=0.02601 smooth=0.5250 laplacian=2.0025 beam=1.56220 homogeneity=0.0212 body=0.00000 bowel=1.04599 femur=2.10792
+2026-05-22 15:04:03 [INFO] Step 40/54 Loss=73.1096 mse=2.1462 v_opt=2.37829 v_mand=1.85054 ptv=0.2019 ptv_max=0.19616 ring=0.05431 smooth=0.5742 laplacian=2.1672 beam=1.43467 homogeneity=0.0360 body=0.00000 bowel=1.12743 femur=1.97091
+2026-05-22 15:04:07 [INFO] Step 45/54 Loss=50.6453 mse=1.2972 v_opt=2.24927 v_mand=1.74711 ptv=0.2378 ptv_max=0.13275 ring=0.04192 smooth=0.3619 laplacian=1.3520 beam=1.40258 homogeneity=0.0263 body=0.00000 bowel=1.10512 femur=2.13645
+2026-05-22 15:04:11 [INFO] Step 50/54 Loss=40.8642 mse=1.0264 v_opt=1.90803 v_mand=1.44704 ptv=0.2063 ptv_max=0.17048 ring=0.05188 smooth=0.2701 laplacian=1.0004 beam=1.08640 homogeneity=0.0411 body=0.00000 bowel=0.89233 femur=1.78654
+2026-05-22 15:04:13 [INFO] Step 54/54 Loss=85.3647 mse=2.6521 v_opt=2.06555 v_mand=1.57134 ptv=0.1966 ptv_max=0.19152 ring=0.07760 smooth=0.6314 laplacian=2.3640 beam=1.79028 homogeneity=0.0378 body=0.00000 bowel=1.09551 femur=2.08321
+2026-05-22 15:04:13 [INFO] Running validation at epoch 3...
+2026-05-22 15:04:42 [INFO] Epoch 3 Summary: Train=61.5184 Val=0.1282 (MSE=0.1282)
+          Metrics: PTV_D95=45.89Gy Bladder=47.66Gy Rectum=48.80Gy
+          Metrics: Ring=55.80Gy Dmax=229.67Gy BG=75.49Gy
+2026-05-22 15:04:42 [INFO] [PHYSICS] Saved best model val_loss=0.1282
+2026-05-22 15:04:42 [INFO] Epoch 4/100 [RAMP 4/30 (13% of physics)] ramp=0.133 lr=9.98e-05
+2026-05-22 15:04:48 [INFO] Step 5/54 Loss=70.7267 mse=1.8715 v_opt=2.03114 v_mand=1.54801 ptv=0.2368 ptv_max=0.19589 ring=0.05185 smooth=0.4056 laplacian=1.4947 beam=1.66267 homogeneity=0.0371 body=0.00000 bowel=1.07906 femur=1.87662
+2026-05-22 15:04:51 [INFO] Step 10/54 Loss=37.0838 mse=0.8507 v_opt=2.10610 v_mand=1.61179 ptv=0.3703 ptv_max=0.00005 ring=0.00024 smooth=0.2655 laplacian=0.9691 beam=0.97187 homogeneity=0.0354 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:04:54 [INFO] Step 15/54 Loss=52.3931 mse=1.2498 v_opt=1.89108 v_mand=1.43654 ptv=0.2268 ptv_max=0.23818 ring=0.07199 smooth=0.3738 laplacian=1.4088 beam=1.14987 homogeneity=0.0509 body=0.00000 bowel=0.78590 femur=1.87819
+2026-05-22 15:04:57 [INFO] Step 20/54 Loss=80.4140 mse=2.3150 v_opt=1.75400 v_mand=1.33573 ptv=0.1731 ptv_max=0.13152 ring=0.06792 smooth=0.5299 laplacian=2.0208 beam=1.65817 homogeneity=0.0245 body=0.00000 bowel=1.12302 femur=2.00075
+2026-05-22 15:05:03 [INFO] Step 25/54 Loss=70.1265 mse=1.7612 v_opt=2.28683 v_mand=1.77195 ptv=0.2221 ptv_max=0.23873 ring=0.06147 smooth=0.3788 laplacian=1.4270 beam=1.69147 homogeneity=0.0389 body=0.00000 bowel=1.33736 femur=1.68277
+2026-05-22 15:05:06 [INFO] Step 30/54 Loss=35.3769 mse=0.8077 v_opt=1.93685 v_mand=1.47099 ptv=0.3887 ptv_max=0.02555 ring=0.00140 smooth=0.2291 laplacian=0.8445 beam=1.04216 homogeneity=0.0387 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:05:09 [INFO] Step 35/54 Loss=57.1006 mse=1.3708 v_opt=2.30046 v_mand=1.78397 ptv=0.2626 ptv_max=0.11927 ring=0.01942 smooth=0.3684 laplacian=1.3588 beam=1.11703 homogeneity=0.0253 body=0.00000 bowel=1.01465 femur=1.77391
+2026-05-22 15:05:12 [INFO] Step 40/54 Loss=49.8082 mse=1.1683 v_opt=1.79544 v_mand=1.36743 ptv=0.1502 ptv_max=0.09475 ring=0.04219 smooth=0.2846 laplacian=1.0557 beam=1.32098 homogeneity=0.0187 body=0.00000 bowel=1.03836 femur=2.11356
+2026-05-22 15:05:17 [INFO] Step 45/54 Loss=42.4556 mse=1.0399 v_opt=1.85945 v_mand=1.38670 ptv=0.1888 ptv_max=0.08873 ring=0.04305 smooth=0.2190 laplacian=0.7725 beam=1.55748 homogeneity=0.0193 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:05:19 [INFO] Step 50/54 Loss=63.8492 mse=1.6825 v_opt=2.08394 v_mand=1.60462 ptv=0.1532 ptv_max=0.15879 ring=0.06389 smooth=0.3566 laplacian=1.3393 beam=1.11089 homogeneity=0.0321 body=0.00000 bowel=1.14051 femur=1.60022
+2026-05-22 15:05:22 [INFO] Step 54/54 Loss=38.4665 mse=0.8497 v_opt=1.97312 v_mand=1.50850 ptv=0.2166 ptv_max=0.07167 ring=0.01569 smooth=0.1253 laplacian=0.4557 beam=1.02180 homogeneity=0.0183 body=0.00000 bowel=0.29013 femur=1.11558
+2026-05-22 15:05:22 [INFO] Running validation at epoch 4...
+2026-05-22 15:05:50 [INFO] Epoch 4 Summary: Train=58.6235 Val=0.1216 (MSE=0.1216)
+          Metrics: PTV_D95=47.81Gy Bladder=46.93Gy Rectum=45.48Gy
+          Metrics: Ring=57.26Gy Dmax=213.57Gy BG=74.06Gy
+2026-05-22 15:05:50 [INFO] [PHYSICS] Saved best model val_loss=0.1216
+2026-05-22 15:05:50 [INFO] [CLINICAL] Saved best model Score=90.687 PTV_D95=47.81Gy Bladder=46.93Gy Rectum=45.48Gy
+2026-05-22 15:05:50 [INFO] Epoch 5/100 [RAMP 5/30 (17% of physics)] ramp=0.167 lr=9.96e-05
+2026-05-22 15:05:57 [INFO] Step 5/54 Loss=86.3273 mse=2.2807 v_opt=1.87968 v_mand=1.42853 ptv=0.1254 ptv_max=0.20391 ring=0.08657 smooth=0.4560 laplacian=1.6955 beam=1.50157 homogeneity=0.0362 body=0.00000 bowel=1.33301 femur=2.07314
+2026-05-22 15:06:00 [INFO] Step 10/54 Loss=46.8005 mse=1.1117 v_opt=1.95953 v_mand=1.48246 ptv=0.2153 ptv_max=0.02900 ring=0.00412 smooth=0.2675 laplacian=0.9730 beam=1.07512 homogeneity=0.0163 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:06:03 [INFO] Step 15/54 Loss=69.6802 mse=1.7318 v_opt=1.88925 v_mand=1.44763 ptv=0.1562 ptv_max=0.20026 ring=0.04183 smooth=0.3556 laplacian=1.3366 beam=1.07604 homogeneity=0.0316 body=0.00000 bowel=1.24299 femur=1.67333
+2026-05-22 15:06:06 [INFO] Step 20/54 Loss=54.3722 mse=1.2109 v_opt=1.82179 v_mand=1.38845 ptv=0.2797 ptv_max=0.10568 ring=0.01662 smooth=0.2900 laplacian=1.0104 beam=1.29295 homogeneity=0.0298 body=0.00000 bowel=0.45770 femur=1.80762
+2026-05-22 15:06:11 [INFO] Step 25/54 Loss=71.9249 mse=1.8308 v_opt=1.70310 v_mand=1.26668 ptv=0.1567 ptv_max=0.13841 ring=0.05536 smooth=0.3964 laplacian=1.4757 beam=1.37539 homogeneity=0.0241 body=0.00000 bowel=1.24004 femur=1.96234
+2026-05-22 15:06:14 [INFO] Step 30/54 Loss=39.8920 mse=0.8423 v_opt=1.07471 v_mand=0.79176 ptv=0.1561 ptv_max=0.15622 ring=0.05801 smooth=0.1534 laplacian=0.5439 beam=0.91752 homogeneity=0.0353 body=0.00000 bowel=1.07828 femur=1.83414
+2026-05-22 15:06:17 [INFO] Step 35/54 Loss=48.4821 mse=1.2383 v_opt=1.55498 v_mand=1.15738 ptv=0.2122 ptv_max=0.04511 ring=0.01127 smooth=0.2642 laplacian=0.9369 beam=1.37301 homogeneity=0.0175 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:06:20 [INFO] Step 40/54 Loss=58.7924 mse=1.4582 v_opt=1.33821 v_mand=0.94088 ptv=0.1745 ptv_max=0.12315 ring=0.03476 smooth=0.2697 laplacian=0.9763 beam=1.23342 homogeneity=0.0211 body=0.00000 bowel=1.25790 femur=2.06083
+2026-05-22 15:06:24 [INFO] Step 45/54 Loss=65.0813 mse=1.6147 v_opt=1.60410 v_mand=1.20441 ptv=0.1623 ptv_max=0.15885 ring=0.03429 smooth=0.3105 laplacian=1.1525 beam=1.13092 homogeneity=0.0268 body=0.00000 bowel=1.41735 femur=1.86382
+2026-05-22 15:06:28 [INFO] Step 50/54 Loss=41.7211 mse=0.7621 v_opt=1.60357 v_mand=1.17724 ptv=0.1381 ptv_max=0.09279 ring=0.03813 smooth=0.1525 laplacian=0.5439 beam=1.20327 homogeneity=0.0146 body=0.00000 bowel=0.87078 femur=2.10499
+2026-05-22 15:06:30 [INFO] Step 54/54 Loss=44.8335 mse=1.0423 v_opt=1.09903 v_mand=0.78247 ptv=0.2447 ptv_max=0.09139 ring=0.00554 smooth=0.1575 laplacian=0.5524 beam=1.37900 homogeneity=0.0209 body=0.00000 bowel=0.40809 femur=2.02963
+2026-05-22 15:06:30 [INFO] Running validation at epoch 5...
+2026-05-22 15:06:59 [INFO] Epoch 5 Summary: Train=57.0297 Val=0.1139 (MSE=0.1139)
+          Metrics: PTV_D95=46.00Gy Bladder=41.75Gy Rectum=38.57Gy
+          Metrics: Ring=55.55Gy Dmax=215.92Gy BG=71.81Gy
+2026-05-22 15:06:59 [INFO] [PHYSICS] Saved best model val_loss=0.1139
+2026-05-22 15:06:59 [INFO] Epoch 6/100 [RAMP 6/30 (20% of physics)] ramp=0.200 lr=9.94e-05
+2026-05-22 15:07:05 [INFO] Step 5/54 Loss=60.8384 mse=1.5951 v_opt=0.81952 v_mand=0.57826 ptv=0.1563 ptv_max=0.11391 ring=0.03583 smooth=0.3444 laplacian=1.1921 beam=1.08516 homogeneity=0.0211 body=0.00000 bowel=0.77553 femur=2.09707
+2026-05-22 15:07:08 [INFO] Step 10/54 Loss=61.1620 mse=1.5485 v_opt=0.97502 v_mand=0.71236 ptv=0.1471 ptv_max=0.22593 ring=0.04993 smooth=0.2410 laplacian=0.8740 beam=1.21282 homogeneity=0.0532 body=0.00000 bowel=0.68423 femur=1.48999
+2026-05-22 15:07:11 [INFO] Step 15/54 Loss=38.9073 mse=0.5494 v_opt=2.11262 v_mand=1.63361 ptv=0.5196 ptv_max=0.00000 ring=0.00000 smooth=0.1048 laplacian=0.3679 beam=0.95625 homogeneity=0.0592 body=0.00000 bowel=0.00000 femur=0.77248
+2026-05-22 15:07:14 [INFO] Step 20/54 Loss=56.1206 mse=1.4519 v_opt=0.70101 v_mand=0.48258 ptv=0.0837 ptv_max=0.13569 ring=0.06893 smooth=0.3016 laplacian=1.0971 beam=0.94773 homogeneity=0.0266 body=0.00000 bowel=1.07342 femur=1.88097
+2026-05-22 15:07:19 [INFO] Step 25/54 Loss=36.2991 mse=0.8271 v_opt=0.95553 v_mand=0.63435 ptv=0.2410 ptv_max=0.05835 ring=0.00933 smooth=0.1542 laplacian=0.5389 beam=1.09443 homogeneity=0.0211 body=0.00000 bowel=0.19936 femur=0.53895
+2026-05-22 15:07:22 [INFO] Step 30/54 Loss=75.1506 mse=2.0714 v_opt=0.71054 v_mand=0.46955 ptv=0.1497 ptv_max=0.13794 ring=0.04727 smooth=0.3901 laplacian=1.3963 beam=1.56004 homogeneity=0.0292 body=0.00000 bowel=1.07457 femur=1.97463
+2026-05-22 15:07:25 [INFO] Step 35/54 Loss=28.0933 mse=0.3446 v_opt=1.67423 v_mand=1.23146 ptv=0.5722 ptv_max=0.00000 ring=0.00000 smooth=0.0708 laplacian=0.2384 beam=0.96475 homogeneity=0.0684 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:07:28 [INFO] Step 40/54 Loss=46.9041 mse=1.1114 v_opt=1.31250 v_mand=0.93002 ptv=0.3255 ptv_max=0.03076 ring=0.00139 smooth=0.2373 laplacian=0.8413 beam=1.12884 homogeneity=0.0300 body=0.00000 bowel=0.26837 femur=0.43664
+2026-05-22 15:07:33 [INFO] Step 45/54 Loss=27.6809 mse=0.5746 v_opt=0.63250 v_mand=0.39889 ptv=0.3578 ptv_max=0.09232 ring=0.00086 smooth=0.0906 laplacian=0.3048 beam=1.02401 homogeneity=0.0348 body=0.00000 bowel=0.19183 femur=0.63768
+2026-05-22 15:07:36 [INFO] Step 50/54 Loss=35.3079 mse=0.7881 v_opt=0.74536 v_mand=0.46578 ptv=0.2582 ptv_max=0.08625 ring=0.00418 smooth=0.1720 laplacian=0.6001 beam=1.01405 homogeneity=0.0247 body=0.00000 bowel=0.81572 femur=0.50311
+2026-05-22 15:07:38 [INFO] Step 54/54 Loss=67.6430 mse=1.8931 v_opt=0.41759 v_mand=0.24432 ptv=0.0897 ptv_max=0.11575 ring=0.05141 smooth=0.3538 laplacian=1.2647 beam=1.57640 homogeneity=0.0220 body=0.00000 bowel=1.10171 femur=1.80114
+2026-05-22 15:07:38 [INFO] Running validation at epoch 6...
+2026-05-22 15:08:07 [INFO] Epoch 6 Summary: Train=51.6519 Val=0.1049 (MSE=0.1049)
+          Metrics: PTV_D95=44.52Gy Bladder=38.08Gy Rectum=35.64Gy
+          Metrics: Ring=54.31Gy Dmax=219.23Gy BG=68.94Gy
+2026-05-22 15:08:07 [INFO] [PHYSICS] Saved best model val_loss=0.1049
+2026-05-22 15:08:07 [INFO] Epoch 7/100 [RAMP 7/30 (23% of physics)] ramp=0.233 lr=9.91e-05
+2026-05-22 15:08:13 [INFO] Step 5/54 Loss=28.6050 mse=0.5550 v_opt=0.38173 v_mand=0.21305 ptv=0.2244 ptv_max=0.08359 ring=0.01751 smooth=0.1098 laplacian=0.3700 beam=1.05903 homogeneity=0.0214 body=0.00000 bowel=0.18168 femur=1.34405
+2026-05-22 15:08:16 [INFO] Step 10/54 Loss=42.5889 mse=0.9273 v_opt=0.75547 v_mand=0.48087 ptv=0.2722 ptv_max=0.10126 ring=0.00267 smooth=0.1708 laplacian=0.5886 beam=1.24170 homogeneity=0.0233 body=0.00000 bowel=0.14521 femur=1.29920
+2026-05-22 15:08:19 [INFO] Step 15/54 Loss=85.9500 mse=2.1377 v_opt=1.12526 v_mand=0.81574 ptv=0.0666 ptv_max=0.19039 ring=0.08733 smooth=0.6300 laplacian=2.3531 beam=1.56246 homogeneity=0.0575 body=0.00000 bowel=1.37843 femur=1.15035
+2026-05-22 15:08:22 [INFO] Step 20/54 Loss=53.3801 mse=1.2334 v_opt=1.01290 v_mand=0.78766 ptv=0.0572 ptv_max=0.22229 ring=0.09183 smooth=0.2819 laplacian=1.0002 beam=0.85736 homogeneity=0.0769 body=0.00000 bowel=0.56585 femur=0.54108
+2026-05-22 15:08:27 [INFO] Step 25/54 Loss=48.4379 mse=1.1240 v_opt=0.50822 v_mand=0.29899 ptv=0.2334 ptv_max=0.10988 ring=0.00756 smooth=0.2826 laplacian=0.9970 beam=1.03978 homogeneity=0.0210 body=0.00000 bowel=0.91126 femur=1.79082
+2026-05-22 15:08:30 [INFO] Step 30/54 Loss=35.2060 mse=0.8852 v_opt=0.24550 v_mand=0.14522 ptv=0.3593 ptv_max=0.07277 ring=0.00089 smooth=0.1920 laplacian=0.6430 beam=1.16314 homogeneity=0.0353 body=0.00000 bowel=0.34635 femur=0.26594
+2026-05-22 15:08:33 [INFO] Step 35/54 Loss=34.2929 mse=0.8795 v_opt=0.41826 v_mand=0.22329 ptv=0.2980 ptv_max=0.09890 ring=0.00191 smooth=0.1953 laplacian=0.7008 beam=1.06768 homogeneity=0.0266 body=0.00000 bowel=0.09126 femur=0.04882
+2026-05-22 15:08:36 [INFO] Step 40/54 Loss=54.9705 mse=1.4121 v_opt=0.58688 v_mand=0.38287 ptv=0.1977 ptv_max=0.11592 ring=0.01393 smooth=0.3367 laplacian=1.1912 beam=1.11708 homogeneity=0.0205 body=0.00000 bowel=0.96193 femur=0.69349
+2026-05-22 15:08:41 [INFO] Step 45/54 Loss=34.9924 mse=0.7632 v_opt=0.55330 v_mand=0.32057 ptv=0.2656 ptv_max=0.10345 ring=0.00660 smooth=0.1508 laplacian=0.5231 beam=0.87258 homogeneity=0.0247 body=0.00000 bowel=1.07424 femur=0.19490
+2026-05-22 15:08:44 [INFO] Step 50/54 Loss=47.7987 mse=1.2188 v_opt=0.35596 v_mand=0.19432 ptv=0.4236 ptv_max=0.07094 ring=0.00494 smooth=0.3307 laplacian=1.2020 beam=1.47117 homogeneity=0.0463 body=0.00000 bowel=0.61657 femur=0.26855
+2026-05-22 15:08:46 [INFO] Step 54/54 Loss=29.1606 mse=0.7723 v_opt=0.21113 v_mand=0.09974 ptv=0.3958 ptv_max=0.11803 ring=0.00312 smooth=0.1929 laplacian=0.6575 beam=0.90316 homogeneity=0.0426 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:08:46 [INFO] Running validation at epoch 7...
+2026-05-22 15:09:15 [INFO] Epoch 7 Summary: Train=45.3133 Val=0.0958 (MSE=0.0958)
+          Metrics: PTV_D95=40.57Gy Bladder=32.23Gy Rectum=28.73Gy
+          Metrics: Ring=50.32Gy Dmax=244.91Gy BG=65.73Gy
+2026-05-22 15:09:15 [INFO] [PHYSICS] Saved best model val_loss=0.0958
+2026-05-22 15:09:15 [INFO] Epoch 8/100 [RAMP 8/30 (27% of physics)] ramp=0.267 lr=9.88e-05
+2026-05-22 15:09:22 [INFO] Step 5/54 Loss=87.4698 mse=2.4996 v_opt=0.13390 v_mand=0.05720 ptv=0.0849 ptv_max=0.18970 ring=0.11135 smooth=0.5142 laplacian=1.8926 beam=1.40397 homogeneity=0.0497 body=0.00000 bowel=1.28364 femur=1.32194
+2026-05-22 15:09:24 [INFO] Step 10/54 Loss=32.7234 mse=0.6964 v_opt=0.21462 v_mand=0.09694 ptv=0.2546 ptv_max=0.11711 ring=0.00541 smooth=0.1697 laplacian=0.5696 beam=1.03543 homogeneity=0.0233 body=0.00000 bowel=0.93386 femur=0.02911
+2026-05-22 15:09:27 [INFO] Step 15/54 Loss=43.7937 mse=1.2065 v_opt=0.15401 v_mand=0.05878 ptv=0.1583 ptv_max=0.11513 ring=0.02755 smooth=0.2911 laplacian=0.9572 beam=0.95636 homogeneity=0.0223 body=0.00000 bowel=0.70082 femur=0.01727
+2026-05-22 15:09:31 [INFO] Step 20/54 Loss=45.1023 mse=1.0470 v_opt=0.41412 v_mand=0.27740 ptv=0.2549 ptv_max=0.12882 ring=0.01550 smooth=0.2506 laplacian=0.8392 beam=1.37201 homogeneity=0.0272 body=0.00000 bowel=0.32707 femur=0.28572
+2026-05-22 15:09:36 [INFO] Step 25/54 Loss=48.4711 mse=1.2429 v_opt=0.28797 v_mand=0.14383 ptv=0.1857 ptv_max=0.14439 ring=0.03137 smooth=0.2457 laplacian=0.8495 beam=1.18204 homogeneity=0.0295 body=0.00000 bowel=0.69630 femur=0.28497
+2026-05-22 15:09:39 [INFO] Step 30/54 Loss=67.8343 mse=1.9824 v_opt=0.37824 v_mand=0.19569 ptv=0.1596 ptv_max=0.21655 ring=0.06214 smooth=0.3357 laplacian=1.1851 beam=1.30459 homogeneity=0.0569 body=0.00000 bowel=0.17008 femur=0.20673
+2026-05-22 15:09:42 [INFO] Step 35/54 Loss=44.6992 mse=1.2001 v_opt=0.33767 v_mand=0.18094 ptv=0.2901 ptv_max=0.07070 ring=0.00269 smooth=0.3424 laplacian=1.1601 beam=1.24426 homogeneity=0.0263 body=0.00000 bowel=0.00000 femur=0.11378
+2026-05-22 15:09:44 [INFO] Step 40/54 Loss=34.4274 mse=0.8962 v_opt=0.14609 v_mand=0.07532 ptv=0.3654 ptv_max=0.09594 ring=0.00226 smooth=0.1695 laplacian=0.5679 beam=0.86680 homogeneity=0.0378 body=0.00000 bowel=0.26918 femur=0.30697
+2026-05-22 15:09:50 [INFO] Step 45/54 Loss=32.1031 mse=0.7204 v_opt=0.20444 v_mand=0.09032 ptv=0.3832 ptv_max=0.11085 ring=0.00404 smooth=0.1667 laplacian=0.5325 beam=0.96266 homogeneity=0.0436 body=0.00000 bowel=0.12790 femur=0.88057
+2026-05-22 15:09:53 [INFO] Step 50/54 Loss=22.0397 mse=0.4176 v_opt=0.17609 v_mand=0.09375 ptv=0.3554 ptv_max=0.21664 ring=0.00170 smooth=0.0722 laplacian=0.2316 beam=0.74799 homogeneity=0.0368 body=0.00000 bowel=0.07885 femur=0.22033
+2026-05-22 15:09:55 [INFO] Step 54/54 Loss=47.0487 mse=1.2227 v_opt=0.34736 v_mand=0.17231 ptv=0.2556 ptv_max=0.09436 ring=0.00554 smooth=0.2373 laplacian=0.7892 beam=1.14347 homogeneity=0.0216 body=0.00000 bowel=0.52852 femur=0.40112
+2026-05-22 15:09:55 [INFO] Running validation at epoch 8...
+2026-05-22 15:10:24 [INFO] Epoch 8 Summary: Train=43.7170 Val=0.0847 (MSE=0.0847)
+          Metrics: PTV_D95=43.66Gy Bladder=34.85Gy Rectum=34.29Gy
+          Metrics: Ring=53.21Gy Dmax=294.26Gy BG=62.10Gy
+2026-05-22 15:10:24 [INFO] [PHYSICS] Saved best model val_loss=0.0847
+2026-05-22 15:10:24 [INFO] Epoch 9/100 [RAMP 9/30 (30% of physics)] ramp=0.300 lr=9.84e-05
+2026-05-22 15:10:30 [INFO] Step 5/54 Loss=48.5356 mse=0.8347 v_opt=0.98556 v_mand=0.65874 ptv=0.2024 ptv_max=0.14145 ring=0.01193 smooth=0.2372 laplacian=0.8288 beam=1.24725 homogeneity=0.0183 body=0.00000 bowel=0.76717 femur=0.06045
+2026-05-22 15:10:33 [INFO] Step 10/54 Loss=47.3811 mse=1.1856 v_opt=0.35812 v_mand=0.20368 ptv=0.2211 ptv_max=0.12273 ring=0.01708 smooth=0.2390 laplacian=0.7672 beam=0.96395 homogeneity=0.0246 body=0.00000 bowel=0.67769 femur=0.08059
+2026-05-22 15:10:36 [INFO] Step 15/54 Loss=25.4687 mse=0.5011 v_opt=0.11656 v_mand=0.03986 ptv=0.5266 ptv_max=0.16504 ring=0.00007 smooth=0.0657 laplacian=0.2110 beam=0.99429 homogeneity=0.0631 body=0.00000 bowel=0.00000 femur=0.01559
+2026-05-22 15:10:39 [INFO] Step 20/54 Loss=18.9752 mse=0.3603 v_opt=0.20668 v_mand=0.09818 ptv=0.6016 ptv_max=0.00000 ring=0.00000 smooth=0.0603 laplacian=0.1997 beam=0.77375 homogeneity=0.0741 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:10:44 [INFO] Step 25/54 Loss=50.6284 mse=1.3812 v_opt=0.18485 v_mand=0.06179 ptv=0.1842 ptv_max=0.20939 ring=0.08804 smooth=0.2889 laplacian=0.9640 beam=0.82465 homogeneity=0.0545 body=0.00000 bowel=0.46700 femur=0.27483
+2026-05-22 15:10:47 [INFO] Step 30/54 Loss=22.4125 mse=0.2963 v_opt=0.49998 v_mand=0.35446 ptv=0.9327 ptv_max=0.00000 ring=0.00000 smooth=0.0486 laplacian=0.1608 beam=0.73572 homogeneity=0.1338 body=0.00000 bowel=0.00000 femur=0.00003
+2026-05-22 15:10:50 [INFO] Step 35/54 Loss=28.0640 mse=0.6315 v_opt=0.18942 v_mand=0.09772 ptv=0.2682 ptv_max=0.06683 ring=0.00692 smooth=0.1141 laplacian=0.3688 beam=0.68153 homogeneity=0.0287 body=0.00000 bowel=0.65400 femur=0.01511
+2026-05-22 15:10:53 [INFO] Step 40/54 Loss=76.4683 mse=2.2442 v_opt=0.05339 v_mand=0.01718 ptv=0.2723 ptv_max=0.13920 ring=0.02606 smooth=0.5356 laplacian=1.7402 beam=1.46461 homogeneity=0.0334 body=0.00000 bowel=0.60759 femur=0.12024
+2026-05-22 15:10:58 [INFO] Step 45/54 Loss=22.5341 mse=0.4202 v_opt=0.14956 v_mand=0.06468 ptv=0.2786 ptv_max=0.06997 ring=0.00061 smooth=0.1040 laplacian=0.3305 beam=0.74065 homogeneity=0.0242 body=0.00000 bowel=0.50018 femur=0.20109
+2026-05-22 15:11:00 [INFO] Step 50/54 Loss=22.0383 mse=0.4404 v_opt=0.20409 v_mand=0.09464 ptv=0.3988 ptv_max=0.05928 ring=0.00034 smooth=0.0621 laplacian=0.1963 beam=0.82112 homogeneity=0.0415 body=0.00000 bowel=0.11927 femur=0.04702
+2026-05-22 15:11:03 [INFO] Step 54/54 Loss=33.9849 mse=0.9422 v_opt=0.16153 v_mand=0.05244 ptv=0.0918 ptv_max=0.07116 ring=0.01407 smooth=0.2477 laplacian=0.7508 beam=0.91721 homogeneity=0.0103 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:11:03 [INFO] Running validation at epoch 9...
+2026-05-22 15:11:32 [INFO] Epoch 9 Summary: Train=36.9433 Val=0.0717 (MSE=0.0717)
+          Metrics: PTV_D95=40.55Gy Bladder=36.67Gy Rectum=28.88Gy
+          Metrics: Ring=52.47Gy Dmax=482.52Gy BG=57.33Gy
+2026-05-22 15:11:32 [INFO] [PHYSICS] Saved best model val_loss=0.0717
+2026-05-22 15:11:32 [INFO] Epoch 10/100 [RAMP 10/30 (33% of physics)] ramp=0.333 lr=9.80e-05
+2026-05-22 15:11:38 [INFO] Step 5/54 Loss=25.4449 mse=0.5808 v_opt=0.21620 v_mand=0.12677 ptv=0.3374 ptv_max=0.02297 ring=0.00003 smooth=0.1031 laplacian=0.3180 beam=0.76364 homogeneity=0.0348 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:11:41 [INFO] Step 10/54 Loss=24.6861 mse=0.5977 v_opt=0.19186 v_mand=0.07720 ptv=0.3013 ptv_max=0.00000 ring=0.00026 smooth=0.1088 laplacian=0.3387 beam=0.78614 homogeneity=0.0259 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:11:44 [INFO] Step 15/54 Loss=69.4765 mse=2.0137 v_opt=0.15652 v_mand=0.07406 ptv=0.1533 ptv_max=0.12544 ring=0.04817 smooth=0.3768 laplacian=1.2854 beam=0.77155 homogeneity=0.0199 body=0.00000 bowel=0.97990 femur=0.36703
+2026-05-22 15:11:47 [INFO] Step 20/54 Loss=28.8523 mse=0.5645 v_opt=0.03417 v_mand=0.00644 ptv=0.6278 ptv_max=0.26239 ring=0.00018 smooth=0.0805 laplacian=0.2539 beam=0.85893 homogeneity=0.0798 body=0.00000 bowel=0.00000 femur=0.00088
+2026-05-22 15:11:52 [INFO] Step 25/54 Loss=35.1169 mse=0.8655 v_opt=0.21102 v_mand=0.09890 ptv=0.2779 ptv_max=0.09930 ring=0.03911 smooth=0.1148 laplacian=0.3559 beam=0.80412 homogeneity=0.0455 body=0.00000 bowel=0.24290 femur=0.01917
+2026-05-22 15:11:55 [INFO] Step 30/54 Loss=75.3438 mse=2.0987 v_opt=0.26460 v_mand=0.14227 ptv=0.2024 ptv_max=0.35216 ring=0.09738 smooth=0.3443 laplacian=1.0683 beam=0.99514 homogeneity=0.1738 body=0.00000 bowel=0.31511 femur=0.11293
+2026-05-22 15:11:58 [INFO] Step 35/54 Loss=24.5449 mse=0.4964 v_opt=0.12534 v_mand=0.06136 ptv=0.4850 ptv_max=0.06872 ring=0.00015 smooth=0.0563 laplacian=0.1706 beam=0.81256 homogeneity=0.0556 body=0.00000 bowel=0.02443 femur=0.20923
+2026-05-22 15:12:01 [INFO] Step 40/54 Loss=36.2557 mse=0.8958 v_opt=0.05505 v_mand=0.01812 ptv=0.3841 ptv_max=0.07202 ring=0.00432 smooth=0.1618 laplacian=0.4535 beam=1.07761 homogeneity=0.0415 body=0.00000 bowel=0.00973 femur=0.27166
+2026-05-22 15:12:05 [INFO] Step 45/54 Loss=34.1605 mse=0.9367 v_opt=0.00000 v_mand=0.00000 ptv=0.3387 ptv_max=0.07087 ring=0.00732 smooth=0.1711 laplacian=0.5060 beam=0.66329 homogeneity=0.0360 body=0.00000 bowel=0.22497 femur=0.18076
+2026-05-22 15:12:08 [INFO] Step 50/54 Loss=18.0023 mse=0.3258 v_opt=0.15833 v_mand=0.08576 ptv=0.4994 ptv_max=0.00000 ring=0.00000 smooth=0.0678 laplacian=0.2160 beam=0.70687 homogeneity=0.0577 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-22 15:12:11 [INFO] Step 54/54 Loss=66.7504 mse=1.4611 v_opt=0.70798 v_mand=0.42874 ptv=0.1412 ptv_max=0.33661 ring=0.06689 smooth=0.4514 laplacian=1.5585 beam=0.99676 homogeneity=0.0855 body=0.00000 bowel=0.88282 femur=0.04525
+2026-05-22 15:12:11 [INFO] Running validation at epoch 10...
