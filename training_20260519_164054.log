@@ -1,5 +1,0 @@
-2026-05-19 16:40:54 [INFO] Training log started: training_20260519_164054.log
-2026-05-19 16:40:54 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
-2026-05-19 16:40:54 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v2.csv ...
-2026-05-19 16:40:54 [INFO] Model ready on cuda, epochs=100, AMP=ON
-2026-05-19 16:40:54 [INFO] Epoch 1/100 started, lr=1.00e-04
