@@ -78,7 +78,7 @@ VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", "1"))  # Validate 
 # During warmup the model learns basic dose anatomy (where dose is high vs zero)
 # without interference from the physics wall.  After WARMUP_EPOCHS the full
 # PhysicsGuidedDoseLoss activates with lambda_mse raised to 25.0.
-WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "30"))
+WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "75"))
 
 # ===================================================================
 # 2. Constraint Parsing  (Step 1)
@@ -894,7 +894,7 @@ def main():
 
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-    epochs = 100
+    epochs = 300
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=epochs, eta_min=1e-6
     )
