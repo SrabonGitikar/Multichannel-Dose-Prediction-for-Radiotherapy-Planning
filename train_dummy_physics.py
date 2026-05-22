@@ -247,7 +247,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_ring=15.0,           # Penalises true hotspots (>66 Gy) in the 5mm ring
         lambda_anticollapse=50.0,   # Prevents zero-dose collapse in early training
         lambda_beam=5.0,            # Suppresses dose predicted outside beam corridors
-        lambda_ptv_max=50.0,        # Penalises PTV voxels exceeding 66.34 Gy ceiling
+        lambda_ptv_max=150.0,       # Penalises PTV voxels exceeding 66.34 Gy ceiling
         lambda_homogeneity=20.0,    # Forces PTV dose to cluster around 62.4 Gy target
         lambda_laplacian=5.0,       # Penalises curvature/kinks — kills step-function edges
         lambda_bowel=15.0,          # Bag_Bowel V45Gy < 30% mandatory constraint
@@ -381,22 +381,19 @@ class PhysicsGuidedDoseLoss(nn.Module):
         
         loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
-            # L1 penalty isolated strictly to violating voxels to prevent dilution
+            # L2 penalty provides gradient scaling: extreme outliers (e.g. 800 Gy)
+            # receive massive gradients, while small errors receive small gradients.
+            # L1 + violating_voxels causes numerical instability and exploding Dmax.
             overdose = torch.relu(pred_dose - hard_max_norm) * ptv_mask
-            violating_voxels = (overdose > 0).float().sum().clamp(min=1.0)
-            loss_ptv_max = overdose.sum() / violating_voxels
+            loss_ptv_max = (overdose ** 2).sum() / ptv_n.clamp(min=1.0)
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
-        # Previously at 0.55 (41.25 Gy) this was cutting off the natural
-        # radiotherapy penumbra: dose at 5mm outside the PTV should be 55-65 Gy,
-        # which the old threshold was actively suppressing. With 0.88, the ring
-        # penalty only fires when voxels exceed the prescription — a true hotspot.
         RING_THRESH = 0.88  # = 66 Gy / 75 Gy — only supratherapeutic dose
         ring_n = ring_mask.sum()
         if ring_n > 0:
             ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
-            loss_ring = ring_overdose.sum() / ring_n
+            loss_ring = (ring_overdose ** 2).sum() / ring_n
         else:
             loss_ring = torch.tensor(0.0, device=pred_dose.device,
                                      dtype=pred_dose.dtype)
@@ -874,7 +871,7 @@ def main():
         "lambda_optional":      2.0,
         "lambda_mandatory":    50.0,
         "lambda_ptv":          10.0,
-        "lambda_ptv_max":      50.0,
+        "lambda_ptv_max":      150.0,
         "lambda_ring":         15.0,
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
