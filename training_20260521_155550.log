@@ -1,0 +1,14 @@
+2026-05-21 15:55:50 [INFO] Training log started: training_20260521_155550.log
+2026-05-21 15:55:50 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-05-21 15:55:50 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v2.csv ...
+2026-05-21 15:55:50 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-05-21 15:55:50 [INFO] Model ready on cuda, epochs=100, AMP=ON
+2026-05-21 15:55:50 [INFO] Epoch 1/100 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
+2026-05-21 15:57:12 [INFO] Step 5/54 Loss=36.2631 mse=1.2799 v_opt=2.23428 v_mand=1.71479 ptv=0.3718 ptv_max=0.00189 ring=0.00689 smooth=1.5746 laplacian=6.2428 beam=0.04773 homogeneity=0.0405 body=0.00000 bowel=0.00000 femur=0.00000
+2026-05-21 15:57:58 [INFO] Step 10/54 Loss=43.9164 mse=1.5688 v_opt=2.14776 v_mand=1.64103 ptv=0.3916 ptv_max=0.06944 ring=0.10062 smooth=1.7618 laplacian=6.9795 beam=0.12395 homogeneity=0.1239 body=0.00000 bowel=0.12221 femur=0.40815
+2026-05-21 15:58:35 [INFO] Step 15/54 Loss=47.6311 mse=1.7167 v_opt=2.15230 v_mand=1.64181 ptv=0.3787 ptv_max=0.03639 ring=0.05845 smooth=1.9323 laplacian=7.6688 beam=0.02756 homogeneity=0.0851 body=0.00000 bowel=0.13869 femur=0.43019
+2026-05-21 15:59:13 [INFO] Step 20/54 Loss=24.4898 mse=0.8395 v_opt=1.62676 v_mand=1.20979 ptv=0.4093 ptv_max=0.02966 ring=0.04048 smooth=1.1845 laplacian=4.6910 beam=0.43582 homogeneity=0.0820 body=0.00000 bowel=0.17740 femur=0.39996
+2026-05-21 16:00:19 [INFO] Step 25/54 Loss=29.5472 mse=0.9818 v_opt=2.36005 v_mand=1.82924 ptv=0.3649 ptv_max=0.05458 ring=0.06760 smooth=1.8009 laplacian=7.1780 beam=0.01619 homogeneity=0.1059 body=0.00000 bowel=0.17248 femur=0.39940
+2026-05-21 16:01:09 [INFO] Step 30/54 Loss=43.1155 mse=1.5400 v_opt=2.17530 v_mand=1.66025 ptv=0.3897 ptv_max=0.06236 ring=0.07636 smooth=1.5892 laplacian=6.3052 beam=0.18326 homogeneity=0.1176 body=0.00000 bowel=0.17099 femur=0.39651
+2026-05-21 16:01:50 [INFO] Step 35/54 Loss=36.5273 mse=1.2830 v_opt=2.30498 v_mand=1.77941 ptv=0.3514 ptv_max=0.00894 ring=0.01938 smooth=1.3469 laplacian=5.3504 beam=0.04246 homogeneity=0.0479 body=0.00000 bowel=0.15731 femur=0.41258
+2026-05-21 16:02:26 [INFO] Step 40/54 Loss=37.7096 mse=1.3336 v_opt=2.12673 v_mand=1.62867 ptv=0.3891 ptv_max=0.07720 ring=0.09136 smooth=1.2948 laplacian=5.1317 beam=0.14324 homogeneity=0.1347 body=0.00000 bowel=0.12974 femur=0.39982
