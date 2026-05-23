@@ -43,15 +43,19 @@ from pydicom.uid import ExplicitVRLittleEndian, generate_uid
 
 def _scan_dicom_folder(folder: str):
     """
-    Recursively scan *folder* and return separate lists:
-        ct_slices  – pydicom datasets for all CT slices (headers only)
-        rtstruct   – first RTSTRUCT dataset found (headers only), or None
-    Raises AssertionError if no CT found or no RTSTRUCT found.
-    """
-    ct_slices = []
-    rtstruct  = None
+    Recursively scan *folder* (and its parent) for CT slices and RTSTRUCT.
+    CT slices must be inside *folder*.
+    RTSTRUCT is searched in *folder* first, then in the parent directory tree
+    so that sibling series folders are also covered.
 
-    for f in sorted(Path(folder).rglob("*.dcm")):
+    Raises FileNotFoundError with a descriptive message if either is missing.
+    """
+    folder_path = Path(folder).resolve()
+    ct_slices   = []
+    rtstruct    = None
+
+    # ── scan the given folder for CT (and RTSTRUCT if present) ───────────────
+    for f in sorted(folder_path.rglob("*.dcm")):
         try:
             ds = pydicom.dcmread(str(f), stop_before_pixels=True, force=True)
             modality = getattr(ds, "Modality", "")
@@ -62,11 +66,35 @@ def _scan_dicom_folder(folder: str):
         except Exception:
             continue
 
-    assert ct_slices, f"No CT DICOM slices found in: {folder}"
-    assert rtstruct  is not None, (
-        f"No RTSTRUCT DICOM found in: {folder}\n"
-        "The folder must contain at least one file with Modality == 'RTSTRUCT'."
-    )
+    if not ct_slices:
+        raise FileNotFoundError(
+            f"ERROR: No CT DICOM slices found in:\n  {folder_path}\n"
+            "Make sure the folder contains CT .dcm files."
+        )
+
+    # ── if RTSTRUCT not in the given folder, search parent directory tree ─────
+    if rtstruct is None:
+        parent = folder_path.parent
+        for f in sorted(parent.rglob("*.dcm")):
+            if folder_path in f.parents:
+                continue   # already scanned above
+            try:
+                ds = pydicom.dcmread(str(f), stop_before_pixels=True, force=True)
+                if getattr(ds, "Modality", "") == "RTSTRUCT":
+                    rtstruct = ds
+                    print(f"[nifti_to_rtdose] RTSTRUCT found in parent tree: {f}")
+                    break
+            except Exception:
+                continue
+
+    if rtstruct is None:
+        raise FileNotFoundError(
+            f"ERROR: RTSTRUCT missing.\n"
+            f"No DICOM file with Modality == 'RTSTRUCT' was found in:\n"
+            f"  {folder_path}\n"
+            f"  {folder_path.parent}  (parent, searched recursively)\n"
+            "Please place the RTSTRUCT .dcm in the same folder or a sibling folder."
+        )
 
     ct_slices.sort(key=lambda s: float(s.ImagePositionPatient[2]))
     return ct_slices, rtstruct
@@ -96,15 +124,19 @@ def _build_sitk_reference(ct_slices, z_positions, spacing_xy, spacing_z, iop, or
 # ─────────────────────────────────────────────────────────────────────────────
 
 def nifti_to_rtdose_dicom(
-    ct_rs_dir:  str,
-    nifti_path: str,
+    ct_rs_dir:       str,
+    nifti_path:      str,
+    dose_spacing_mm: float = 2.5,
 ) -> str:
     """
     Parameters
     ----------
-    ct_rs_dir  : folder that contains all CT slices AND the RTSTRUCT .dcm
-                 The output RTDOSE .dcm is saved into this same folder.
-    nifti_path : predicted dose NIfTI (.nii / .nii.gz), values in Gy
+    ct_rs_dir       : folder containing CT slices + RTSTRUCT .dcm
+                      Output RTDOSE .dcm is saved into this same folder.
+    nifti_path      : predicted dose NIfTI (.nii / .nii.gz), values in Gy
+    dose_spacing_mm : isotropic voxel size of the output dose grid in mm.
+                      Default 2.5 mm → ~15 MB output (clinical standard).
+                      Use CT spacing (~1.27 mm) only if high resolution needed.
 
     Returns
     -------
@@ -134,12 +166,40 @@ def nifti_to_rtdose_dicom(
     print(f"[nifti_to_rtdose] Patient: {getattr(ct_ref,'PatientName','')} | ID: {patient_id}")
     print(f"[nifti_to_rtdose] RTSTRUCT: {rs_ds.SOPInstanceUID}")
 
-    # ── 2. Resample NIfTI onto CT grid ───────────────────────────────────────
-    ct_ref_img = _build_sitk_reference(ct_slices, z_positions, spacing_xy, spacing_z, iop, origin)
-    pred_sitk  = sitk.ReadImage(nifti_path)
+    # ── 2. Build dose grid at dose_spacing_mm (coarser than CT) ──────────────
+    # Compute dose grid size by scaling CT dimensions to dose_spacing_mm
+    ct_extent_x = ct_cols   * spacing_xy[1]   # physical extent in mm
+    ct_extent_y = ct_rows   * spacing_xy[0]
+    ct_extent_z = n_slices  * spacing_z
+
+    dose_cols   = max(1, int(round(ct_extent_x / dose_spacing_mm)))
+    dose_rows   = max(1, int(round(ct_extent_y / dose_spacing_mm)))
+    dose_frames = max(1, int(round(ct_extent_z / dose_spacing_mm)))
+
+    # Recompute z positions for the coarser dose grid
+    dose_z_positions = [
+        z_positions[0] + i * dose_spacing_mm for i in range(dose_frames)
+    ]
+
+    row_cos = np.array(iop[0:3])
+    col_cos = np.array(iop[3:6])
+    nor_cos = np.cross(row_cos, col_cos)
+    direction = tuple(row_cos.tolist() + col_cos.tolist() + nor_cos.tolist())
+
+    dose_ref_img = sitk.Image(dose_cols, dose_rows, dose_frames, sitk.sitkFloat32)
+    dose_ref_img.SetSpacing((dose_spacing_mm, dose_spacing_mm, dose_spacing_mm))
+    dose_ref_img.SetOrigin(origin)
+    dose_ref_img.SetDirection(direction)
+
+    est_mb = dose_cols * dose_rows * dose_frames * 4 / 1e6
+    print(f"[nifti_to_rtdose] Dose grid: {dose_cols}×{dose_rows}×{dose_frames}  "
+          f"@ {dose_spacing_mm} mm  (~{est_mb:.1f} MB)")
+
+    # ── 3. Resample NIfTI onto dose grid ─────────────────────────────────────
+    pred_sitk = sitk.ReadImage(nifti_path)
 
     resampler = sitk.ResampleImageFilter()
-    resampler.SetReferenceImage(ct_ref_img)
+    resampler.SetReferenceImage(dose_ref_img)
     resampler.SetInterpolator(sitk.sitkLinear)
     resampler.SetDefaultPixelValue(0.0)
     pred_on_ct = resampler.Execute(pred_sitk)
@@ -213,15 +273,15 @@ def nifti_to_rtdose_dicom(
     rtdose.ManufacturerModelName = "DoseNet-v1"
     rtdose.SoftwareVersions     = "1.0"
 
-    # Image geometry
-    rtdose.Rows                    = ct_rows
-    rtdose.Columns                 = ct_cols
-    rtdose.NumberOfFrames          = n_slices
-    rtdose.PixelSpacing            = [f"{spacing_xy[0]:.6f}", f"{spacing_xy[1]:.6f}"]
-    rtdose.SliceThickness          = f"{spacing_z:.6f}"
+    # Image geometry — use dose grid dimensions, not CT
+    rtdose.Rows                    = dose_rows
+    rtdose.Columns                 = dose_cols
+    rtdose.NumberOfFrames          = dose_frames
+    rtdose.PixelSpacing            = [f"{dose_spacing_mm:.6f}", f"{dose_spacing_mm:.6f}"]
+    rtdose.SliceThickness          = f"{dose_spacing_mm:.6f}"
     rtdose.ImagePositionPatient    = [f"{v:.6f}" for v in origin]
     rtdose.ImageOrientationPatient = [f"{v:.6f}" for v in iop]
-    rtdose.GridFrameOffsetVector   = [f"{z - z_positions[0]:.4f}" for z in z_positions]
+    rtdose.GridFrameOffsetVector   = [f"{z - dose_z_positions[0]:.4f}" for z in dose_z_positions]
     rtdose.FrameIncrementPointer   = pydicom.dataelem.Tag(0x3004, 0x000C)
 
     # Pixel data
@@ -266,10 +326,13 @@ if __name__ == "__main__":
                         help="Folder containing CT slices + RTSTRUCT .dcm")
     parser.add_argument("--nifti-path", required=True,
                         help="Predicted dose NIfTI (.nii / .nii.gz), values in Gy")
+    parser.add_argument("--dose-spacing", type=float, default=2.5,
+                        help="Isotropic dose grid spacing in mm (default: 2.5)")
     args = parser.parse_args()
 
     saved = nifti_to_rtdose_dicom(
-        ct_rs_dir  = args.ct_rs_dir,
-        nifti_path = args.nifti_path,
+        ct_rs_dir       = args.ct_rs_dir,
+        nifti_path      = args.nifti_path,
+        dose_spacing_mm = args.dose_spacing,
     )
     print(f"Done: {saved}")
