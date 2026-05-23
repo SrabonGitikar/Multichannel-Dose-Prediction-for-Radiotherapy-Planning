@@ -8,6 +8,8 @@ import torch.nn.functional as F
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
+import nibabel as nib
+# pyrefly: ignore [missing-import]
 import SimpleITK as sitk
 # pyrefly: ignore [missing-import]
 from monai.networks.nets import UNet
@@ -111,21 +113,11 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     batch = next(iter(loader))
     inputs = batch["image"].to(device)
 
-    # Capture spatial metadata from the resampled CT (channel 0) for NIfTI alignment
-    ct_sitk = sitk.ReadImage(pt_dict["ch_0"])
-    ct_resampled = sitk.Resample(
-        ct_sitk,
-        [int(round(ct_sitk.GetSize()[i] * ct_sitk.GetSpacing()[i] / TARGET_SPACING[i])) for i in range(3)],
-        sitk.Transform(),
-        sitk.sitkLinear,
-        ct_sitk.GetOrigin(),
-        TARGET_SPACING,
-        ct_sitk.GetDirection(),
-        0.0,
-        ct_sitk.GetPixelID(),
-    )
-    grid_origin    = ct_resampled.GetOrigin()
-    grid_direction = ct_resampled.GetDirection()
+    # Capture the affine matrix from MONAI's MetaTensor for ch_0.
+    # This affine encodes spacing + origin + direction in one 4x4 matrix,
+    # exactly as written by dicom_to_nnunet.py — no axis reordering needed.
+    ref_nib = nib.load(pt_dict["ch_0"])
+    ref_affine = ref_nib.affine  # (4,4) float64, RAS convention
 
     print(f"Input tensor shape: {inputs.shape}")  # [1, 6, D, H, W]
 
@@ -144,38 +136,34 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
     # Apply Softplus outside autocast in float32 — matches the training loop exactly.
     # (float16 saturates at ~65504; Softplus inside AMP could silently overflow.)
     # MONAI's Spacingd preserves (Z, Y, X) = (D, H, W) ordering, so no transpose needed.
-    outputs_activated = F.softplus(outputs.float())  # (1, 1, D, H, W)
+    outputs_activated = F.softplus(outputs.float())  # (1, 1, H, W, D) — MONAI axis order
 
     # Hard-zero dose outside the patient body — mirrors training loop.
     # ch_5 = body mask: 1.0 inside body (CT > -300 HU), 0.0 in air.
     body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
     outputs_activated = outputs_activated * body_mask_hard
 
-    pred_dose = outputs_activated[0, 0].cpu().numpy()  # (D, H, W)
+    # MONAI tensor axis order: (B, C, X, Y, Z) after Spacingd+ConcatItemsd.
+    # nibabel NIfTI axis order: (X, Y, Z) — same order, no transpose needed.
+    pred_dose = outputs_activated[0, 0].cpu().numpy()  # (X, Y, Z)
     pred_dose = pred_dose * PRESCRIPTION_DOSE_GY        # denormalise to Gy
     pred_dose = np.clip(pred_dose, 0.0, None)           # dose cannot be negative
-    
+
     print(f"Prediction complete. Shape: {pred_dose.shape}")
     print(f"Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
-    
-    # Save to NIfTI with correct spatial metadata from resampled input
+
+    # Save using nibabel with the reference affine — guaranteed correct orientation.
+    # nibabel stores arrays as (X, Y, Z) with the affine encoding physical space.
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
-        
-        sitk_img = sitk.GetImageFromArray(pred_dose.astype(np.float32))
-        sitk_img.SetSpacing(TARGET_SPACING)
-        sitk_img.SetOrigin(grid_origin)
-        sitk_img.SetDirection(grid_direction)
-        sitk.WriteImage(sitk_img, out_file)
-        
+        nib_img = nib.Nifti1Image(pred_dose.astype(np.float32), affine=ref_affine)
+        nib.save(nib_img, out_file)
         print(f"Saved predicted dose to: {out_file}")
-    
+
     metadata = {
         "patient_id": patient_id,
-        "spacing": TARGET_SPACING,
-        "origin": grid_origin,
-        "direction": grid_direction,
+        "affine": ref_affine,
         "shape": pred_dose.shape,
         "dose_min": float(pred_dose.min()),
         "dose_max": float(pred_dose.max()),
@@ -202,9 +190,7 @@ def main():
         pred_dose, metadata = run_inference(args.patient, args.output_dir)
         print("\n=== Dose Grid Summary ===")
         print(f"Patient:   {metadata['patient_id']}")
-        print(f"Shape:     {metadata['shape']}  (Z, Y, X voxels)")
-        print(f"Spacing:   {metadata['spacing']} mm")
-        print(f"Origin:    {tuple(round(v,2) for v in metadata['origin'])} mm")
+        print(f"Shape:     {metadata['shape']}  (X, Y, Z voxels)")
         print(f"Dose range: [{metadata['dose_min']:.2f}, {metadata['dose_max']:.2f}] Gy")
         print("=========================")
     except Exception as e:
