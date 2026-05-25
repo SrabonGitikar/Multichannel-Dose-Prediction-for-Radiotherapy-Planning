@@ -373,11 +373,17 @@ class PhysicsGuidedDoseLoss(nn.Module):
             loss_homogeneity = (deviation ** 2).sum() / ptv_n
 
         # ------ 3b. Anti-Collapse Safety Net ------------------------
+        # Uses fraction of underdosed PTV voxels rather than mean dose.
+        # Mean dose is unreliable on patches — boundary spillover from
+        # adjacent high-dose regions inflates the mean above the threshold
+        # even when the majority of PTV voxels are severely underdosed.
+        # Fraction-based formulation fires whenever a significant portion
+        # of PTV voxels fall below 50% prescription, making it robust to
+        # patch geometry and boundary effects.
         loss_anticollapse = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
-            mean_ptv_dose = (pred_dose * ptv_mask).sum() / ptv_n
-            # Penalize heavily if the mean dose inside the PTV is below 50%
-            loss_anticollapse = torch.relu(0.50 - mean_ptv_dose) ** 2
+            ptv_underdose_frac = (torch.relu(0.50 - pred_dose) * ptv_mask).sum() / ptv_n
+            loss_anticollapse = ptv_underdose_frac ** 2
 
         # ------ 4. L_D-Type max dose (PTV max) ----------------------
         # ------ 4. L_D-Type max dose (Hotspot Smasher) --------------
@@ -934,7 +940,7 @@ def main():
         "lambda_ring":         15.0,
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
-        "lambda_anticollapse": 50.0,
+        "lambda_anticollapse": 150.0,
         "lambda_beam":         25.0,
         "lambda_homogeneity":  20.0,
         "lambda_body":         20.0,
@@ -979,6 +985,19 @@ def main():
         ramp_frac = min((epoch + 1) / WARMUP_EPOCHS, 1.0)
         for attr, target in PHYSICS_TARGET_LAMBDAS.items():
             setattr(loss_function, attr, target * ramp_frac)
+
+        # ---- Ceiling lambda partial ramp (first 20 epochs only) -----
+        # Ceiling terms start at full strength from epoch 1 in the
+        # constructor, but a short 20-epoch ramp prevents them from
+        # dominating the backward pass before the MSE has established
+        # the PTV dose anchor. After epoch 20 both ceiling terms hold
+        # at their full target values of 2.0 permanently.
+        # This ramp is deliberately separate from PHYSICS_TARGET_LAMBDAS
+        # to prevent the main curriculum loop from overwriting it.
+        CEIL_RAMP_EPOCHS = 20
+        ceil_ramp = min((epoch + 1) / CEIL_RAMP_EPOCHS, 1.0)
+        loss_function.lambda_global_ceil = 2.0 * ceil_ramp
+        loss_function.lambda_beam_ceil   = 2.0 * ceil_ramp
 
         if epoch < WARMUP_EPOCHS:
             phase_tag = (f"RAMP {epoch + 1}/{WARMUP_EPOCHS} "
