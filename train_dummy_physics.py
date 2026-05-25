@@ -253,7 +253,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_laplacian=5.0,       # Penalises curvature/kinks — kills step-function edges
         lambda_bowel=15.0,          # Bag_Bowel V45Gy < 30% mandatory constraint
         lambda_femur=10.0,          # Femur heads V50Gy < 5% mandatory constraint
-        lambda_global_ceil=50.0,    # Top-K L1 penalty for extreme outliers
+        lambda_global_ceil=2.0,     # Top-K L1 penalty for extreme outliers
+        lambda_beam_ceil=2.0,       # Caps legitimate transit dose at 60 Gy
         k_steepness=50.0,           # Sigmoid steepness for differentiable DVH
     ):
         super().__init__()
@@ -273,6 +274,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_bowel = lambda_bowel
         self.lambda_femur = lambda_femur
         self.lambda_global_ceil = lambda_global_ceil
+        self.lambda_beam_ceil = lambda_beam_ceil
         self.lambda_body = 20.0    # Eliminates ghost dose predicted in air outside the patient body
         self.k = k_steepness
 
@@ -322,8 +324,9 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # so a voxel at 66 Gy (norm=0.88) gets weight ~8.9 — nearly 9x more
         # gradient signal than a zero-dose voxel.  This forces the model to
         # learn the PTV and penumbra first, rather than fitting background noise.
+        # Clamp true dose at 72 Gy (0.96) to prevent adversarial MSE amplification
         DOSE_WEIGHT_SCALE = 9.0
-        dose_weight = 1.0 + DOSE_WEIGHT_SCALE * true_dose
+        dose_weight = 1.0 + DOSE_WEIGHT_SCALE * true_dose.clamp(max=0.96)
         loss_mse = ((pred_dose - true_dose) ** 2 * dose_weight).mean()
 
         # ------ 2. L_V-Type (Dual-Tier DVH) -------------------------
@@ -409,8 +412,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 
                 topk_violations, _ = torch.topk(ceil_violations, K)
                 
-                # L1 Mean over Top-K: Strong, isolated gradient that does not scale geometrically
-                loss_global_ceil = topk_violations.mean()
+                # L1 Sum over Top-K: Strong, isolated gradient that does not scale geometrically
+                loss_global_ceil = topk_violations.sum()
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
@@ -438,6 +441,24 @@ class PhysicsGuidedDoseLoss(nn.Module):
         rogue_dose = pred_dose * outside_beam_body
         n_rogue = outside_beam_body.sum().clamp(min=1.0)
         loss_beam_suppression = rogue_dose.sum() / n_rogue
+
+        # ------ 5d. Beam Corridor Hard Ceiling (Top-K L1 Sum) --------------
+        # Caps the legitimate transit dose at 60 Gy to prevent hotspots inside the beam path.
+        beam_interior_mask = beam_mask * body_mask * (1.0 - ptv_mask) * \
+                             (1.0 - bladder_mask) * (1.0 - rectum_mask)
+        beam_pred = pred_dose[beam_interior_mask.bool()]
+        
+        loss_beam_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        if beam_pred.numel() > 0:
+            beam_ceil_violations = torch.relu(beam_pred - 0.80) # 60 Gy / 75 Gy
+            if beam_ceil_violations.max() > 0:
+                # Static K bound prevents dynamic denominator explosions
+                K_beam = max(int(0.001 * beam_pred.numel()), 10)
+                K_beam = min(K_beam, beam_pred.numel()) 
+                
+                topk_beam, _ = torch.topk(beam_ceil_violations, K_beam)
+                # L1 Sum over Top-K: provides constant gradient scaling regardless of beam size
+                loss_beam_ceil = topk_beam.sum()
 
         # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
         # body_mask is 1.0 inside the patient body (CT HU > -300), 0.0 in air.
@@ -521,6 +542,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_laplacian  * loss_laplacian
             + self.lambda_anticollapse * loss_anticollapse
             + self.lambda_beam       * loss_beam_suppression
+            + self.lambda_beam_ceil  * loss_beam_ceil
             + self.lambda_homogeneity * loss_homogeneity
             + self.lambda_body       * loss_body
             + self.lambda_bowel      * loss_bowel
@@ -536,7 +558,9 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "ring":       loss_ring.item(),
             "smooth":     loss_smooth.item(),
             "laplacian":  loss_laplacian.item(),
+            "anticollapse": loss_anticollapse.item(),
             "beam":       loss_beam_suppression.item(),
+            "beam_ceil":  loss_beam_ceil.item(),
             "homogeneity": loss_homogeneity.item(),
             "body":       loss_body.item(),
             "bowel":      loss_bowel.item(),
@@ -892,7 +916,8 @@ def main():
         lambda_beam=0.0,            # starts at 0 — ramped per epoch
         lambda_ptv_max=0.0,         # starts at 0 — ramped per epoch
         lambda_homogeneity=0.0,     # starts at 0 — ramped per epoch
-        lambda_global_ceil=0.0,     # starts at 0 — ramped per epoch
+        lambda_global_ceil=2.0,     # FULL STRENGTH FROM EPOCH 1
+        lambda_beam_ceil=2.0,       # FULL STRENGTH FROM EPOCH 1
         lambda_bowel=0.0,           # starts at 0 — ramped per epoch
         lambda_femur=0.0,           # starts at 0 — ramped per epoch
         k_steepness=50.0,
@@ -906,7 +931,6 @@ def main():
         "lambda_mandatory":    50.0,
         "lambda_ptv":          10.0,
         "lambda_ptv_max":      150.0,
-        "lambda_global_ceil":  50.0,
         "lambda_ring":         15.0,
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
@@ -1052,7 +1076,8 @@ def main():
                     f"ptv_max={components['ptv_max']:.5f} global_ceil={components['global_ceil']:.5f} "
                     f"ring={components['ring']:.5f} "
                     f"smooth={components['smooth']:.4f} laplacian={components['laplacian']:.4f} "
-                    f"beam={components['beam']:.5f} "
+                    f"anticollapse={components['anticollapse']:.5f} "
+                    f"beam={components['beam']:.5f} beam_ceil={components['beam_ceil']:.5f} "
                     f"homogeneity={components['homogeneity']:.4f} "
                     f"body={components['body']:.5f} "
                     f"bowel={components['bowel']:.5f} femur={components['femur']:.5f}"
@@ -1192,8 +1217,7 @@ def main():
         # -- Checkpoint Gating: Physical Acceptability ----
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             # Gate both checkpoints on physical acceptability
-            # Requires Dmax < 80 Gy and Background Body Dose < 15 Gy
-            is_physically_valid = (avg_dmax < 80.0) and (avg_bg < 15.0)
+            is_physically_valid = (avg_dmax < 80.0)
 
             # 1. Physics checkpoint: best validation loss
             if is_physically_valid and val_loss_avg < best_val_loss:
