@@ -246,6 +246,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_laplacian=5.0,       # Penalises curvature/kinks — kills step-function edges
         lambda_bowel=15.0,          # Bag_Bowel V45Gy < 30% mandatory constraint
         lambda_femur=10.0,          # Femur heads V50Gy < 5% mandatory constraint
+        lambda_global_ceil=50.0,    # Top-K L1 penalty for extreme outliers
         k_steepness=50.0,           # Sigmoid steepness for differentiable DVH
     ):
         super().__init__()
@@ -264,6 +265,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_laplacian = lambda_laplacian
         self.lambda_bowel = lambda_bowel
         self.lambda_femur = lambda_femur
+        self.lambda_global_ceil = lambda_global_ceil
         self.lambda_body = 20.0    # Eliminates ghost dose predicted in air outside the patient body
         self.k = k_steepness
 
@@ -375,16 +377,35 @@ class PhysicsGuidedDoseLoss(nn.Module):
         
         loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
-            # Heavily penalize any voxel inside the PTV that exceeds 66.34 Gy
+            # L2 penalty provides gradient scaling: extreme outliers
+            # receive massive gradients, while small errors receive small gradients.
             overdose = torch.relu(pred_dose - hard_max_norm) * ptv_mask
-            loss_ptv_max = (overdose ** 2).sum() / ptv_n
+            loss_ptv_max = (overdose ** 2).sum() / ptv_n.clamp(min=1.0)
+
+        # ------ Global Hard Ceiling (Top-K L1 formulation) --------------
+        # Isolates the worst violations to prevent 1/N statistical dilution,
+        # but uses L1 to prevent L2 gradient explosions and Laplacian waterbed effects.
+        global_ceil_norm = 72.0 / 75.0
+        body_mask_bool = inputs[:, 5:6, ...] > 0.5
+        body_pred = pred_dose[body_mask_bool]
+
+        loss_global_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        
+        if body_pred.numel() > 0:
+            ceil_violations = torch.relu(body_pred - global_ceil_norm)
+            
+            if ceil_violations.max() > 0:
+                # Fix K to 0.1% of body voxels (min 10) to prevent dynamic denominator explosion
+                K = max(int(0.001 * body_pred.numel()), 10)
+                K = min(K, body_pred.numel())  # Safety bound
+                
+                topk_violations, _ = torch.topk(ceil_violations, K)
+                
+                # L1 Mean over Top-K: Strong, isolated gradient that does not scale geometrically
+                loss_global_ceil = topk_violations.mean()
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
-        # Previously at 0.55 (41.25 Gy) this was cutting off the natural
-        # radiotherapy penumbra: dose at 5mm outside the PTV should be 55-65 Gy,
-        # which the old threshold was actively suppressing. With 0.88, the ring
-        # penalty only fires when voxels exceed the prescription — a true hotspot.
         RING_THRESH = 0.88  # = 66 Gy / 75 Gy — only supratherapeutic dose
         ring_n = ring_mask.sum()
         if ring_n > 0:
@@ -396,10 +417,16 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 5b. L_Beam (Anti-Brachytherapy Suppression) --------------
         beam_mask = inputs[:, 4:5, ...]
+        body_mask = (inputs[:, 5:6, ...] > 0.5).float()
         # beam_mask is 1.0 inside the LINAC beams, and 0.0 outside.
-        outside_beam_mask = 1.0 - beam_mask
-        rogue_dose = pred_dose * outside_beam_mask
-        loss_beam_suppression = (rogue_dose ** 2).mean()
+        # Restrict to BODY voxels only — air voxels dilute .mean() by ~9×.
+        # Exclude PTV, Ring, and OARs from beam suppression to allow natural dose falloff
+        # and prevent Laplacian gradient conflicts at the PTV boundary.
+        exclusion_mask = torch.clamp(ptv_mask + ring_mask + bladder_mask + rectum_mask, 0.0, 1.0)
+        outside_beam_body = (1.0 - beam_mask) * body_mask * (1.0 - exclusion_mask)
+        rogue_dose = pred_dose * outside_beam_body
+        n_rogue = outside_beam_body.sum().clamp(min=1.0)
+        loss_beam_suppression = rogue_dose.sum() / n_rogue
 
         # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
         # body_mask is 1.0 inside the patient body (CT HU > -300), 0.0 in air.
@@ -408,7 +435,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         outside_body_mask = 1.0 - body_mask
         ghost_dose = pred_dose * outside_body_mask
         n_outside_body = outside_body_mask.sum().clamp(min=1.0)
-        loss_body = (ghost_dose ** 2).sum() / n_outside_body
+        loss_body = ghost_dose.sum() / n_outside_body
 
         # ------ 6. L_smooth (Total Variation) -----------------------
         # TV penalises the first derivative — discourages jagged voxel-to-voxel
@@ -477,6 +504,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_mandatory  * loss_mandatory
             + self.lambda_ptv        * loss_ptv
             + self.lambda_ptv_max    * loss_ptv_max
+            + self.lambda_global_ceil * loss_global_ceil
             + self.lambda_ring       * loss_ring
             + self.lambda_smooth     * loss_smooth
             + self.lambda_laplacian  * loss_laplacian
@@ -493,6 +521,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "v_mand":     loss_mandatory.item(),
             "ptv":        loss_ptv.item(),
             "ptv_max":    loss_ptv_max.item(),
+            "global_ceil": loss_global_ceil.item(),
             "ring":       loss_ring.item(),
             "smooth":     loss_smooth.item(),
             "laplacian":  loss_laplacian.item(),
@@ -862,6 +891,7 @@ def main():
         "lambda_mandatory":     0.0,
         "lambda_ptv":           0.0,
         "lambda_ptv_max":       0.0,
+        "lambda_global_ceil":   0.0,
         "lambda_ring":          0.0,
         "lambda_smooth":        0.0,
         "lambda_laplacian":     0.0,
@@ -881,7 +911,7 @@ def main():
 
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-    epochs = 100
+    epochs = 300
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=epochs, eta_min=1e-6
     )
@@ -1018,14 +1048,18 @@ def main():
 
         # ---- Validation (skip if not every N epochs) -----------------
         val_loss_avg = float('nan')
-        avg_d95 = avg_bladder = avg_rectum = float('nan')
+        avg_d95 = avg_bladder = avg_rectum = avg_dmax = avg_bg = avg_mse = avg_ring = float('nan')
 
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             model.eval()
             val_loss_sum = 0.0
+            val_mse_sum = 0.0
             val_d95_sum = 0.0
             val_bladder_mean_sum = 0.0
             val_rectum_mean_sum = 0.0
+            val_ring_mean_sum = 0.0
+            val_dmax_sum = 0.0
+            val_bg_mean_sum = 0.0
             n_val = 0
 
             logger.info(f"Running validation at epoch {epoch + 1}...")
@@ -1060,21 +1094,18 @@ def main():
                     bowel_mask_val = batch["bowel_mask"].to(device)
                     femur_mask_val = batch["femur_mask"].to(device)
 
-                    # Ring mask computed on-the-fly for validation.
+                    # Ring mask computed on-the-fly for validation metrics.
                     ring_mask_val = compute_ring_mask(ptv_mask)
 
-                    loss, _ = loss_function(
-                        outputs_activated,
-                        normalized_targets.float(),
-                        bladder_mask.float(),
-                        rectum_mask.float(),
-                        ptv_mask.float(),
-                        ring_mask_val.float(),
-                        inputs,
-                        bowel_mask_val.float(),
-                        femur_mask_val.float(),
-                    )
-                    val_loss_sum += loss.item()
+                    # --- FIX FOR OOM: -----------------------------------------------------
+                    # Running the full physics loss function (with Laplacians, TV gradients, 
+                    # and DVH sigmoids) on the uncropped full-size CT volume consumes massive 
+                    # memory. Since we don't backpropagate validation loss, we skip the physics 
+                    # penalty computation and ONLY compute the pure MSE and clinical metrics.
+                    mse_loss = ((outputs_activated - normalized_targets.float()) ** 2).mean()
+                    
+                    val_loss_sum += mse_loss.item()
+                    val_mse_sum += mse_loss.item()
 
                     # Clinical metrics
                     outputs_gy = outputs_activated * PRESCRIPTION_DOSE_GY
@@ -1091,35 +1122,59 @@ def main():
                     if len(rectum_dose) > 0:
                         val_rectum_mean_sum += rectum_dose.mean().item()
 
+                    ring_dose = outputs_gy[ring_mask_val.bool()]
+                    if len(ring_dose) > 0:
+                        val_ring_mean_sum += ring_dose.mean().item()
+
+                    val_dmax_sum += outputs_gy.max().item()
+
+                    # Background mask: inside body, but outside PTV and OARs
+                    bg_mask = (body_mask_hard.bool() & ~ptv_mask.bool() & 
+                               ~bladder_mask.bool() & ~rectum_mask.bool() & 
+                               ~bowel_mask_val.bool() & ~femur_mask_val.bool())
+                    bg_dose = outputs_gy[bg_mask]
+                    if len(bg_dose) > 0:
+                        val_bg_mean_sum += bg_dose.mean().item()
+
                     n_val += 1
 
             val_loss_avg = val_loss_sum / max(n_val, 1)
+            avg_mse = val_mse_sum / max(n_val, 1)
             avg_d95 = val_d95_sum / max(n_val, 1)
             avg_bladder = val_bladder_mean_sum / max(n_val, 1)
             avg_rectum = val_rectum_mean_sum / max(n_val, 1)
+            avg_ring = val_ring_mean_sum / max(n_val, 1)
+            avg_dmax = val_dmax_sum / max(n_val, 1)
+            avg_bg = val_bg_mean_sum / max(n_val, 1)
 
         epoch_summary = (
-            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} "
-            f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
+            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
+            f"          Metrics: PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy\n"
+            f"          Metrics: Ring={avg_ring:.2f}Gy Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy"
         )
         print(f"  --> {epoch_summary}")
         logger.info(epoch_summary)
 
-        # -- Physics checkpoint: best validation loss (only on validation epochs) ----
+        # -- Checkpoint Gating: Physical Acceptability ----
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
-            if val_loss_avg < best_val_loss:
+            # Gate both checkpoints on physical acceptability
+            # Requires Dmax < 80 Gy and Background Body Dose < 15 Gy
+            is_physically_valid = (avg_dmax < 80.0) and (avg_bg < 15.0)
+
+            # 1. Physics checkpoint: best validation loss
+            if is_physically_valid and val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
                 torch.save(model.state_dict(), "best_dose_model_physics.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
 
-            # -- Clinical checkpoint: soft-margin exchange-rate score --------
+            # 2. Clinical checkpoint: soft-margin exchange-rate score
             current_worst_oar = max(avg_bladder, avg_rectum)
             ptv_deficit = max(0.0, 62.4 - avg_d95)
             clinical_score = current_worst_oar + (ptv_deficit * 3.0)
 
-            if clinical_score < best_clinical_score:
+            if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
                 torch.save(model.state_dict(), "best_dose_model_clinical.pth")
                 clinical_msg = (
