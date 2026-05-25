@@ -252,6 +252,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_laplacian=5.0,       # Penalises curvature/kinks — kills step-function edges
         lambda_bowel=15.0,          # Bag_Bowel V45Gy < 30% mandatory constraint
         lambda_femur=10.0,          # Femur heads V50Gy < 5% mandatory constraint
+        lambda_global_ceil=50.0,    # Top-K L1 penalty for extreme outliers
         k_steepness=50.0,           # Sigmoid steepness for differentiable DVH
     ):
         super().__init__()
@@ -270,6 +271,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_laplacian = lambda_laplacian
         self.lambda_bowel = lambda_bowel
         self.lambda_femur = lambda_femur
+        self.lambda_global_ceil = lambda_global_ceil
         self.lambda_body = 20.0    # Eliminates ghost dose predicted in air outside the patient body
         self.k = k_steepness
 
@@ -387,6 +389,28 @@ class PhysicsGuidedDoseLoss(nn.Module):
             overdose = torch.relu(pred_dose - hard_max_norm) * ptv_mask
             loss_ptv_max = (overdose ** 2).sum() / ptv_n.clamp(min=1.0)
 
+        # ------ Global Hard Ceiling (Top-K L1 formulation) --------------
+        # Isolates the worst violations to prevent 1/N statistical dilution,
+        # but uses L1 to prevent L2 gradient explosions and Laplacian waterbed effects.
+        global_ceil_norm = 72.0 / 75.0
+        body_mask_bool = inputs[:, 5:6, ...] > 0.5
+        body_pred = pred_dose[body_mask_bool]
+
+        loss_global_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        
+        if body_pred.numel() > 0:
+            ceil_violations = torch.relu(body_pred - global_ceil_norm)
+            
+            if ceil_violations.max() > 0:
+                # Fix K to 0.1% of body voxels (min 10) to prevent dynamic denominator explosion
+                K = max(int(0.001 * body_pred.numel()), 10)
+                K = min(K, body_pred.numel())  # Safety bound
+                
+                topk_violations, _ = torch.topk(ceil_violations, K)
+                
+                # L1 Mean over Top-K: Strong, isolated gradient that does not scale geometrically
+                loss_global_ceil = topk_violations.mean()
+
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         # Threshold raised to 0.88 (= 66 Gy / 75 Gy — at prescription level).
         RING_THRESH = 0.88  # = 66 Gy / 75 Gy — only supratherapeutic dose
@@ -406,7 +430,10 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # but .mean() was dividing by ALL voxels (including ~87% air and ~15%
         # inside-beam), diluting the gradient by ~9×. Now we divide only by the
         # outside-beam body voxels, giving a ~9× stronger per-voxel gradient.
-        outside_beam_body = (1.0 - beam_mask) * body_mask
+        # Exclude PTV, Ring, and OARs from beam suppression to allow natural dose falloff
+        # and prevent Laplacian gradient conflicts at the PTV boundary.
+        exclusion_mask = torch.clamp(ptv_mask + ring_mask + bladder_mask + rectum_mask, 0.0, 1.0)
+        outside_beam_body = (1.0 - beam_mask) * body_mask * (1.0 - exclusion_mask)
         rogue_dose = pred_dose * outside_beam_body
         n_rogue = outside_beam_body.sum().clamp(min=1.0)
         loss_beam_suppression = rogue_dose.sum() / n_rogue
@@ -487,6 +514,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_mandatory  * loss_mandatory
             + self.lambda_ptv        * loss_ptv
             + self.lambda_ptv_max    * loss_ptv_max
+            + self.lambda_global_ceil * loss_global_ceil
             + self.lambda_ring       * loss_ring
             + self.lambda_smooth     * loss_smooth
             + self.lambda_laplacian  * loss_laplacian
@@ -503,6 +531,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "v_mand":     loss_mandatory.item(),
             "ptv":        loss_ptv.item(),
             "ptv_max":    loss_ptv_max.item(),
+            "global_ceil": loss_global_ceil.item(),
             "ring":       loss_ring.item(),
             "smooth":     loss_smooth.item(),
             "laplacian":  loss_laplacian.item(),
@@ -861,6 +890,9 @@ def main():
         lambda_beam=0.0,            # starts at 0 — ramped per epoch
         lambda_ptv_max=0.0,         # starts at 0 — ramped per epoch
         lambda_homogeneity=0.0,     # starts at 0 — ramped per epoch
+        lambda_global_ceil=0.0,     # starts at 0 — ramped per epoch
+        lambda_bowel=0.0,           # starts at 0 — ramped per epoch
+        lambda_femur=0.0,           # starts at 0 — ramped per epoch
         k_steepness=50.0,
     )
     loss_function.lambda_body = 0.0  # hardcoded in __init__ at 20 — start at 0
@@ -872,6 +904,7 @@ def main():
         "lambda_mandatory":    50.0,
         "lambda_ptv":          10.0,
         "lambda_ptv_max":      150.0,
+        "lambda_global_ceil":  50.0,
         "lambda_ring":         15.0,
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
@@ -909,6 +942,7 @@ def main():
     # ---- Training --------------------------------------------------
     best_val_loss      = float("inf")   # tracks physics (loss) optimum
     best_clinical_score = float("inf")  # tracks clinical (soft-margin) optimum
+    best_diagnostic_mse = float("inf")  # tracks unconditional MSE optimum for fallback
 
     for epoch in range(epochs):
         current_lr = optimizer.param_groups[0]['lr']
@@ -1013,7 +1047,8 @@ def main():
                     f"Step {step}/{len(train_loader)} Loss={loss.item():.4f} "
                     f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "
                     f"v_mand={components['v_mand']:.5f} ptv={components['ptv']:.4f} "
-                    f"ptv_max={components['ptv_max']:.5f} ring={components['ring']:.5f} "
+                    f"ptv_max={components['ptv_max']:.5f} global_ceil={components['global_ceil']:.5f} "
+                    f"ring={components['ring']:.5f} "
                     f"smooth={components['smooth']:.4f} laplacian={components['laplacian']:.4f} "
                     f"beam={components['beam']:.5f} "
                     f"homogeneity={components['homogeneity']:.4f} "
@@ -1145,21 +1180,26 @@ def main():
         print(f"  --> {epoch_summary}")
         logger.info(epoch_summary)
 
-        # -- Physics checkpoint: best validation loss (only on validation epochs) ----
+        # -- Checkpoint Gating: Physical Acceptability ----
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
-            if val_loss_avg < best_val_loss:
+            # Gate both checkpoints on physical acceptability
+            # Requires Dmax < 80 Gy and Background Body Dose < 15 Gy
+            is_physically_valid = (avg_dmax < 80.0) and (avg_bg < 15.0)
+
+            # 1. Physics checkpoint: best validation loss
+            if is_physically_valid and val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
                 torch.save(model.state_dict(), "best_dose_model_physics_L1.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
 
-            # -- Clinical checkpoint: soft-margin exchange-rate score --------
+            # 2. Clinical checkpoint: soft-margin exchange-rate score
             current_worst_oar = max(avg_bladder, avg_rectum)
             ptv_deficit = max(0.0, 62.4 - avg_d95)
             clinical_score = current_worst_oar + (ptv_deficit * 3.0)
 
-            if clinical_score < best_clinical_score:
+            if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
                 torch.save(model.state_dict(), "best_dose_model_clinical_L1.pth")
                 clinical_msg = (
@@ -1168,6 +1208,14 @@ def main():
                 )
                 print(f"  --> {clinical_msg}")
                 logger.info(clinical_msg)
+
+            # 3. Diagnostic Fallback (Unconditional MSE)
+            if val_loss_avg < best_diagnostic_mse:
+                best_diagnostic_mse = val_loss_avg
+                torch.save(model.state_dict(), "best_dose_model_diagnostic.pth")
+                diag_msg = f"[DIAGNOSTIC] Saved fallback model MSE={best_diagnostic_mse:.4f}"
+                print(f"  --> {diag_msg}")
+                logger.info(diag_msg)
 
     completion_msg = (
         f"Training complete. Best val loss: {best_val_loss:.4f} "
