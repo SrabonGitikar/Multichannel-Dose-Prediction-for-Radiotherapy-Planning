@@ -45,6 +45,7 @@ from monai.transforms import (
     ConcatItemsd,
     MapTransform,
     RandCropByLabelClassesd,
+    DeleteItemsd,
 )
 # pyrefly: ignore [missing-import]
 from monai.networks.nets import UNet
@@ -705,6 +706,7 @@ train_transforms = Compose(
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
             num_samples=2,  # Reduced from 4 for 12GB VRAM
         ),
+        DeleteItemsd(keys=["crop_mask"]),
         ConcatItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
         ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask"]),
     ]
@@ -809,8 +811,8 @@ def main():
     # For a 24 GB GPU, BATCH_SIZE=1 is safe; BATCH_SIZE=2 may work.
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
     # Reduced from 8 to 4 to prevent RAM accumulation (67GB system)
-    num_workers  = min(int(os.environ.get("NUM_WORKERS", "4")), 6)
-    prefetch_factor = int(os.environ.get("PREFETCH_FACTOR", "2"))  # Limit prefetch to control RAM
+    num_workers     = min(int(os.environ.get("NUM_WORKERS", "2")), 2)
+    prefetch_factor = 1  # Limit prefetch to control RAM
     print(f"Batch size={batch_size}  num_workers={num_workers}  prefetch={prefetch_factor}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
@@ -829,10 +831,10 @@ def main():
         train_ds,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
-        prefetch_factor=prefetch_factor,  # Limit RAM usage from prefetching
+        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),
+        prefetch_factor=1,  # Limit RAM usage from prefetching
         persistent_workers=False,  # Release worker memory between epochs
-        pin_memory=torch.cuda.is_available(),
+        pin_memory=False,
         collate_fn=list_data_collate,
         drop_last=True,  # Drop incomplete batches for stable training speed
     )
@@ -844,10 +846,10 @@ def main():
         val_ds,
         batch_size=1,              # always 1 for val — sliding window handles the patch
         shuffle=False,
-        num_workers=min(num_workers, 2),  # Fewer workers for validation to save RAM
+        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),  # Fewer workers for validation to save RAM
         prefetch_factor=1,  # Minimal prefetch for validation
         persistent_workers=False,  # Release memory after validation
-        pin_memory=torch.cuda.is_available(),
+        pin_memory=False,
     )
 
     # ---- Model -----------------------------------------------------
@@ -1162,6 +1164,13 @@ def main():
                         val_bg_mean_sum += bg_dose.mean().item()
 
                     n_val += 1
+
+                    # Explicit memory cleanup per patient to prevent RAM/VRAM accumulation
+                    del outputs, outputs_activated, outputs_gy, body_mask_hard
+                    del ptv_mask, bladder_mask, rectum_mask, ring_mask_val
+                    del bg_mask, inputs, targets, normalized_targets
+                    del bowel_mask_val, femur_mask_val
+                    torch.cuda.empty_cache()
 
             val_loss_avg = val_loss_sum / max(n_val, 1)
             avg_mse = val_mse_sum / max(n_val, 1)
