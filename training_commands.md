@@ -38,14 +38,14 @@ python train_monai.py
 Once training is complete, you can use the trained model to generate predictions using sliding window inference.
 ```bash
 python inference.py
-python inference.py --patient prostate_000 --output-dir data/output --model best_dose_model_physics.pth
+python inference.py --patient prostate_000 --output-dir data/output/test3 --model best_dose_model_physics.pth
 ```
 
 ```bash
-python inference_dicom.py \
-    --input-dir /path/to/patient/dicom \
-    --output-dose predicted_dose.dcm \
-    --model best_dose_model.pth
+python utils/nifti_to_rtdose.py \
+    --ct-rs-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/1de3b35a.8614.43b1.8bb4.37877ce504dd" \
+    --nifti-path "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/output/test31/prostate_000_predicted_dose.nii.gz" \
+    --dose-spacing 2.5
 ```
 
 ### 7. Visualize Predictions (Optional)
@@ -53,3 +53,6 @@ Plot masks and predictions to visually verify the outputs.
 ```bash
 python plot_masks.py
 ```
+
+
+/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/

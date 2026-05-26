@@ -31,7 +31,9 @@ from monai.transforms import (
 from monai.data import Dataset, DataLoader
 
 # Configuration - uses same paths as training
-DATA_DIR = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
+# DATA_DIR = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
+DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/raw_dicom_nifti"
+
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 TARGET_SPACING = (1.27, 1.27, 2.5)  # Physical mm - must match training
 PATCH_SIZE = (128, 128, 64)  # Must match training

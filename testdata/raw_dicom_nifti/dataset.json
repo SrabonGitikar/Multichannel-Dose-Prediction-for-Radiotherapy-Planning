@@ -1,0 +1,15 @@
+{
+  "channel_names": {
+    "0": "CT",
+    "1": "PTV_mask",
+    "2": "Bladder_SDM",
+    "3": "Anorectum_SDM",
+    "4": "IMRT_Beam_Prior",
+    "5": "Body_Mask"
+  },
+  "labels": {
+    "0": "dose"
+  },
+  "numTraining": 1,
+  "file_ending": ".nii.gz"
+}
