@@ -43,18 +43,22 @@ from pydicom.uid import ExplicitVRLittleEndian, generate_uid
 
 def _scan_dicom_folder(folder: str):
     """
-    Recursively scan *folder* (and its parent) for CT slices and RTSTRUCT.
-    CT slices must be inside *folder*.
-    RTSTRUCT is searched in *folder* first, then in the parent directory tree
-    so that sibling series folders are also covered.
+    Recursively scan *folder* (and its parent) for CT slices, RTSTRUCT,
+    and RTPLAN.  CT slices must be inside *folder*.
+    RTSTRUCT and RTPLAN are searched in *folder* first, then in the parent
+    directory tree so that sibling series folders are also covered.
 
-    Raises FileNotFoundError with a descriptive message if either is missing.
+    Returns
+    -------
+    (ct_slices, rtstruct_ds, rtplan_ds_or_None)
+    Raises FileNotFoundError if CT or RTSTRUCT is missing.
     """
     folder_path = Path(folder).resolve()
     ct_slices   = []
     rtstruct    = None
+    rtplan      = None
 
-    # ── scan the given folder for CT (and RTSTRUCT if present) ───────────────
+    # ── scan the given folder for CT, RTSTRUCT, RTPLAN ───────────────────────
     for f in sorted(folder_path.rglob("*.dcm")):
         try:
             ds = pydicom.dcmread(str(f), stop_before_pixels=True, force=True)
@@ -63,6 +67,8 @@ def _scan_dicom_folder(folder: str):
                 ct_slices.append(ds)
             elif modality == "RTSTRUCT" and rtstruct is None:
                 rtstruct = ds
+            elif modality == "RTPLAN" and rtplan is None:
+                rtplan = ds
         except Exception:
             continue
 
@@ -72,20 +78,25 @@ def _scan_dicom_folder(folder: str):
             "Make sure the folder contains CT .dcm files."
         )
 
-    # ── if RTSTRUCT not in the given folder, search parent directory tree ─────
-    if rtstruct is None:
+    # ── if RTSTRUCT or RTPLAN not found locally, search parent tree ───────────
+    if rtstruct is None or rtplan is None:
         parent = folder_path.parent
         for f in sorted(parent.rglob("*.dcm")):
             if folder_path in f.parents:
                 continue   # already scanned above
             try:
                 ds = pydicom.dcmread(str(f), stop_before_pixels=True, force=True)
-                if getattr(ds, "Modality", "") == "RTSTRUCT":
+                mod = getattr(ds, "Modality", "")
+                if mod == "RTSTRUCT" and rtstruct is None:
                     rtstruct = ds
                     print(f"[nifti_to_rtdose] RTSTRUCT found in parent tree: {f}")
-                    break
+                elif mod == "RTPLAN" and rtplan is None:
+                    rtplan = ds
+                    print(f"[nifti_to_rtdose] RTPLAN found in parent tree: {f}")
             except Exception:
                 continue
+            if rtstruct and rtplan:
+                break
 
     if rtstruct is None:
         raise FileNotFoundError(
@@ -96,8 +107,12 @@ def _scan_dicom_folder(folder: str):
             "Please place the RTSTRUCT .dcm in the same folder or a sibling folder."
         )
 
+    if rtplan is None:
+        print("[nifti_to_rtdose] WARNING: No RTPLAN found — ReferencedRTPlanSequence "
+              "will be omitted. Run create_dummy_plan.py first for TPS compatibility.")
+
     ct_slices.sort(key=lambda s: float(s.ImagePositionPatient[2]))
-    return ct_slices, rtstruct
+    return ct_slices, rtstruct, rtplan
 
 
 def _build_sitk_reference(ct_slices, z_positions, spacing_xy, spacing_z, iop, origin):
@@ -143,8 +158,8 @@ def nifti_to_rtdose_dicom(
     str : absolute path to the saved RTDOSE DICOM
     """
 
-    # ── 1. Scan folder for CT + RTSTRUCT ─────────────────────────────────────
-    ct_slices, rs_ds = _scan_dicom_folder(ct_rs_dir)
+    # ── 1. Scan folder for CT + RTSTRUCT + RTPLAN ───────────────────────────
+    ct_slices, rs_ds, rtplan_ds = _scan_dicom_folder(ct_rs_dir)
     ct_ref = ct_slices[0]
 
     z_positions = [float(s.ImagePositionPatient[2]) for s in ct_slices]
@@ -300,11 +315,24 @@ def nifti_to_rtdose_dicom(
     rtdose.DoseGridScaling               = f"{new_scaling:.10e}"
     rtdose.TissueHeterogeneityCorrection = ["IMAGE"]
 
+    # Operators' Name — Type 2, can be empty
+    rtdose.OperatorsName = ""
+
     # Link RTSTRUCT
     ref_item = Dataset()
     ref_item.ReferencedSOPClassUID    = rs_ds.SOPClassUID
     ref_item.ReferencedSOPInstanceUID = rs_ds.SOPInstanceUID
     rtdose.ReferencedStructureSetSequence = Sequence([ref_item])
+
+    # Link RTPLAN (300C,0002) — Type 1, mandatory for TPS import
+    if rtplan_ds is not None:
+        plan_ref = Dataset()
+        plan_ref.ReferencedSOPClassUID    = rtplan_ds.SOPClassUID
+        plan_ref.ReferencedSOPInstanceUID = rtplan_ds.SOPInstanceUID
+        rtdose.ReferencedRTPlanSequence   = Sequence([plan_ref])
+        print(f"[nifti_to_rtdose] Linked RTPLAN: {rtplan_ds.SOPInstanceUID}")
+    else:
+        print("[nifti_to_rtdose] WARNING: RTPLAN not linked — TPS may reject import.")
 
     pydicom.dcmwrite(out_path, rtdose)
     print(f"[nifti_to_rtdose] Saved: {out_path}")

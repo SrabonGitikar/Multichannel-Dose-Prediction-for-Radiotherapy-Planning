@@ -47,6 +47,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
+from utils.create_dummy_plan import create_dummy_plan_dicom
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Structure name patterns (same as dicom_to_nnunet.py)
@@ -424,6 +425,23 @@ def run_pipeline(
     print(f"\n{'='*60}")
     print(f"  Pipeline start: {dicom_dir}")
     print(f"{'='*60}\n")
+
+    # ── 0. Ensure RTPLAN exists (create dummy if missing) ────────────────────
+    print("[Step 0/3] Checking for RTPLAN...")
+    _has_rtplan = False
+    for _f in Path(dicom_dir).rglob("*.dcm"):
+        try:
+            _ds = pydicom.dcmread(str(_f), stop_before_pixels=True, force=True)
+            if getattr(_ds, "Modality", "") == "RTPLAN":
+                _has_rtplan = True
+                print(f"  RTPLAN found: {_f.name}")
+                break
+        except Exception:
+            continue
+
+    if not _has_rtplan:
+        print("  No RTPLAN found — generating dummy plan...")
+        create_dummy_plan_dicom(dicom_dir)
 
     # ── temp directory ────────────────────────────────────────────────────────
     tmp_root   = tempfile.mkdtemp(prefix="dose_pipeline_")
