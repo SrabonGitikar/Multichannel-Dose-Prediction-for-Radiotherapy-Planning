@@ -55,4 +55,10 @@ python plot_masks.py
 ```
 
 
-/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/
+```bash
+python utils/pipeline.py \
+    --dicom-dir "/mnt/nvme/.../testdata/1de3b35a.8614.43b1.8bb4.37877ce504dd" \
+    --model best_dose_model_physics_L1.pth \
+    --dose-spacing 2.5
+
+```
