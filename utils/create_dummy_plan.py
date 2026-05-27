@@ -70,7 +70,7 @@ _TABLE_TOP_LONGITUDINAL  = "1200"
 _TABLE_TOP_LATERAL       = "0"
 
 _PATIENT_POSITION        = "HFS"
-_PLAN_LABEL              = "dummy plan for dose prediction"
+_PLAN_LABEL              = "Dummy Plan (AI)"
 _PLAN_INTENT             = "CURATIVE"
 _PLAN_GEOMETRY           = "PATIENT"
 _APPROVAL_STATUS         = "UNAPPROVED"
