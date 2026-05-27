@@ -34,18 +34,16 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-# DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
-# OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
-# DATASET_NAME = "Dataset001_ProstateDose"
-
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/dicom"
-OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/raw_dicom_nifti"
-DATASET_NAME = "Dataset001_ProstateDose_Test"
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
+DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
 STRUCTURE_PATTERNS = {
     "PTV": [
         r"^CTVP$", r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$", 
+        r"^CTV_55", r"^PTV_55", r"^CTV55$", r"^PTV55$", 
+        r"^CTV_54", r"^PTV_54", r"^CTV54$", r"^PTV54$",
         r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36", 
         r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25", 
         r"^CTV 25", r"^PTV 25",
@@ -390,6 +388,11 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
 
     print("  [3/7] Rasterizing contour masks (union of all PTVs)...")
     ptv_mask = rtstruct_all_contours_to_mask(rs_ds, ptv_names, ct_image)
+
+    print("         Rasterizing individual PTVs for SIB mapping...")
+    individual_ptv_masks = {}
+    for p_name in ptv_names:
+        individual_ptv_masks[p_name] = rtstruct_contour_to_mask(rs_ds, p_name, ct_image)
     bladder_mask = rtstruct_contour_to_mask(rs_ds, bladder_name, ct_image)
     anorectum_mask = rtstruct_contour_to_mask(rs_ds, anorectum_name, ct_image)
 
@@ -440,6 +443,13 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     body_mask_array = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
     print(f"         Body Mask Voxels: {int(body_mask_array.sum()):,}")
 
+    print("\n  [Summary] Matched Structures for this Patient:")
+    print(f"         PTVs: {ptv_names}")
+    print(f"         Bladder: {bladder_name}")
+    print(f"         Anorectum: {anorectum_name}")
+    print(f"         Bag_Bowel: {bowel_name or 'NOT FOUND'}")
+    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}\n")
+
     print("  [8/8] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
 
@@ -470,6 +480,29 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
                     os.path.join(images_dir, f"{case_name}_bowel.nii.gz"))
     sitk.WriteImage(numpy_to_sitk(femur_mask.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_femur.nii.gz"))
+
+    SIB_CANONICAL = {
+        r"^ptv.*62|^ctv.*62|^ctvp$": "PTV62",
+        r"^ptv.*55|^ctv.*55": "PTV55", 
+        r"^ptv.*54|^ctv.*54": "PTV54",
+        r"^ptv.*44|^ctv.*44": "PTV44",
+        r"^ptv.*36|^ctv.*36": "PTV36",
+        r"^ptv.*25|^ctv.*25": "PTV25",
+    }
+
+    # Individual PTVs for SIB mapping
+    for p_name, p_mask in individual_ptv_masks.items():
+        canonical = None
+        for pattern, cname in SIB_CANONICAL.items():
+            if re.match(pattern, p_name, re.IGNORECASE):
+                canonical = cname
+                break
+        
+        if canonical is None:
+            canonical = p_name.replace(" ", "_").replace("/", "_")
+            
+        sitk.WriteImage(numpy_to_sitk(p_mask.astype(np.float32), ct_image),
+                        os.path.join(images_dir, f"{case_name}_{canonical}.nii.gz"))
 
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
