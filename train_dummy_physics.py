@@ -59,13 +59,13 @@ DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
-CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005"]  
+CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]  # 7 input channels (v3 adds Penile Bulb)
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (128, 128, 64)  
 
 PRESCRIPTION_DOSE_GY = 75.0  
 CONSTRAINT_CSV = os.environ.get(
-    "CONSTRAINT_CSV", "./prostate_prime_constraints_v2.csv"
+    "CONSTRAINT_CSV", "./prostate_prime_constraints_v3.csv"
 )
 
 GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", "2"))
@@ -138,8 +138,8 @@ def load_clinical_constraints(csv_path, patient_class="N0"):
 
             canonical = name[: -len(nplus_suffix)] if is_nplus else name
 
-            # ---- V-Type constraints (Bladder / Anorectum) -----------
-            if ctype == "V" and canonical in ("Bladder", "Anorectum"):
+            # ---- V-Type constraints (Bladder / Anorectum / Penile_Bulb) -----
+            if ctype == "V" and canonical in ("Bladder", "Anorectum", "Penile_Bulb"):
                 
                 if obj_unit.strip() != "%":
                     continue  
@@ -180,7 +180,7 @@ def load_clinical_constraints(csv_path, patient_class="N0"):
                     )
 
     # ---- Build the final v_constraints list (per organ) -------------
-    v_constraints = {"Bladder": [], "Anorectum": []}
+    v_constraints = {"Bladder": [], "Anorectum": [], "Penile_Bulb": []}
     for (organ, dose_gy), tiers in sorted(v_accum.items(),
                                           key=lambda x: x[0][1]):
         
@@ -241,6 +241,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_beam_ceil=2.0,       
         lambda_shell_inner=0.0,     
         lambda_shell_outer=0.0,     
+        lambda_penile=10.0,         # Penile Bulb V47Gy ≤ 50% (v3)
         k_steepness=50.0,           
     ):
         super().__init__()
@@ -264,6 +265,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_shell_inner = lambda_shell_inner
         self.lambda_shell_outer = lambda_shell_outer
         self.lambda_body = 20.0    
+        self.lambda_penile = lambda_penile   # Penile Bulb (v3)
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -320,6 +322,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "Bladder": bladder_mask,
             "Anorectum": rectum_mask,
         }
+        # Penile Bulb is handled separately below (has its own lambda).
 
         for organ_name, mask in organ_map.items():
             for rule in self.constraints["v_type"].get(organ_name, []):
@@ -351,7 +354,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # Map targets to their discrete extraction masks
         sib_targets = {
-            "ptv62": {"mask": ptv62_mask, "rx": 62.4, "is_core": True},
+            "ptv60": {"mask": ptv62_mask, "rx": 60.0, "is_core": True},   # v3: PTV60 (was ptv62/62.4Gy)
             "ptv55": {"mask": ptv55_mask, "rx": 55.0, "is_core": False},
             "ptv54": {"mask": ptv54_mask, "rx": 54.0, "is_core": False},
             "ptv44": {"mask": ptv44_mask, "rx": 44.0, "is_core": False},
@@ -389,8 +392,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 4. L_D-Type max dose (Hotspot Smasher) --------------
         loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        if ptv62_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (66.34/PRESCRIPTION_DOSE_GY)))**2 * ptv62_mask).sum() / ptv62_mask.sum()
+        if ptv62_mask.sum() > 0:  # ptv62_mask = PTV60 in v3
+            loss_ptv_max += ((torch.relu(pred_dose - (64.2/PRESCRIPTION_DOSE_GY)))**2 * ptv62_mask).sum() / ptv62_mask.sum()
         if ptv55_mask.sum() > 0:
             loss_ptv_max += ((torch.relu(pred_dose - (58.3/PRESCRIPTION_DOSE_GY)))**2 * ptv55_mask).sum() / ptv55_mask.sum()
         if ptv54_mask.sum() > 0:
@@ -562,16 +565,20 @@ class PhysicsGuidedDoseLoss(nn.Module):
         loss_bowel_mand = torch.relu(bowel_v50 - BOWEL_MAND_LIMIT) ** 2
         loss_bowel = loss_bowel_opt + MANDATORY_SCALE * loss_bowel_mand
 
-        # ------ 8. L_Femur (merged Femur_Head_L+R — dual-tier) ------
-        
-        FEMUR_THRESH_NORM = 50.0 / PRESCRIPTION_DOSE_GY   
-        FEMUR_OPT_LIMIT   = 0.05
-        FEMUR_MAND_LIMIT  = 0.50
+        # ------ 8. L_Femur (merged Femur_Head_L+R — D_max < 40 Gy) -------
+        # v3 constraint: D_max < 40 Gy.  Penalise all voxels above 40/75 Gy.
+        FEMUR_MAX_NORM = 40.0 / PRESCRIPTION_DOSE_GY
+        femur_n = femur_mask.sum().clamp(min=1.0)
+        loss_femur = ((torch.relu(pred_dose - FEMUR_MAX_NORM) ** 2) * femur_mask).sum() / femur_n
 
-        femur_v50 = self.calculate_dvh_volume(pred_dose, femur_mask, FEMUR_THRESH_NORM)
-        loss_femur_opt  = torch.relu(femur_v50 - FEMUR_OPT_LIMIT)  ** 2
-        loss_femur_mand = torch.relu(femur_v50 - FEMUR_MAND_LIMIT) ** 2
-        loss_femur = loss_femur_opt + MANDATORY_SCALE * loss_femur_mand
+        # ------ 9. L_Penile (Penile Bulb — V47Gy ≤ 50%, v3) ----------
+        # Read Penile Bulb directly from model input channel 6.
+        penile_mask_ch = inputs[:, 6:7, ...]
+        loss_penile = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        for rule in self.constraints["v_type"].get("Penile_Bulb", []):
+            v_frac = self.calculate_dvh_volume(pred_dose, penile_mask_ch, rule["norm_dose"])
+            viol = torch.relu(v_frac - rule["mandatory_v"])
+            loss_penile = loss_penile + viol ** 2
 
         # ------ Total -----------------------------------------------
         total = (
@@ -593,6 +600,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_body        * loss_body
             + self.lambda_bowel       * loss_bowel
             + self.lambda_femur       * loss_femur
+            + self.lambda_penile      * loss_penile
         )
         return total, {
             "mse":        loss_mse.item(),
@@ -613,6 +621,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "body":       loss_body.item(),
             "bowel":      loss_bowel.item(),
             "femur":      loss_femur.item(),
+            "penile":     loss_penile.item(),
         }
 
 # ===================================================================
@@ -658,7 +667,7 @@ class CreateDiscretePTVMapd(MapTransform):
             ("PTV44", 2.0),
             ("PTV54", 6.0),
             ("PTV55", 3.0),
-            ("PTV62", 1.0)
+            ("PTV60", 1.0)   # v3: PTV60 (was PTV62)
         ]
 
     def __call__(self, data):
@@ -778,8 +787,8 @@ class CreateFalloffRingd(MapTransform):
         d["ring_mask"] = compute_ring_mask(ptv)
         return d
 
-SIB_KEYS = ["PTV62", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]
-ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5",
+SIB_KEYS = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]   # v3: PTV62 → PTV60
+ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
             "bowel_mask", "femur_mask",  
             "dose_label"] + SIB_KEYS
 
@@ -790,8 +799,8 @@ train_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",
-                  "nearest", "nearest",   
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 to ch_6
+                  "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
@@ -808,11 +817,10 @@ train_transforms = Compose(
             spatial_size=PATCH_SIZE,
             num_classes=5,
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
-            num_samples=2,
-            allow_missing_keys=True,
+            num_samples=2,  
         ),
         DeleteItemsd(keys=["crop_mask"]),
-        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
+        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
         ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask"]),
     ]
 )
@@ -824,14 +832,14 @@ val_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",
-                  "nearest", "nearest",   
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 – ch_6
+                  "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
         CreateDiscretePTVMapd(keys=["ch_0"]),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
+        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
         ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
     ]
 )
@@ -843,10 +851,14 @@ val_transforms = Compose(
 def extract_binary_masks(inputs):
     """
     Convert the concatenated input tensor channels to binary masks.
-    Channels: 0=CT, 1=PTV (binary), 2=Bladder SDM, 3=Anorectum SDM.
-
-    SDMs are <= 0.0 inside the organ.  We convert to binary float masks.
-    PTV channel is already binary (>= 0.5 → 1.0).
+    Channel layout (v3, 7 channels):
+      0 = CT (normalized HU)
+      1 = discrete PTV map (integer 1-6 per sub-volume)
+      2 = Bladder SDM   (≤ 0 inside organ)
+      3 = Anorectum SDM (≤ 0 inside organ)
+      4 = IMRT Beam Prior (binary)
+      5 = Body Mask (binary)
+      6 = Penile Bulb (binary, NEW v3)
 
     Returns ptv_mask, bladder_mask, rectum_mask  — all (B,1,D,H,W) float.
     """
@@ -966,7 +978,7 @@ def main():
 
     model = UNet(
         spatial_dims=3,
-        in_channels=6,  
+        in_channels=7,  # 7 inputs: CT, discrete_PTV, Bladder_SDM, Ano_SDM, Beam, Body, PenileBulb
         out_channels=1,
         channels=(16, 32, 64, 128),  
         strides=(2, 2, 2),           
@@ -994,6 +1006,7 @@ def main():
         lambda_shell_outer=0.0,     # disabled — not yet active
         lambda_bowel=0.0,           
         lambda_femur=0.0,           
+        lambda_penile=0.0,          # Penile Bulb — ramp in
         k_steepness=50.0,
     )
     loss_function.lambda_body = 0.0  
@@ -1010,8 +1023,9 @@ def main():
         "lambda_beam":         25.0,
         "lambda_homogeneity":  20.0,
         "lambda_body":         20.0,
-        "lambda_bowel":        15.0,  
-        "lambda_femur":        10.0,  
+        "lambda_bowel":        15.0,
+        "lambda_femur":        10.0,
+        "lambda_penile":       10.0,   # v3: Penile Bulb V47Gy ≤ 50%
     }
 
     print(f"\n{'='*60}")
@@ -1145,7 +1159,8 @@ def main():
                     f"shell_outer={components['shell_outer']:.5f} "
                     f"homogeneity={components['homogeneity']:.4f} "
                     f"body={components['body']:.5f} "
-                    f"bowel={components['bowel']:.5f} femur={components['femur']:.5f}"
+                    f"bowel={components['bowel']:.5f} femur={components['femur']:.5f} "
+                    f"penile={components['penile']:.5f}"
                 )
                 print(f"  {log_msg}")
                 logger.info(log_msg)
@@ -1164,7 +1179,7 @@ def main():
         # ---- Validation (skip if not every N epochs) -----------------
         val_loss_avg = float('nan')
         avg_d95 = avg_bladder = avg_rectum = avg_dmax = avg_bg = avg_mse = avg_ring = float('nan')
-        avg_ptv62 = avg_ptv44 = avg_bowel = avg_femur = float('nan')
+        avg_ptv60 = avg_ptv44 = avg_bowel = avg_femur = avg_penile = float('nan')
 
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             model.eval()
@@ -1176,10 +1191,11 @@ def main():
             val_ring_mean_sum = 0.0
             val_dmax_sum = 0.0
             val_bg_mean_sum = 0.0
-            val_ptv62_mean_sum = 0.0
+            val_ptv60_mean_sum = 0.0
             val_ptv44_mean_sum = 0.0
             val_bowel_mean_sum = 0.0
             val_femur_mean_sum = 0.0
+            val_penile_mean_sum = 0.0
             n_val = 0
 
             logger.info(f"Running validation at epoch {epoch + 1}...")
@@ -1236,11 +1252,16 @@ def main():
                     if len(ptv_dose) > 0:
                         val_d95_sum += torch.quantile(ptv_dose, 0.05).item()
                         
-                    ptv62_dose = outputs_gy[discrete_ptv == 1.0]
-                    if len(ptv62_dose) > 0: val_ptv62_mean_sum += ptv62_dose.mean().item()
+                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(1.0, device=discrete_ptv.device))]
+                    if len(ptv60_dose) > 0: val_ptv60_mean_sum += ptv60_dose.mean().item()
                         
-                    ptv44_dose = outputs_gy[discrete_ptv == 2.0]
+                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(2.0, device=discrete_ptv.device))]
                     if len(ptv44_dose) > 0: val_ptv44_mean_sum += ptv44_dose.mean().item()
+                        
+                    # Penile Bulb (channel 6)
+                    penile_mask_cpu = (inputs[:, 6:7, ...] > 0.5).cpu()
+                    penile_dose = outputs_gy[penile_mask_cpu.bool()]
+                    if len(penile_dose) > 0: val_penile_mean_sum += penile_dose.mean().item()
                         
                     bowel_dose = outputs_gy[bowel_mask_cpu.bool()]
                     if len(bowel_dose) > 0: val_bowel_mean_sum += bowel_dose.mean().item()
@@ -1268,10 +1289,10 @@ def main():
                     n_val += 1
 
                     # 3. Aggressively delete CPU tensors to free system RAM
-                    del outputs_gy, discrete_ptv, ptv62_dose, ptv44_dose, bowel_dose, femur_dose
+                    del outputs_gy, discrete_ptv, ptv60_dose, ptv44_dose, bowel_dose, femur_dose, penile_dose
                     del ptv_dose, bladder_dose, rectum_dose, ring_dose, bg_dose
                     del ptv_mask_cpu, bladder_mask_cpu, rectum_mask_cpu, ring_mask_cpu
-                    del bowel_mask_cpu, femur_mask_cpu, body_mask_cpu, bg_mask
+                    del bowel_mask_cpu, femur_mask_cpu, body_mask_cpu, bg_mask, penile_mask_cpu
                     
                     del outputs, outputs_activated, body_mask_hard
                     del ptv_mask, bladder_mask, rectum_mask, ring_mask_val
@@ -1287,16 +1308,17 @@ def main():
             avg_ring = val_ring_mean_sum / max(n_val, 1)
             avg_dmax = val_dmax_sum / max(n_val, 1)
             avg_bg = val_bg_mean_sum / max(n_val, 1)
-            avg_ptv62 = val_ptv62_mean_sum / max(n_val, 1)
+            avg_ptv60 = val_ptv60_mean_sum / max(n_val, 1)
             avg_ptv44 = val_ptv44_mean_sum / max(n_val, 1)
             avg_bowel = val_bowel_mean_sum / max(n_val, 1)
             avg_femur = val_femur_mean_sum / max(n_val, 1)
+            avg_penile = val_penile_mean_sum / max(n_val, 1)
 
         epoch_summary = (
             f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
             f"          Core Metrics: PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy\n"
-            f"          SIB Targets:  PTV62={avg_ptv62:.2f}Gy PTV44={avg_ptv44:.2f}Gy\n"
-            f"          OAR Metrics:  Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy\n"
+            f"          SIB Targets:  PTV60={avg_ptv60:.2f}Gy PTV44={avg_ptv44:.2f}Gy\n"
+            f"          OAR Metrics:  Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
             f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy"
         )
         print(f"  --> {epoch_summary}")
@@ -1314,7 +1336,7 @@ def main():
                 logger.info(checkpoint_msg)
 
             current_worst_oar = max(avg_bladder, avg_rectum)
-            ptv_deficit = max(0.0, 62.4 - avg_d95)
+            ptv_deficit = max(0.0, 60.0 - avg_d95)   # v3: PTV60 target
             clinical_score = current_worst_oar + (ptv_deficit * 3.0)
 
             if is_physically_valid and clinical_score < best_clinical_score:
@@ -1413,10 +1435,20 @@ def main():
                 outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
 
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
+                penile_mask_eval = (inputs[:, 6:7, ...] > 0.5)
 
-                ptv_dose     = outputs_gy[ptv_mask.bool()].cpu()
+                discrete_ptv = inputs[:, 1:2, ...].cpu()
+                
+                # SIB Mapping from CreateDiscretePTVMapd
+                sib_eval_targets = {
+                    "PTV60": 1.0,
+                    "PTV55": 3.0,
+                    "PTV54": 6.0,
+                    "PTV44": 2.0
+                }
                 bladder_dose = outputs_gy[bladder_mask.bool()].cpu()
                 rectum_dose  = outputs_gy[rectum_mask.bool()].cpu()
+                penile_dose  = outputs_gy[penile_mask_eval.bool()].cpu()
 
                 try:
                     label_path = val_files[idx]["dose_label"]
@@ -1426,27 +1458,40 @@ def main():
 
                 row = {"Patient_ID": patient_id}
 
-                for pct in (99, 98, 95, 50, 2):
-                    row[f"PTV_D{pct} (Gy)"] = quantile_dose(ptv_dose, pct)
-                row["PTV_Mean (Gy)"] = ptv_dose.mean().item() if ptv_dose.numel() else float("nan")
-                row["PTV_Max (Gy)"]  = ptv_dose.max().item()  if ptv_dose.numel() else float("nan")
+                # Calculate metrics for each specific SIB target
+                for name, id_val in sib_eval_targets.items():
+                    mask = torch.isclose(discrete_ptv, torch.tensor(id_val, dtype=torch.float32))
+                    sib_dose = outputs_gy[mask.bool()]
+                    
+                    if sib_dose.numel() > 0:
+                        row[f"{name}_D95 (Gy)"] = quantile_dose(sib_dose, 95)
+                        row[f"{name}_Mean (Gy)"] = sib_dose.mean().item()
+                        row[f"{name}_Max (Gy)"] = sib_dose.max().item()
+                    else:
+                        row[f"{name}_D95 (Gy)"] = float("nan")
+                        row[f"{name}_Mean (Gy)"] = float("nan")
+                        row[f"{name}_Max (Gy)"] = float("nan")
 
                 row["Bladder_Mean (Gy)"] = bladder_dose.mean().item() if bladder_dose.numel() else float("nan")
                 row["Bladder_Max (Gy)"]  = bladder_dose.max().item()  if bladder_dose.numel() else float("nan")
-                for thresh in (60.4, 56.0, 47.0, 38.0, 28.6):
+                for thresh in (59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0):  # v3 thresholds
                     row[f"Bladder_V{thresh}Gy (%)"] = v_metric(bladder_dose, thresh)
 
                 row["Rectum_Mean (Gy)"] = rectum_dose.mean().item() if rectum_dose.numel() else float("nan")
                 row["Rectum_Max (Gy)"]  = rectum_dose.max().item()  if rectum_dose.numel() else float("nan")
-                for thresh in (60.4, 56.0, 47.0, 38.0, 28.6):
+                for thresh in (59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0):  # v3 thresholds
                     row[f"Rectum_V{thresh}Gy (%)"] = v_metric(rectum_dose, thresh)
+
+                row["PenileBulb_Mean (Gy)"] = penile_dose.mean().item() if penile_dose.numel() else float("nan")
+                row["PenileBulb_V47Gy (%)"] = v_metric(penile_dose, 47.0)  # v3: V47Gy ≤ 50%
 
                 records.append(row)
                 print(
                     f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
-                    f"PTV D95={row['PTV_D95 (Gy)']:.2f} Gy  "
+                    f"PTV60 D95={row['PTV60_D95 (Gy)']:.2f} Gy  "
                     f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
-                    f"Rectum Mean={row['Rectum_Mean (Gy)']:.2f} Gy"
+                    f"Rectum Mean={row['Rectum_Mean (Gy)']:.2f} Gy  "
+                    f"PenileBulb Mean={row['PenileBulb_Mean (Gy)']:.2f} Gy"
                 )
 
         df = pd.DataFrame(records)
