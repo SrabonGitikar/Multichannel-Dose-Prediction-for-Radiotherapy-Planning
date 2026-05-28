@@ -1,0 +1,17 @@
+name: ProstatePrime
+protocol: prime
+version: 1.0
+structures:
+  OAR:
+    1: Bladder
+    2: Anorectum
+    3: Bag_Bowel
+    4: Femur_Head_L
+    5: Femur_Head_R
+    6: Penilebulb
+  PTV:
+    1: PTV_62/20
+    2: PTV_44/20
+    
+prescription_dose: 62
+fractions: 20

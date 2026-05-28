@@ -57,8 +57,8 @@ python plot_masks.py
 
 ```bash
 python utils/pipeline.py \
-    --dicom-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/f40d8cf2.f057.409e.a9cb.434ea5aa8eed/1.2.826.0.1.3680043.10.1561.260.1390.924/" \
-    --model best_dose_model.pth \
+    --dicom-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/raw_dicom_nifti/f40d8cf2.f057.409e.a9cb.434ea5aa8eed/1.2.826.0.1.3680043.10.1561.260.1390.924/" \
+    --model best_dose_model_physics.pth \
     --dose-spacing 2.5
 
 ```
