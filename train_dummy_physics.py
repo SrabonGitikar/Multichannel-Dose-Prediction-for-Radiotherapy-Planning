@@ -873,8 +873,9 @@ def extract_binary_masks(inputs):
 
 def main():
     # ---- Setup logging ---------------------------------------------
+    os.makedirs("logs", exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_filename = f"training_{timestamp}.log"
+    log_filename = f"logs/training_{timestamp}.log"
     log_format = "%(asctime)s [%(levelname)s] %(message)s"
     date_format = "%Y-%m-%d %H:%M:%S"
 
@@ -1330,7 +1331,7 @@ def main():
 
             if is_physically_valid and val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
-                torch.save(model.state_dict(), "best_dose_model_physics.pth")
+                torch.save(model.state_dict(), "best_dose_model_physics_may28.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
@@ -1341,7 +1342,7 @@ def main():
 
             if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
-                torch.save(model.state_dict(), "best_dose_model_clinical.pth")
+                torch.save(model.state_dict(), "best_dose_model_clinical_may28.pth")
                 clinical_msg = (
                     f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
                     f"PTV_D95={avg_d95:.2f}Gy Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
@@ -1351,7 +1352,7 @@ def main():
 
             if val_loss_avg < best_diagnostic_mse:
                 best_diagnostic_mse = val_loss_avg
-                torch.save(model.state_dict(), "best_dose_model_diagnostic.pth")
+                torch.save(model.state_dict(), "best_dose_model_diagnostic_may28.pth")
                 diag_msg = f"[DIAGNOSTIC] Saved fallback model MSE={best_diagnostic_mse:.4f}"
                 print(f"  --> {diag_msg}")
                 logger.info(diag_msg)
@@ -1397,9 +1398,9 @@ def main():
 
     # ---- Dual-model evaluation loop ------------------------------------
     for model_path, csv_name in [
-        ("best_dose_model_physics.pth",    "validation_physics_summary.csv"),
-        ("best_dose_model_clinical.pth",   "validation_clinical_summary.csv"),
-        ("best_dose_model_diagnostic.pth", "validation_diagnostic_summary.csv"),
+        ("best_dose_model_physics_may28.pth",    "validation_physics_summary_may28.csv"),
+        ("best_dose_model_clinical_may28.pth",   "validation_clinical_summary_may28.csv"),
+        ("best_dose_model_diagnostic_may28.pth", "validation_diagnostic_summary_may28.csv"),
     ]:
         print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
