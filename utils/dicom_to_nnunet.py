@@ -11,6 +11,7 @@ Input channels:
   3 = Anorectum signed distance map (mm, negative inside organ)
   4 = IMRT Beam Prior (binary mask, dynamic-radius cylinders along gantry angles)
   5 = Body Mask (binary: 1 = inside patient, 0 = air outside body)
+  6 = Penile Bulb binary mask (binary: 1 = inside organ, 0 = outside)  [v3]
 
 Label:
   RTDose in Gy (continuous values for regression)
@@ -41,11 +42,13 @@ DATASET_NAME = "Dataset001_ProstateDose"
 # Structure name matching patterns (case-insensitive, priority order)
 STRUCTURE_PATTERNS = {
     "PTV": [
-        r"^CTVP$", r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$", 
-        r"^CTV_55", r"^PTV_55", r"^CTV55$", r"^PTV55$", 
+        r"^CTVP$",
+        r"^CTV_?60", r"^PTV_?60",          # New: PTV60 (v3 protocol)
+        r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$",  # Legacy PTV62
+        r"^CTV_55", r"^PTV_55", r"^CTV55$", r"^PTV55$",
         r"^CTV_54", r"^PTV_54", r"^CTV54$", r"^PTV54$",
-        r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36", 
-        r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25", 
+        r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36",
+        r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25",
         r"^CTV 25", r"^PTV 25",
     ],
     "Bladder": [
@@ -54,8 +57,7 @@ STRUCTURE_PATTERNS = {
     "Anorectum": [
         r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$",
     ],
-    # Auxiliary OARs — used ONLY in the loss function, not as model input channels.
-    # Saved as separate NIfTI files (_bowel.nii.gz, _femur.nii.gz).
+    # Auxiliary OARs — saved as separate NIfTI files (_bowel.nii.gz, _femur.nii.gz).
     # Missing in any patient → empty mask (no skip).
     "Bag_Bowel": [
         r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*",
@@ -65,6 +67,13 @@ STRUCTURE_PATTERNS = {
     ],
     "Femur_R": [
         r"^Femur_?Head_?R.*", r"^R_?Femur.*", r"^Right_?Femur.*",
+    ],
+    # Penile Bulb — new in v3. Saved as channel 6 (_0006.nii.gz), binary mask.
+    # Missing in any patient → empty mask (no skip, loss term = 0).
+    "Penile_Bulb": [
+        r"^Penile_?Bulb.*",
+        r"^PenileBulb.*",
+        r"^Penile Bulb.*",
     ],
 }
 
@@ -418,6 +427,16 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, "
           f"R={femur_r_name or 'NOT FOUND'}  ({femur_mask.sum():,} voxels)")
 
+    # Penile Bulb — new v3 OAR.  Saved as model input Channel 6 (_0006.nii.gz).
+    # Optional: empty mask used gracefully when absent (loss term → 0).
+    penile_name = match_structure_name(roi_names, "Penile_Bulb")
+    if penile_name:
+        penile_bulb_mask = rtstruct_contour_to_mask(rs_ds, penile_name, ct_image)
+        print(f"         Penile_Bulb: {penile_name}  ({penile_bulb_mask.sum():,} voxels)")
+    else:
+        penile_bulb_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
+        print("         Penile_Bulb: NOT FOUND — using empty mask (loss term = 0)")
+
     if ptv_mask.sum() == 0:
         print(f"  *** SKIPPING: PTV mask is empty ***")
         return False
@@ -448,7 +467,8 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     print(f"         Bladder: {bladder_name}")
     print(f"         Anorectum: {anorectum_name}")
     print(f"         Bag_Bowel: {bowel_name or 'NOT FOUND'}")
-    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}\n")
+    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}")
+    print(f"         Penile_Bulb: {penile_name or 'NOT FOUND'}\n")
 
     print("  [8/8] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
@@ -473,24 +493,30 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(body_mask_array, ct_image),
                     os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
 
+    # Channel 6: Penile Bulb binary mask (v3 — new OAR input channel)
+    sitk.WriteImage(numpy_to_sitk(penile_bulb_mask.astype(np.float32), ct_image),
+                    os.path.join(images_dir, f"{case_name}_0006.nii.gz"))
+
     # Auxiliary OAR masks (loss-only, NOT model input channels).
-    # Bag_Bowel: V45Gy < 30% constraint in loss function.
-    # Femur (merged L+R): V50Gy < 5% constraint in loss function.
+    # Bag_Bowel: V45Gy < 90cc constraint in loss function (hardcoded threshold).
+    # Femur (merged L+R): D_max < 40 Gy constraint in loss function.
     sitk.WriteImage(numpy_to_sitk(bowel_mask.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_bowel.nii.gz"))
     sitk.WriteImage(numpy_to_sitk(femur_mask.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_femur.nii.gz"))
 
     SIB_CANONICAL = {
-        r"^ptv.*62|^ctv.*62|^ctvp$": "PTV62",
-        r"^ptv.*55|^ctv.*55": "PTV55", 
+        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",   # v3 canonical
+        r"^ptv.*62|^ctv.*62": "PTV60",            # legacy PTV62 → maps to PTV60
+        r"^ptv.*55|^ctv.*55": "PTV55",
         r"^ptv.*54|^ctv.*54": "PTV54",
         r"^ptv.*44|^ctv.*44": "PTV44",
         r"^ptv.*36|^ctv.*36": "PTV36",
         r"^ptv.*25|^ctv.*25": "PTV25",
     }
 
-    # Individual PTVs for SIB mapping
+    # 1. Accumulate and merge masks by canonical name to prevent overwriting
+    accumulated_ptvs = {}
     for p_name, p_mask in individual_ptv_masks.items():
         canonical = None
         for pattern, cname in SIB_CANONICAL.items():
@@ -501,13 +527,21 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         if canonical is None:
             canonical = p_name.replace(" ", "_").replace("/", "_")
             
+        if canonical in accumulated_ptvs:
+            # Merge overlapping or adjacent volumes targeting the same dose
+            accumulated_ptvs[canonical] = np.maximum(accumulated_ptvs[canonical], p_mask)
+        else:
+            accumulated_ptvs[canonical] = p_mask
+
+    # 2. Write the safely accumulated canonical masks to disk
+    for canonical, p_mask in accumulated_ptvs.items():
         sitk.WriteImage(numpy_to_sitk(p_mask.astype(np.float32), ct_image),
                         os.path.join(images_dir, f"{case_name}_{canonical}.nii.gz"))
 
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    print(f"  ✓ Done! Saved 6 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
+    print(f"  ✓ Done! Saved 7 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
     return True
 
 def create_dataset_json(output_dir, num_cases):
@@ -518,7 +552,8 @@ def create_dataset_json(output_dir, num_cases):
             "2": "Bladder_SDM",
             "3": "Anorectum_SDM",
             "4": "IMRT_Beam_Prior",
-            "5": "Body_Mask"
+            "5": "Body_Mask",
+            "6": "Penile_Bulb_mask",   # v3
         },
         "labels": {"0": "dose"},
         "numTraining": num_cases,
