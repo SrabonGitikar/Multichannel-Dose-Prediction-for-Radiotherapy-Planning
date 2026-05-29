@@ -342,43 +342,42 @@ class PhysicsGuidedDoseLoss(nn.Module):
         ptv_channel = inputs[:, 1:2, ...]
         
         # Dynamically extract independent masks
-        ptv62_mask = (torch.isclose(ptv_channel, torch.tensor(1.0, device=pred_dose.device))).float()
+        ptv60_mask = (torch.isclose(ptv_channel, torch.tensor(1.0, device=pred_dose.device))).float()
         ptv44_mask = (torch.isclose(ptv_channel, torch.tensor(2.0, device=pred_dose.device))).float()
         ptv55_mask = (torch.isclose(ptv_channel, torch.tensor(3.0, device=pred_dose.device))).float()
         ptv36_mask = (torch.isclose(ptv_channel, torch.tensor(4.0, device=pred_dose.device))).float()
         ptv25_mask = (torch.isclose(ptv_channel, torch.tensor(5.0, device=pred_dose.device))).float()
         ptv54_mask = (torch.isclose(ptv_channel, torch.tensor(6.0, device=pred_dose.device))).float()
 
-        loss_ptv = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        loss_homogeneity = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-
-        # Map targets to their discrete extraction masks
+        # Map targets to their discrete extraction masks with explicit clinical floors/ceilings
         sib_targets = {
-            "ptv60": {"mask": ptv62_mask, "rx": 60.0, "is_core": True},   # v3: PTV60 (was ptv62/62.4Gy)
-            "ptv55": {"mask": ptv55_mask, "rx": 55.0, "is_core": False},
-            "ptv54": {"mask": ptv54_mask, "rx": 54.0, "is_core": False},
-            "ptv44": {"mask": ptv44_mask, "rx": 44.0, "is_core": False},
-            "ptv36": {"mask": ptv36_mask, "rx": 36.0, "is_core": False},
-            "ptv25": {"mask": ptv25_mask, "rx": 25.0, "is_core": False}
+            "ptv60": {"mask": ptv60_mask, "rx": 60.0, "ceil": 64.2},
+            "ptv55": {"mask": ptv55_mask, "rx": 55.0, "ceil": 58.3},
+            "ptv54": {"mask": ptv54_mask, "rx": 54.0, "ceil": 57.24},
+            "ptv44": {"mask": ptv44_mask, "rx": 44.0, "ceil": 46.64},
+            "ptv36": {"mask": ptv36_mask, "rx": 36.0, "ceil": 38.16},
+            "ptv25": {"mask": ptv25_mask, "rx": 25.0, "ceil": 26.50}
         }
+
+        loss_ptv = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        loss_homogeneity = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype) # Kept at 0.0 to avoid breaking return dict
 
         for name, data in sib_targets.items():
             mask = data["mask"]
             if mask.sum() > 0:
                 rx_norm = data["rx"] / PRESCRIPTION_DOSE_GY
+                ceil_norm = data["ceil"] / PRESCRIPTION_DOSE_GY
                 
-                # The Floor: Strict penalty for any underdosing
+                # The Floor: Strict penalty for any underdosing below Rx
                 underdose_penalty = (torch.relu(rx_norm - pred_dose) ** 2) * mask
                 loss_ptv += underdose_penalty.sum() / mask.sum()
 
-                # The Ceiling: Symmetric MSE for the core, relaxed ceiling for transit regions
-                if data["is_core"]:
-                    homogeneity_penalty = ((pred_dose - rx_norm) ** 2) * mask
-                else:
-                    upper_bound_norm = (data["rx"] * 1.05) / PRESCRIPTION_DOSE_GY
-                    homogeneity_penalty = (torch.relu(pred_dose - upper_bound_norm) ** 2) * mask
+                # The Ceiling: Strict penalty for any overdosing above ICRU limit
+                overdose_penalty = (torch.relu(pred_dose - ceil_norm) ** 2) * mask
+                loss_ptv_max += overdose_penalty.sum() / mask.sum()
                 
-                loss_homogeneity += homogeneity_penalty.sum() / mask.sum()
+                # Between rx_norm and ceil_norm, the gradient is exactly 0.
 
         # ------ 3a. Homogeneity Penalty -----------------------------
         # (Computed inside the SIB loop above)
@@ -389,21 +388,6 @@ class PhysicsGuidedDoseLoss(nn.Module):
         if ptv_n > 0:
             ptv_underdose_frac = (torch.relu(0.50 - pred_dose) * ptv_mask).sum() / ptv_n
             loss_anticollapse = ptv_underdose_frac ** 2
-
-        # ------ 4. L_D-Type max dose (Hotspot Smasher) --------------
-        loss_ptv_max = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        if ptv62_mask.sum() > 0:  # ptv62_mask = PTV60 in v3
-            loss_ptv_max += ((torch.relu(pred_dose - (64.2/PRESCRIPTION_DOSE_GY)))**2 * ptv62_mask).sum() / ptv62_mask.sum()
-        if ptv55_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (58.3/PRESCRIPTION_DOSE_GY)))**2 * ptv55_mask).sum() / ptv55_mask.sum()
-        if ptv54_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (57.24/PRESCRIPTION_DOSE_GY)))**2 * ptv54_mask).sum() / ptv54_mask.sum()
-        if ptv44_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (46.64/PRESCRIPTION_DOSE_GY)))**2 * ptv44_mask).sum() / ptv44_mask.sum()
-        if ptv36_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (38.16/PRESCRIPTION_DOSE_GY)))**2 * ptv36_mask).sum() / ptv36_mask.sum()
-        if ptv25_mask.sum() > 0:
-            loss_ptv_max += ((torch.relu(pred_dose - (26.50/PRESCRIPTION_DOSE_GY)))**2 * ptv25_mask).sum() / ptv25_mask.sum()
 
         # ------ Global Hard Ceiling (Top-K L1 formulation) --------------
         
@@ -817,8 +801,7 @@ train_transforms = Compose(
             spatial_size=PATCH_SIZE,
             num_classes=5,
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
-            num_samples=2,
-            allow_missing_keys=True,
+            num_samples=2,  
         ),
         DeleteItemsd(keys=["crop_mask"]),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
@@ -1016,14 +999,14 @@ def main():
     PHYSICS_TARGET_LAMBDAS = {
         "lambda_optional":      2.0,
         "lambda_mandatory":    50.0,
-        "lambda_ptv":          10.0,
-        "lambda_ptv_max":      150.0,
+        "lambda_ptv":          30.0,
+        "lambda_ptv_max":      30.0,
         "lambda_ring":         15.0,
         "lambda_smooth":        1.0,
         "lambda_laplacian":     5.0,
         "lambda_anticollapse": 150.0,
         "lambda_beam":         25.0,
-        "lambda_homogeneity":  20.0,
+        "lambda_homogeneity":  0.0,
         "lambda_body":         20.0,
         "lambda_bowel":        15.0,
         "lambda_femur":        10.0,
