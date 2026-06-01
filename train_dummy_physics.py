@@ -59,7 +59,7 @@ DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
-CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]  # 7 input channels (v3 adds Penile Bulb)
+CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005"]  # 6 input channels
 TARGET_SPACING = (1.27, 1.27, 2.5)
 PATCH_SIZE = (128, 128, 64)  
 
@@ -231,14 +231,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_smooth=1.0,          
         lambda_ring=15.0,           
         lambda_anticollapse=50.0,   
-        lambda_beam=5.0,            
-        lambda_ptv_max=150.0,       
-        lambda_homogeneity=30.0,    
-        lambda_laplacian=5.0,       
-        lambda_bowel=15.0,          
-        lambda_femur=10.0,          
         lambda_global_ceil=2.0,     
-        lambda_beam_ceil=2.0,       
         lambda_shell_inner=0.0,     
         lambda_shell_outer=0.0,     
         lambda_penile=10.0,         # Penile Bulb V47Gy ≤ 50% (v3)
@@ -254,14 +247,12 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_smooth = lambda_smooth
         self.lambda_ring = lambda_ring
         self.lambda_anticollapse = lambda_anticollapse
-        self.lambda_beam = lambda_beam
         self.lambda_ptv_max = lambda_ptv_max
         self.lambda_homogeneity = lambda_homogeneity
         self.lambda_laplacian = lambda_laplacian
         self.lambda_bowel = lambda_bowel
         self.lambda_femur = lambda_femur
         self.lambda_global_ceil = lambda_global_ceil
-        self.lambda_beam_ceil = lambda_beam_ceil
         self.lambda_shell_inner = lambda_shell_inner
         self.lambda_shell_outer = lambda_shell_outer
         self.lambda_body = 20.0    
@@ -389,29 +380,27 @@ class PhysicsGuidedDoseLoss(nn.Module):
             ptv_underdose_frac = (torch.relu(0.50 - pred_dose) * ptv_mask).sum() / ptv_n
             loss_anticollapse = ptv_underdose_frac ** 2
 
-        # ------ Global Hard Ceiling (Top-K L1 formulation) --------------
-        
-        global_ceil_norm = 72.0 / 75.0
-        body_mask_bool = inputs[:, 5:6, ...] > 0.5
-        body_pred = pred_dose[body_mask_bool]
+        # ------ Global Hard Ceiling (Fixed-K=1000 Top-K MSE) ------
+        # 64.2 Gy = 107% of PTV60 — hard clinical ceiling
+        # K=1000 ≈ 4 cc of tissue at 1.27×1.27×2.5 mm spacing.
+        # Dividing by constant K_CEIL (not by n_violations) avoids both
+        # the volume-dilution trap (.mean() over 2M voxels) and the
+        # denominator-inflation trap (dividing by N_violating).
+        K_CEIL = 1000
+        global_ceil_norm = 64.2 / PRESCRIPTION_DOSE_GY
+        body_pred = pred_dose[inputs[:, 4:5, ...] > 0.5]
 
         loss_global_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        
         if body_pred.numel() > 0:
             ceil_violations = torch.relu(body_pred - global_ceil_norm)
-            
             if ceil_violations.max() > 0:
-                
-                K = max(int(0.001 * body_pred.numel()), 10)
-                K = min(K, body_pred.numel())  
-                
-                topk_violations, _ = torch.topk(ceil_violations, K)
-                
-                loss_global_ceil = topk_violations.sum()
+                K = min(K_CEIL, ceil_violations.numel())
+                top_violations, _ = torch.topk(ceil_violations, K)
+                loss_global_ceil = (top_violations ** 2).sum() / K_CEIL
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         
-        RING_THRESH = 0.88  # = 66 Gy / 75 Gy — only supratherapeutic hotspots
+        RING_THRESH = 62.0 / PRESCRIPTION_DOSE_GY  # Suppress hotspots instantly outside target
         ring_n = ring_mask.sum()
         if ring_n > 0:
             ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
@@ -475,38 +464,9 @@ class PhysicsGuidedDoseLoss(nn.Module):
 #                topk_outer, _ = torch.topk(outer_violations, K_outer)
 #                loss_shell_outer = topk_outer.sum()
 
-        # ------ 5b. L_Beam (Anti-Brachytherapy Suppression) --------------
-        beam_mask = inputs[:, 4:5, ...]
-        body_mask = (inputs[:, 5:6, ...] > 0.5).float()
-        
-        exclusion_mask = torch.clamp(ptv_mask + ring_mask + bladder_mask + rectum_mask, 0.0, 1.0)
-        outside_beam_body = (1.0 - beam_mask) * body_mask * (1.0 - exclusion_mask)
-        rogue_dose = pred_dose * outside_beam_body
-        n_rogue = outside_beam_body.sum().clamp(min=1.0)
-        loss_beam_suppression = rogue_dose.sum() / n_rogue
-
-        # ------ 5d. Beam Corridor Hard Ceiling (Top-K L1 Sum) --------------
-        
-        beam_interior_mask = beam_mask * body_mask * (1.0 - ptv_mask) * \
-                             (1.0 - ring_mask) * \
-                             (1.0 - bladder_mask) * (1.0 - rectum_mask)
-        beam_pred = pred_dose[beam_interior_mask.bool()]
-        
-        loss_beam_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        if beam_pred.numel() > 0:
-            beam_ceil_violations = torch.relu(beam_pred - 0.80) # 60 Gy / 75 Gy
-            if beam_ceil_violations.max() > 0:
-                
-                K_beam = max(int(0.001 * beam_pred.numel()), 10)
-                K_beam = min(K_beam, beam_pred.numel()) 
-                
-                topk_beam, _ = torch.topk(beam_ceil_violations, K_beam)
-                
-                loss_beam_ceil = topk_beam.sum()
-
         # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
         
-        body_mask = (inputs[:, 5:6, ...] > 0.5).float()
+        body_mask = (inputs[:, 4:5, ...] > 0.5).float()
         outside_body_mask = 1.0 - body_mask
         ghost_dose = pred_dose * outside_body_mask
         n_outside_body = outside_body_mask.sum().clamp(min=1.0)
@@ -557,7 +517,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 9. L_Penile (Penile Bulb — V47Gy ≤ 50%, v3) ----------
         # Read Penile Bulb directly from model input channel 6.
-        penile_mask_ch = inputs[:, 6:7, ...]
+        penile_mask_ch = inputs[:, 5:6, ...]
         loss_penile = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         for rule in self.constraints["v_type"].get("Penile_Bulb", []):
             v_frac = self.calculate_dvh_volume(pred_dose, penile_mask_ch, rule["norm_dose"])
@@ -576,8 +536,6 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_smooth     * loss_smooth
             + self.lambda_laplacian  * loss_laplacian
             + self.lambda_anticollapse * loss_anticollapse
-            + self.lambda_beam       * loss_beam_suppression
-            + self.lambda_beam_ceil   * loss_beam_ceil
             + self.lambda_shell_inner * loss_shell_inner
             + self.lambda_shell_outer * loss_shell_outer
             + self.lambda_homogeneity * loss_homogeneity
@@ -597,8 +555,6 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "smooth":     loss_smooth.item(),
             "laplacian":  loss_laplacian.item(),
             "anticollapse": loss_anticollapse.item(),
-            "beam":       loss_beam_suppression.item(),
-            "beam_ceil":    loss_beam_ceil.item(),
             "shell_inner":  loss_shell_inner.item(),
             "shell_outer":  loss_shell_outer.item(),
             "homogeneity":  loss_homogeneity.item(),
@@ -773,7 +729,7 @@ class CreateFalloffRingd(MapTransform):
         return d
 
 SIB_KEYS = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]   # v3: PTV62 → PTV60
-ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
+ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5",
             "bowel_mask", "femur_mask",  
             "dose_label"] + SIB_KEYS
 
@@ -784,7 +740,7 @@ train_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 to ch_6
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",  # ch_0 to ch_5
                   "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
@@ -802,11 +758,10 @@ train_transforms = Compose(
             spatial_size=PATCH_SIZE,
             num_classes=5,
             ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
-            num_samples=2,
-            allow_missing_keys=True,  # required: SIB keys deleted by CreateDiscretePTVMapd before this runs
+            num_samples=2,  
         ),
         DeleteItemsd(keys=["crop_mask"]),
-        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
+        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
         ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask"]),
     ]
 )
@@ -818,14 +773,14 @@ val_transforms = Compose(
         Spacingd(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
-            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 – ch_6
+            mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest",  # ch_0 – ch_5
                   "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
         CreateDiscretePTVMapd(keys=["ch_0"]),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
+        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5"], name="image"),
         ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
     ]
 )
@@ -837,14 +792,13 @@ val_transforms = Compose(
 def extract_binary_masks(inputs):
     """
     Convert the concatenated input tensor channels to binary masks.
-    Channel layout (v3, 7 channels):
+    Channel layout (v3, 6 channels):
       0 = CT (normalized HU)
       1 = discrete PTV map (integer 1-6 per sub-volume)
       2 = Bladder SDM   (≤ 0 inside organ)
       3 = Anorectum SDM (≤ 0 inside organ)
-      4 = IMRT Beam Prior (binary)
-      5 = Body Mask (binary)
-      6 = Penile Bulb (binary, NEW v3)
+      4 = Body Mask (binary)
+      5 = Penile Bulb (binary, NEW v3)
 
     Returns ptv_mask, bladder_mask, rectum_mask  — all (B,1,D,H,W) float.
     """
@@ -965,7 +919,7 @@ def main():
 
     model = UNet(
         spatial_dims=3,
-        in_channels=7,  # 7 inputs: CT, discrete_PTV, Bladder_SDM, Ano_SDM, Beam, Body, PenileBulb
+        in_channels=6,  # 6 inputs: CT, discrete_PTV, Bladder_SDM, Ano_SDM, Body, PenileBulb
         out_channels=1,
         channels=(16, 32, 64, 128),  
         strides=(2, 2, 2),           
@@ -983,12 +937,8 @@ def main():
         lambda_ring=0.0,            
         lambda_smooth=0.0,          
         lambda_laplacian=0.0,       
-        lambda_anticollapse=0.0,    
-        lambda_beam=0.0,            
-        lambda_ptv_max=0.0,         
         lambda_homogeneity=0.0,     
         lambda_global_ceil=2.0,     
-        lambda_beam_ceil=2.0,       
         lambda_shell_inner=0.0,     # disabled — not yet active
         lambda_shell_outer=0.0,     # disabled — not yet active
         lambda_bowel=0.0,           
@@ -1001,18 +951,18 @@ def main():
     PHYSICS_TARGET_LAMBDAS = {
         "lambda_optional":      2.0,
         "lambda_mandatory":    50.0,
-        "lambda_ptv":          30.0,
+        "lambda_ptv":          45.0,
         "lambda_ptv_max":      30.0,
-        "lambda_ring":         15.0,
+        "lambda_ring":         25.0,
         "lambda_smooth":        0.5,
         "lambda_laplacian":     1.0,
         "lambda_anticollapse": 150.0,
-        "lambda_beam":         25.0,
         "lambda_homogeneity":  0.0,
         "lambda_body":         20.0,
         "lambda_bowel":        15.0,
         "lambda_femur":        10.0,
-        "lambda_penile":       10.0,   # v3: Penile Bulb V47Gy ≤ 50%
+        "lambda_penile":       10.0,
+        "lambda_global_ceil": 150.0,
     }
 
     print(f"\n{'='*60}")
@@ -1052,12 +1002,6 @@ def main():
         for attr, target in PHYSICS_TARGET_LAMBDAS.items():
             setattr(loss_function, attr, target * ramp_frac)
 
-        # ---- Ceiling lambda partial ramp (first 20 epochs only) -----
-        
-        CEIL_RAMP_EPOCHS = 20
-        ceil_ramp = min((epoch + 1) / CEIL_RAMP_EPOCHS, 1.0)
-        loss_function.lambda_global_ceil = 2.0 * ceil_ramp
-        loss_function.lambda_beam_ceil   = 2.0 * ceil_ramp
 
         if epoch < WARMUP_EPOCHS:
             phase_tag = (f"RAMP {epoch + 1}/{WARMUP_EPOCHS} "
@@ -1103,7 +1047,7 @@ def main():
 
             outputs_activated = F.softplus(outputs.float())
 
-            body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+            body_mask_hard = (inputs[:, 4:5, ...] > 0.5).float()
             outputs_activated = outputs_activated * body_mask_hard
 
             loss, components = loss_function(
@@ -1141,7 +1085,6 @@ def main():
                     f"ring={components['ring']:.5f} "
                     f"smooth={components['smooth']:.4f} laplacian={components['laplacian']:.4f} "
                     f"anticollapse={components['anticollapse']:.5f} "
-                    f"beam={components['beam']:.5f} beam_ceil={components['beam_ceil']:.5f} "
                     f"shell_inner={components['shell_inner']:.5f} "
                     f"shell_outer={components['shell_outer']:.5f} "
                     f"homogeneity={components['homogeneity']:.4f} "
@@ -1207,7 +1150,7 @@ def main():
 
                     outputs_activated = F.softplus(outputs.float())
 
-                    body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+                    body_mask_hard = (inputs[:, 4:5, ...] > 0.5).float()
                     outputs_activated = outputs_activated * body_mask_hard
 
                     normalized_targets = targets / PRESCRIPTION_DOSE_GY
@@ -1247,8 +1190,8 @@ def main():
                         val_ptv44_d95_sum  += torch.quantile(ptv44_dose, 0.05).item()
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
                         
-                    # Penile Bulb (channel 6)
-                    penile_mask_cpu = (inputs[:, 6:7, ...] > 0.5).cpu()
+                    # Penile Bulb (channel 5)
+                    penile_mask_cpu = (inputs[:, 5:6, ...] > 0.5).cpu()
                     penile_dose = outputs_gy[penile_mask_cpu.bool()]
                     if len(penile_dose) > 0: val_penile_mean_sum += penile_dose.mean().item()
                         
@@ -1425,7 +1368,7 @@ def main():
                 outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
 
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
-                penile_mask_eval = (inputs[:, 6:7, ...] > 0.5)
+                penile_mask_eval = (inputs[:, 5:6, ...] > 0.5)
 
                 discrete_ptv = inputs[:, 1:2, ...].cpu()
                 
