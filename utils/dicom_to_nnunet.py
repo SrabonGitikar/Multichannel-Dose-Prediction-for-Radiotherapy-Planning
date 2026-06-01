@@ -35,8 +35,8 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
-OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
@@ -61,6 +61,9 @@ STRUCTURE_PATTERNS = {
     # Missing in any patient → empty mask (no skip).
     "Bag_Bowel": [
         r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*",
+    ],
+    "Body": [
+        r"^Body$", r"^EXTERNAL$", r"^Patient$", r"^Skin$",
     ],
     "Femur_L": [
         r"^Femur_?Head_?L.*", r"^L_?Femur.*", r"^Left_?Femur.*",
@@ -250,87 +253,7 @@ def numpy_to_sitk(array, reference_image):
     sitk_image.SetDirection(reference_image.GetDirection())
     return sitk_image
 
-# ===========================================================================
-# IMRT BEAM PRIOR GENERATION (Channel 5)
-# ===========================================================================
 
-def generate_beam_mask(plan_files, ct_image, ptv_mask):
-    if not plan_files:
-        print("         WARNING: No RTPlan found for beam mask generation. Outputting empty mask.")
-        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
-
-    plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
-
-    isocenter_mm = None
-    gantry_angles_deg = []
-
-    if hasattr(plan, 'BeamSequence'):
-        for beam in plan.BeamSequence:
-            b_type = getattr(beam, 'BeamType', '')
-            d_type = getattr(beam, 'TreatmentDeliveryType', '')
-            if b_type == "STATIC" or d_type == "TREATMENT":
-                if hasattr(beam, 'ControlPointSequence') and len(beam.ControlPointSequence) > 0:
-                    cp0 = beam.ControlPointSequence[0]
-                    if isocenter_mm is None and hasattr(cp0, 'IsocenterPosition'):
-                        isocenter_mm = np.array(cp0.IsocenterPosition)
-                    if hasattr(cp0, 'GantryAngle'):
-                        gantry_angles_deg.append(float(cp0.GantryAngle))
-
-    if isocenter_mm is None or not gantry_angles_deg:
-        print("         WARNING: Could not extract Isocenter or Gantry Angles. Outputting empty mask.")
-        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
-
-    print(f"         Isocenter (mm): {isocenter_mm}")
-    print(f"         Gantry Angles: {gantry_angles_deg}")
-
-    ptv_z, ptv_y, ptv_x = np.where(ptv_mask > 0.5)
-    ptv_physical_points = []
-    for x, y, z in zip(ptv_x, ptv_y, ptv_z):
-        ptv_physical_points.append(ct_image.TransformIndexToPhysicalPoint((int(x), int(y), int(z))))
-    
-    if len(ptv_physical_points) > 0:
-        ptv_physical_points = np.array(ptv_physical_points)
-        distances = np.linalg.norm(ptv_physical_points - isocenter_mm, axis=1)
-        cylinder_radius_mm = np.max(distances) + 10.0
-        print(f"         Dynamic Beam Radius (mm): {cylinder_radius_mm:.2f}")
-    else:
-        cylinder_radius_mm = 50.0
-        print(f"         WARNING: Empty PTV, defaulting Beam Radius to {cylinder_radius_mm} mm")
-
-    # Vectorized SimpleITK physical mapping
-    shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
-    shape_xyz = (shape_zyx[2], shape_zyx[1], shape_zyx[0])
-
-    spacing = np.array(ct_image.GetSpacing())
-    origin = np.array(ct_image.GetOrigin())
-    direction = np.array(ct_image.GetDirection()).reshape(3, 3)
-
-    x_idx = np.arange(shape_xyz[0])
-    y_idx = np.arange(shape_xyz[1])
-    z_idx = np.arange(shape_xyz[2])
-    X_idx, Y_idx, Z_idx = np.meshgrid(x_idx, y_idx, z_idx, indexing='ij')
-
-    indices = np.stack([X_idx.ravel(), Y_idx.ravel(), Z_idx.ravel()], axis=1)
-    scaled_indices = indices * spacing
-    physical_points = origin + np.dot(scaled_indices, direction.T)
-
-    beam_mask_flat = np.zeros(len(physical_points), dtype=np.float32)
-
-    for angle in gantry_angles_deg:
-        theta_rad = np.deg2rad(angle)
-        # IEC 61217 to Cartesian direction mapping
-        beam_dir = np.array([np.sin(theta_rad), -np.cos(theta_rad), 0.0])
-        beam_dir = beam_dir / np.linalg.norm(beam_dir)
-
-        vec_to_iso = physical_points - isocenter_mm
-        projection_length = np.sum(vec_to_iso * beam_dir, axis=1)
-        projection_vec = projection_length[:, np.newaxis] * beam_dir
-        perp_distance = np.linalg.norm(vec_to_iso - projection_vec, axis=1)
-
-        beam_mask_flat[perp_distance <= cylinder_radius_mm] = 1.0
-
-    beam_mask_xyz = beam_mask_flat.reshape(shape_xyz[0], shape_xyz[1], shape_xyz[2])
-    return np.transpose(beam_mask_xyz, (2, 1, 0)) # Return as ZYX for SimpleITK
 
 
 # ===========================================================================
@@ -351,7 +274,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     struct_files = dicom_files.get("RTSTRUCT", [])
     dose_files = dicom_files.get("RTDOSE", [])
 
-    print("  [1/7] Loading CT volume...")
+    print("  [1/8] Loading CT volume...")
     reader = sitk.ImageSeriesReader()
     series_ids = reader.GetGDCMSeriesIDs(dicom_dir)
     
@@ -378,7 +301,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         print(f"  *** SKIPPING: CT is {ct_image.GetDimension()}D, expected 3D ***")
         return False
 
-    print("  [2/7] Parsing RTStruct contours...")
+    print("  [2/8] Parsing RTStruct contours...")
     rs_file = find_correct_rtstruct(plan_files, struct_files)
     rs_ds = pydicom.dcmread(rs_file)
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
@@ -395,7 +318,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         return False
     print(f"         PTV structures found ({len(ptv_names)}): {ptv_names}")
 
-    print("  [3/7] Rasterizing contour masks (union of all PTVs)...")
+    print("  [3/8] Rasterizing contour masks (union of all PTVs)...")
     ptv_mask = rtstruct_all_contours_to_mask(rs_ds, ptv_names, ct_image)
 
     print("         Rasterizing individual PTVs for SIB mapping...")
@@ -441,25 +364,26 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         print(f"  *** SKIPPING: PTV mask is empty ***")
         return False
 
-    print("  [4/7] Computing signed distance maps...")
+    print("  [4/8] Computing signed distance maps...")
     spacing_zyx = (spacing[2], spacing[1], spacing[0])
     bladder_sdm = compute_signed_distance_map(bladder_mask, spacing_zyx)
     anorectum_sdm = compute_signed_distance_map(anorectum_mask, spacing_zyx)
 
-    print("  [5/7] Loading and resampling RTDose...")
+    print("  [5/8] Loading and resampling RTDose...")
     dose_image = load_rtdose_as_sitk(dose_files, ct_image)
     dose_array = sitk.GetArrayFromImage(dose_image)
 
-    print("  [6/8] Generating IMRT Beam Prior (Channel 5)...")
-    beam_mask = generate_beam_mask(plan_files, ct_image, ptv_mask)
-    print(f"         Beam Prior Voxels: {beam_mask.sum():,}")
-
-    print("  [7/8] Computing Body Mask from CT (Channel 6)...")
-    # Body mask: any voxel with HU > -300 is considered inside the patient.
-    # This threshold reliably separates external air (-1000 HU) from soft tissue.
-    # The model uses this channel to learn that dose outside the body is always 0.
-    BODY_HU_THRESHOLD = -300.0
-    body_mask_array = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
+    print("  [6/7] Computing Body Mask from RTStruct (Channel 4)...")
+    body_name = match_structure_name(roi_names, "Body")
+    
+    if body_name:
+        print(f"         Using RTStruct contour: {body_name}")
+        body_mask_array = rtstruct_contour_to_mask(rs_ds, body_name, ct_image).astype(np.float32)
+    else:
+        print("         WARNING: No Body/External contour found. Falling back to HU threshold.")
+        BODY_HU_THRESHOLD = -300.0
+        body_mask_array = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
+        
     print(f"         Body Mask Voxels: {int(body_mask_array.sum()):,}")
 
     print("\n  [Summary] Matched Structures for this Patient:")
@@ -469,8 +393,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     print(f"         Bag_Bowel: {bowel_name or 'NOT FOUND'}")
     print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}")
     print(f"         Penile_Bulb: {penile_name or 'NOT FOUND'}\n")
-
-    print("  [8/8] Saving NIfTI files...")
+    print("  [7/7] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
 
     sitk.WriteImage(numpy_to_sitk(ct_array.astype(np.float32), ct_image),
@@ -485,17 +408,13 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(anorectum_sdm, ct_image),
                     os.path.join(images_dir, f"{case_name}_0003.nii.gz"))
 
-    # Channel 4: IMRT Beam Prior
-    sitk.WriteImage(numpy_to_sitk(beam_mask.astype(np.float32), ct_image),
+    # Channel 4: Body Mask (Shifted from 5)
+    sitk.WriteImage(numpy_to_sitk(body_mask_array.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_0004.nii.gz"))
 
-    # Channel 5: Body Mask
-    sitk.WriteImage(numpy_to_sitk(body_mask_array, ct_image),
-                    os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
-
-    # Channel 6: Penile Bulb binary mask (v3 — new OAR input channel)
+    # Channel 5: Penile Bulb binary mask (Shifted from 6)
     sitk.WriteImage(numpy_to_sitk(penile_bulb_mask.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_0006.nii.gz"))
+                    os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
 
     # Auxiliary OAR masks (loss-only, NOT model input channels).
     # Bag_Bowel: V45Gy < 90cc constraint in loss function (hardcoded threshold).
@@ -541,7 +460,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    print(f"  ✓ Done! Saved 7 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
+    print(f"  ✓ Done! Saved 6 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
     return True
 
 def create_dataset_json(output_dir, num_cases):
@@ -551,9 +470,8 @@ def create_dataset_json(output_dir, num_cases):
             "1": "PTV_mask",
             "2": "Bladder_SDM",
             "3": "Anorectum_SDM",
-            "4": "IMRT_Beam_Prior",
-            "5": "Body_Mask",
-            "6": "Penile_Bulb_mask",   # v3
+            "4": "Body_Mask",
+            "5": "Penile_Bulb_mask",
         },
         "labels": {"0": "dose"},
         "numTraining": num_cases,
