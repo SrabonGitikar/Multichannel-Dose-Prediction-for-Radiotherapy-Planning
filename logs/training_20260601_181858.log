@@ -1,0 +1,3 @@
+2026-06-01 18:18:58 [INFO] Training log started: logs/training_20260601_181858.log
+2026-06-01 18:18:58 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-01 18:18:58 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v3.csv ...

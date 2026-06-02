@@ -10,7 +10,7 @@ echo "Starting Pipeline"
 echo "=========================================="
 
 # Step 1: DICOM to nnU-Net conversion
-echo ""
+# echo ""
 # echo "[1/3] Running DICOM to nnU-Net conversion..."
 # python utils/dicom_to_nnunet.py
 

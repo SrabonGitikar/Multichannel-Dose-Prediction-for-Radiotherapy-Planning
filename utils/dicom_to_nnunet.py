@@ -35,8 +35,8 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
-OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
+DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
+OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)

@@ -1,0 +1,7 @@
+2026-06-02 10:24:14 [INFO] Training log started: logs/training_20260602_102414.log
+2026-06-02 10:24:14 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-02 10:24:14 [INFO] Loading clinical constraints from ./prostate_prime_constraints_v3.csv ...
+2026-06-02 10:24:14 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 75 epochs
+2026-06-02 10:24:14 [INFO] Model ready on cuda, epochs=300, AMP=ON
+2026-06-02 10:24:14 [INFO] Epoch 1/300 [RAMP 1/75 (1% of physics)] ramp=0.013 lr=1.00e-04
+2026-06-02 10:26:02 [INFO] Step 5/54 Loss=37.4248 mse=0.8677 v_opt=1.20770 v_mand=0.66716 ptv=0.0273 ptv_max=0.07507 global_ceil=7.55071 ring=0.04096 smooth=0.6952 laplacian=2.7481 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.14640 femur=0.17311 penile=0.00000
