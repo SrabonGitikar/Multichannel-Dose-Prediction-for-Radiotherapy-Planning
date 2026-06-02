@@ -72,7 +72,7 @@ GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", "2"))
 
 VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", "1"))  
 
-WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "75"))
+WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "30"))
 
 # ===================================================================
 
@@ -231,10 +231,16 @@ class PhysicsGuidedDoseLoss(nn.Module):
         lambda_smooth=1.0,          
         lambda_ring=15.0,           
         lambda_anticollapse=50.0,   
+        lambda_ptv_max=150.0,       
+        lambda_homogeneity=30.0,    
+        lambda_laplacian=5.0,       
+        lambda_bowel=15.0,          
+        lambda_femur=10.0,          
         lambda_global_ceil=2.0,     
         lambda_shell_inner=0.0,     
         lambda_shell_outer=0.0,     
         lambda_penile=10.0,         # Penile Bulb V47Gy ≤ 50% (v3)
+        lambda_bg=15.0,
         k_steepness=50.0,           
     ):
         super().__init__()
@@ -257,6 +263,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_shell_outer = lambda_shell_outer
         self.lambda_body = 20.0    
         self.lambda_penile = lambda_penile   # Penile Bulb (v3)
+        self.lambda_bg = lambda_bg
         self.k = k_steepness
 
     # --- Differentiable DVH volume fraction --------------------------
@@ -409,6 +416,20 @@ class PhysicsGuidedDoseLoss(nn.Module):
             loss_ring = torch.tensor(0.0, device=pred_dose.device,
                                      dtype=pred_dose.dtype)
 
+        # ------ 5b. Healthy Tissue Bath Suppression (L_bg) -------------------
+        # Isolate healthy tissue: Body - (PTV + Bladder + Rectum + 5mm Ring + Bowel + Femur)
+        oar_exclusion = ptv_mask + bladder_mask + rectum_mask + ring_mask + bowel_mask + femur_mask
+        bg_mask = (inputs[:, 4:5, ...] > 0.5).float() - oar_exclusion
+        bg_mask = torch.clamp(bg_mask, min=0.0)
+        
+        BG_CEIL_NORM = 15.0 / PRESCRIPTION_DOSE_GY
+        bg_pred = pred_dose[bg_mask.bool()]
+        
+        loss_bg = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
+        if bg_pred.numel() > 0:
+            bg_violations = torch.relu(bg_pred - BG_CEIL_NORM)
+            loss_bg = (bg_violations ** 2).mean()
+
         loss_shell_inner = torch.tensor(0.0, device=pred_dose.device, 
                                         dtype=pred_dose.dtype)
         loss_shell_outer = torch.tensor(0.0, device=pred_dose.device, 
@@ -543,6 +564,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             + self.lambda_bowel       * loss_bowel
             + self.lambda_femur       * loss_femur
             + self.lambda_penile      * loss_penile
+            + self.lambda_bg          * loss_bg
         )
         return total, {
             "mse":        loss_mse.item(),
@@ -562,6 +584,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
             "bowel":      loss_bowel.item(),
             "femur":      loss_femur.item(),
             "penile":     loss_penile.item(),
+            "bg":         loss_bg.item(),
         }
 
 # ===================================================================
@@ -937,6 +960,8 @@ def main():
         lambda_ring=0.0,            
         lambda_smooth=0.0,          
         lambda_laplacian=0.0,       
+        lambda_anticollapse=0.0,    
+        lambda_ptv_max=0.0,         
         lambda_homogeneity=0.0,     
         lambda_global_ceil=2.0,     
         lambda_shell_inner=0.0,     # disabled — not yet active
@@ -963,6 +988,7 @@ def main():
         "lambda_femur":        10.0,
         "lambda_penile":       10.0,
         "lambda_global_ceil": 150.0,
+        "lambda_bg":           15.0,
     }
 
     print(f"\n{'='*60}")
@@ -1090,7 +1116,7 @@ def main():
                     f"homogeneity={components['homogeneity']:.4f} "
                     f"body={components['body']:.5f} "
                     f"bowel={components['bowel']:.5f} femur={components['femur']:.5f} "
-                    f"penile={components['penile']:.5f}"
+                    f"penile={components['penile']:.5f} bg={components['bg']:.5f}"
                 )
                 print(f"  {log_msg}")
                 logger.info(log_msg)
