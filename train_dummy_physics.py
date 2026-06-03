@@ -393,8 +393,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # Dividing by constant K_CEIL (not by n_violations) avoids both
         # the volume-dilution trap (.mean() over 2M voxels) and the
         # denominator-inflation trap (dividing by N_violating).
-        K_CEIL = 1000
-        global_ceil_norm = 64.2 / PRESCRIPTION_DOSE_GY
+        K_CEIL = 100
+        global_ceil_norm = 63.0 / PRESCRIPTION_DOSE_GY
         body_pred = pred_dose[inputs[:, 4:5, ...] > 0.5]
 
         loss_global_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
@@ -422,7 +422,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         bg_mask = (inputs[:, 4:5, ...] > 0.5).float() - oar_exclusion
         bg_mask = torch.clamp(bg_mask, min=0.0)
         
-        BG_CEIL_NORM = 15.0 / PRESCRIPTION_DOSE_GY
+        BG_CEIL_NORM = 7.0 / PRESCRIPTION_DOSE_GY
         bg_pred = pred_dose[bg_mask.bool()]
         
         loss_bg = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
@@ -980,16 +980,16 @@ def main():
         "lambda_ptv":          45.0,
         "lambda_ptv_max":      30.0,
         "lambda_ring":         25.0,
-        "lambda_smooth":        0.5,
-        "lambda_laplacian":     1.0,
+        "lambda_smooth":        0.125,
+        "lambda_laplacian":     0.25,
         "lambda_anticollapse": 150.0,
         "lambda_homogeneity":  0.0,
         "lambda_body":         20.0,
         "lambda_bowel":        15.0,
         "lambda_femur":        10.0,
         "lambda_penile":       10.0,
-        "lambda_global_ceil": 150.0,
-        "lambda_bg":           15.0,
+        "lambda_global_ceil": 300.0,
+        "lambda_bg":           10.0,
     }
 
     print(f"\n{'='*60}")
@@ -1155,6 +1155,8 @@ def main():
             val_femur_mean_sum = 0.0
             val_penile_mean_sum = 0.0
             n_val = 0
+            n_val_ptv60 = 0
+            n_val_ptv44 = 0
 
             logger.info(f"Running validation at epoch {epoch + 1}...")
             with torch.no_grad():
@@ -1211,11 +1213,13 @@ def main():
                     if ptv60_dose.numel() > 0:
                         val_ptv60_d95_sum  += torch.quantile(ptv60_dose, 0.05).item()
                         val_ptv60_mean_sum += ptv60_dose.mean().item()
+                        n_val_ptv60 += 1
                         
                     ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(44.0, device=discrete_ptv.device))]
                     if ptv44_dose.numel() > 0:
                         val_ptv44_d95_sum  += torch.quantile(ptv44_dose, 0.05).item()
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
+                        n_val_ptv44 += 1
                         
                     # Penile Bulb (channel 5)
                     penile_mask_cpu = (inputs[:, 5:6, ...] > 0.5).cpu()
@@ -1260,15 +1264,15 @@ def main():
 
             val_loss_avg = val_loss_sum / max(n_val, 1)
             avg_mse = val_mse_sum / max(n_val, 1)
-            avg_ptv60_d95 = val_ptv60_d95_sum / max(n_val, 1)
-            avg_ptv44_d95 = val_ptv44_d95_sum / max(n_val, 1)
+            avg_ptv60_d95 = val_ptv60_d95_sum / max(n_val_ptv60, 1)
+            avg_ptv44_d95 = val_ptv44_d95_sum / max(n_val_ptv44, 1)
             avg_bladder = val_bladder_mean_sum / max(n_val, 1)
             avg_rectum = val_rectum_mean_sum / max(n_val, 1)
             avg_ring = val_ring_mean_sum / max(n_val, 1)
             avg_dmax = val_dmax_sum / max(n_val, 1)
             avg_bg = val_bg_mean_sum / max(n_val, 1)
-            avg_ptv60 = val_ptv60_mean_sum / max(n_val, 1)
-            avg_ptv44 = val_ptv44_mean_sum / max(n_val, 1)
+            avg_ptv60 = val_ptv60_mean_sum / max(n_val_ptv60, 1)
+            avg_ptv44 = val_ptv44_mean_sum / max(n_val_ptv44, 1)
             avg_bowel = val_bowel_mean_sum / max(n_val, 1)
             avg_femur = val_femur_mean_sum / max(n_val, 1)
             avg_penile = val_penile_mean_sum / max(n_val, 1)
