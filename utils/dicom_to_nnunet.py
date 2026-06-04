@@ -358,11 +358,8 @@ def generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
 
         # Frustum radius at each voxel: grows linearly with depth from source
         # PTV half-width at isocenter (SAD from source) → sets the opening angle
-        ptv_phys = np.column_stack([
-            origin[0] + ptv_x * spacing[0],
-            origin[1] + ptv_y * spacing[1],
-            origin[2] + ptv_z * spacing[2],
-        ])  # (M, 3)
+        ptv_indices = np.stack([ptv_x, ptv_y, ptv_z], axis=1)  # (M, 3) XYZ
+        ptv_phys = origin + (ptv_indices * spacing) @ direction.T  # (M, 3) physical coords
         vec_ptv = ptv_phys - source_pos                    # (M, 3)
         depth_ptv = vec_ptv @ beam_dir                     # (M,)
         perp_ptv  = np.linalg.norm(vec_ptv - depth_ptv[:, np.newaxis] * beam_dir, axis=1)
@@ -552,8 +549,6 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     # Channel 6: BEV Frustum Beam Mask
     sitk.WriteImage(numpy_to_sitk(beam_mask_array, ct_image),
                     os.path.join(images_dir, f"{case_name}_0006.nii.gz"))
-    sitk.WriteImage(numpy_to_sitk(beam_mask_array, ct_image),
-                    os.path.join(images_dir, f"{case_name}_beam.nii.gz"))
 
     # Auxiliary OAR masks (loss-only, NOT model input channels).
     # Bag_Bowel: V45Gy < 90cc constraint in loss function (hardcoded threshold).
