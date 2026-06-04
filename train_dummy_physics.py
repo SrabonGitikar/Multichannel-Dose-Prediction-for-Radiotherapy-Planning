@@ -432,8 +432,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         loss_bg = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         
-        # Tier 1: In-Beam Corridor Falloff (Relaxed — deliverable scatter allowed up to 10.0 Gy)
-        IN_BEAM_CEIL = 10.0 / PRESCRIPTION_DOSE_GY
+        # Tier 1: In-Beam Corridor Falloff (Relaxed to 15.0 Gy to match physical d_max)
+        IN_BEAM_CEIL = 15.0 / PRESCRIPTION_DOSE_GY
         in_beam_pred = pred_dose[in_beam_bg_mask.bool()]
         if in_beam_pred.numel() > 0:
             in_beam_violations = torch.relu(in_beam_pred - IN_BEAM_CEIL)
@@ -621,7 +621,6 @@ def get_data_dicts():
         
         pt_dict["bowel_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_bowel.nii.gz")
         pt_dict["femur_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_femur.nii.gz")
-        pt_dict["beam_mask"]  = os.path.join(IMAGES_DIR, f"{patient_id}_beam.nii.gz")
         
         # Load individual PTV structures for SIB mapping
         import glob as glb
@@ -771,7 +770,7 @@ class CreateFalloffRingd(MapTransform):
 
 SIB_KEYS = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]   # v3: PTV62 → PTV60
 ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
-            "bowel_mask", "femur_mask", "beam_mask",
+            "bowel_mask", "femur_mask",
             "dose_label"] + SIB_KEYS
 
 train_transforms = Compose(
@@ -782,7 +781,7 @@ train_transforms = Compose(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
             mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 to ch_6
-                  "nearest", "nearest", "nearest",   # bowel_mask, femur_mask, beam_mask
+                  "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
@@ -803,7 +802,7 @@ train_transforms = Compose(
         ),
         DeleteItemsd(keys=["crop_mask"]),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
-        ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask", "beam_mask"]),
+        ToTensord(keys=["image", "dose_label", "ring_mask", "bowel_mask", "femur_mask"]),
     ]
 )
 
@@ -815,14 +814,14 @@ val_transforms = Compose(
             keys=ALL_KEYS,
             pixdim=TARGET_SPACING,
             mode=("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0 – ch_6
-                  "nearest", "nearest", "nearest",   # bowel_mask, femur_mask, beam_mask
+                  "nearest", "nearest",   # bowel_mask, femur_mask
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
         CreateDiscretePTVMapd(keys=["ch_0"]),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
-        ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask", "beam_mask"]),
+        ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
     ]
 )
 
@@ -988,6 +987,7 @@ def main():
         lambda_bowel=0.0,           
         lambda_femur=0.0,           
         lambda_penile=0.0,          # Penile Bulb — ramp in
+        lambda_bg=0.0,              # Added to prevent Epoch 0 shock
         k_steepness=50.0,
     )
     loss_function.lambda_body = 0.0  
@@ -1155,11 +1155,14 @@ def main():
         val_loss_avg = float('nan')
         avg_ptv60_d95 = avg_ptv44_d95 = avg_bladder = avg_rectum = avg_dmax = avg_bg = avg_mse = avg_ring = float('nan')
         avg_ptv60 = avg_ptv44 = avg_bowel = avg_femur = avg_penile = float('nan')
+        avg_hi = avg_ci = float('nan')
 
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             model.eval()
             val_loss_sum = 0.0
             val_mse_sum = 0.0
+            val_hi_sum = 0.0
+            val_ci_sum = 0.0
             val_ptv60_d95_sum = 0.0   # D95 of PTV60 voxels only
             val_ptv44_d95_sum = 0.0   # D95 of PTV44 voxels only
             val_bladder_mean_sum = 0.0
@@ -1229,9 +1232,23 @@ def main():
                     # D95 is computed per-structure (no union blend) — values match Gy literals from CreateDiscretePTVMapd
                     ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(60.0, device=discrete_ptv.device))]
                     if ptv60_dose.numel() > 0:
-                        val_ptv60_d95_sum  += torch.quantile(ptv60_dose, 0.05).item()
+                        val_ptv60_d95_sum  += torch.quantile(ptv60_dose.float(), 0.05).item()
                         val_ptv60_mean_sum += ptv60_dose.mean().item()
+                        
+                        # -- ICRU 83 Homogeneity Index (HI) --
+                        d2 = torch.quantile(ptv60_dose.float(), 0.98).item()
+                        d98 = torch.quantile(ptv60_dose.float(), 0.02).item()
+                        d50 = torch.median(ptv60_dose).item()
+                        if d50 > 0:
+                            val_hi_sum += (d2 - d98) / d50
+                            
                         n_val_ptv60 += 1
+                        
+                    # -- RTOG Conformity Index (CI) --
+                    v_ref = (outputs_gy >= 60.0).sum().item()
+                    v_ptv = ptv60_dose.numel()
+                    if v_ptv > 0:
+                        val_ci_sum += v_ref / v_ptv
                         
                     ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(44.0, device=discrete_ptv.device))]
                     if ptv44_dose.numel() > 0:
@@ -1263,7 +1280,8 @@ def main():
 
                     bg_mask = (body_mask_cpu.bool() & ~ptv_mask_cpu.bool() & 
                                ~bladder_mask_cpu.bool() & ~rectum_mask_cpu.bool() & 
-                               ~bowel_mask_cpu.bool() & ~femur_mask_cpu.bool())
+                               ~bowel_mask_cpu.bool() & ~femur_mask_cpu.bool() &
+                               ~ring_mask_cpu.bool())
                     bg_dose = outputs_gy[bg_mask]
                     if len(bg_dose) > 0: val_bg_mean_sum += bg_dose.mean().item()
 
@@ -1289,6 +1307,8 @@ def main():
             avg_ring = val_ring_mean_sum / max(n_val, 1)
             avg_dmax = val_dmax_sum / max(n_val, 1)
             avg_bg = val_bg_mean_sum / max(n_val, 1)
+            avg_hi = val_hi_sum / max(n_val_ptv60, 1)
+            avg_ci = val_ci_sum / max(n_val, 1)
             avg_ptv60 = val_ptv60_mean_sum / max(n_val_ptv60, 1)
             avg_ptv44 = val_ptv44_mean_sum / max(n_val_ptv44, 1)
             avg_bowel = val_bowel_mean_sum / max(n_val, 1)
@@ -1300,7 +1320,7 @@ def main():
             f"          Coverage D95:  PTV60_D95={avg_ptv60_d95:.2f}Gy  PTV44_D95={avg_ptv44_d95:.2f}Gy\n"
             f"          SIB Means:    PTV60={avg_ptv60:.2f}Gy PTV44={avg_ptv44:.2f}Gy\n"
             f"          OAR Metrics:  Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
-            f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy"
+            f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy HI={avg_hi:.3f} CI={avg_ci:.2f}"
         )
         print(f"  --> {epoch_summary}")
         logger.info(epoch_summary)
@@ -1415,6 +1435,10 @@ def main():
 
                 outputs_gy = F.softplus(outputs.float()) * PRESCRIPTION_DOSE_GY
                 outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
+
+                # Apply body mask to prevent ghost radiation inflating CSV metrics
+                body_mask_eval = (inputs[:, 4:5, ...] > 0.5).float()
+                outputs_gy = outputs_gy * body_mask_eval
 
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
                 penile_mask_eval = (inputs[:, 5:6, ...] > 0.5)
