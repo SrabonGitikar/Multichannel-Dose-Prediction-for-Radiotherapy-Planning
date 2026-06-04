@@ -54,6 +54,7 @@ with open(_CONFIG_PATH, "r") as _f:
 STRUCTURE_PATTERNS = {
     "PTV": [rf"^{name}$" for name in SITE_CONFIG["ptv_levels"]],
 }
+# Collect all unique structure names referenced in channels and auxiliary_masks
 for _ch in SITE_CONFIG["channels"]:
     _struct = _ch.get("structure")
     if _struct:
@@ -372,228 +373,206 @@ def generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
 # ===========================================================================
 
 def convert_patient(patient_dir, case_id, images_dir, labels_dir):
+    cfg = SITE_CONFIG
     folder_uuid = os.path.basename(patient_dir)
-    pid = folder_uuid.replace('.', '_')           # full UUID, dots → underscores
+    pid = folder_uuid.replace('.', '_')
+    case_name = f"prostate_{pid}"
     print(f"\n{'='*60}")
-    print(f"  Converting: {folder_uuid}  →  prostate_{pid}")
+    print(f"  Converting: {folder_uuid}  →  {case_name}")
     print(f"{'='*60}")
 
     dicom_dir = find_dicom_subdir(patient_dir)
-    
-    # Sort files by DICOM Modality instead of filename
     dicom_files = sort_dicom_files(dicom_dir)
     plan_files = dicom_files.get("RTPLAN", [])
     struct_files = dicom_files.get("RTSTRUCT", [])
     dose_files = dicom_files.get("RTDOSE", [])
 
-    print("  [1/8] Loading CT volume...")
+    # ── Step 1: Load CT ──────────────────────────────────────────────
+    print("  [1] Loading CT volume...")
     reader = sitk.ImageSeriesReader()
     series_ids = reader.GetGDCMSeriesIDs(dicom_dir)
-    
     if not series_ids:
-        print("  *** SKIPPING: No DICOM series found in directory ***")
+        print("  *** SKIPPING: No DICOM series found ***")
         return False
-        
-    best_series = None
-    best_count = 0
-    for sid in series_ids:
-        fnames = reader.GetGDCMSeriesFileNames(dicom_dir, sid)
-        if len(fnames) > best_count:
-            best_count = len(fnames)
-            best_series = fnames
-            
+    best_series = max(
+        (reader.GetGDCMSeriesFileNames(dicom_dir, sid) for sid in series_ids),
+        key=len,
+    )
     reader.SetFileNames(best_series)
     ct_image = reader.Execute()
-
     ct_array = sitk.GetArrayFromImage(ct_image)
     spacing = ct_image.GetSpacing()
+    spacing_zyx = (spacing[2], spacing[1], spacing[0])
     print(f"         Shape: {ct_array.shape}, Spacing: {spacing}")
-
     if ct_image.GetDimension() != 3:
-        print(f"  *** SKIPPING: CT is {ct_image.GetDimension()}D, expected 3D ***")
+        print(f"  *** SKIPPING: CT is {ct_image.GetDimension()}D ***")
         return False
 
-    print("  [2/8] Parsing RTStruct contours...")
+    # ── Step 2: Parse RTStruct ───────────────────────────────────────
+    print("  [2] Parsing RTStruct contours...")
     rs_file = find_correct_rtstruct(plan_files, struct_files)
     rs_ds = pydicom.dcmread(rs_file)
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
 
-    ptv_names   = match_all_structure_names(roi_names, "PTV")
-    bladder_name  = match_structure_name(roi_names, "Bladder")
-    anorectum_name = match_structure_name(roi_names, "Anorectum")
-
+    # PTV union mask (needed by several channel types)
+    ptv_names = match_all_structure_names(roi_names, "PTV")
     if not ptv_names:
-        print(f"  *** SKIPPING: Could not match any PTV/CTV structure ***")
+        print("  *** SKIPPING: No PTV/CTV structures found ***")
         return False
-    if not all([bladder_name, anorectum_name]):
-        print(f"  *** SKIPPING: Could not match Bladder or Anorectum ***")
-        return False
-    print(f"         PTV structures found ({len(ptv_names)}): {ptv_names}")
-
-    print("  [3/8] Rasterizing contour masks (union of all PTVs)...")
+    print(f"         PTV structures ({len(ptv_names)}): {ptv_names}")
     ptv_mask = rtstruct_all_contours_to_mask(rs_ds, ptv_names, ct_image)
+    if ptv_mask.sum() == 0:
+        print("  *** SKIPPING: PTV mask is empty ***")
+        return False
 
-    print("         Rasterizing individual PTVs for SIB mapping...")
+    # ── Step 3: Process channels from YAML ───────────────────────────
+    print("  [3] Processing input channels...")
+    channel_arrays = []
+    for idx, ch in enumerate(cfg["channels"]):
+        ch_type = ch["type"]
+        ch_name = ch["name"]
+        struct  = ch.get("structure")
+        optional = ch.get("optional", True)
+
+        if ch_type == "ct":
+            arr = ct_array.astype(np.float32)
+
+        elif ch_type == "ptv_union":
+            arr = ptv_mask.astype(np.float32)
+
+        elif ch_type == "sdm":
+            roi = match_structure_name(roi_names, struct)
+            if roi is None and not optional:
+                print(f"  *** SKIPPING: Required structure {struct} not found ***")
+                return False
+            if roi:
+                mask = rtstruct_contour_to_mask(rs_ds, roi, ct_image)
+            else:
+                mask = np.zeros_like(ct_array, dtype=np.uint8)
+            arr = compute_signed_distance_map(mask, spacing_zyx)
+            print(f"         ch_{idx} ({ch_name}): {roi or 'EMPTY'}")
+
+        elif ch_type == "binary_mask":
+            roi = match_structure_name(roi_names, struct)
+            if roi is None and not optional:
+                print(f"  *** SKIPPING: Required structure {struct} not found ***")
+                return False
+            if roi:
+                arr = rtstruct_contour_to_mask(rs_ds, roi, ct_image).astype(np.float32)
+                print(f"         ch_{idx} ({ch_name}): {roi}  ({int(arr.sum()):,} voxels)")
+            else:
+                arr = np.zeros(ct_array.shape, dtype=np.float32)
+                print(f"         ch_{idx} ({ch_name}): NOT FOUND — empty mask")
+
+        elif ch_type == "body_mask":
+            roi = match_structure_name(roi_names, struct) if struct else None
+            if roi:
+                arr = rtstruct_contour_to_mask(rs_ds, roi, ct_image).astype(np.float32)
+                print(f"         ch_{idx} ({ch_name}): {roi}  ({int(arr.sum()):,} voxels)")
+            else:
+                arr = (ct_array > -300.0).astype(np.float32)
+                print(f"         ch_{idx} ({ch_name}): HU threshold fallback  ({int(arr.sum()):,} voxels)")
+
+        elif ch_type == "bev_beam":
+            arr = generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
+
+        else:
+            raise ValueError(f"Unknown channel type '{ch_type}' for ch_{idx} ({ch_name})")
+
+        channel_arrays.append(arr)
+
+    # ── Step 4: Auxiliary masks (loss-only) ──────────────────────────
+    print("  [4] Processing auxiliary masks...")
+    aux_masks = {}
+    for aux in cfg.get("auxiliary_masks", []):
+        tag = aux["tag"]
+        optional = aux.get("optional", True)
+        # single structure
+        if "structure" in aux:
+            roi = match_structure_name(roi_names, aux["structure"])
+            if roi:
+                mask = rtstruct_contour_to_mask(rs_ds, roi, ct_image)
+                print(f"         {tag}: {roi}  ({mask.sum():,} voxels)")
+            elif not optional:
+                print(f"  *** SKIPPING: Required auxiliary {aux['structure']} not found ***")
+                return False
+            else:
+                mask = np.zeros_like(ct_array, dtype=np.uint8)
+                print(f"         {tag}: NOT FOUND — empty mask")
+        # merged structures (e.g. Femur L+R)
+        elif "structures" in aux:
+            mask = np.zeros_like(ct_array, dtype=np.uint8)
+            found = []
+            for s in aux["structures"]:
+                roi = match_structure_name(roi_names, s)
+                if roi:
+                    mask = np.maximum(mask, rtstruct_contour_to_mask(rs_ds, roi, ct_image))
+                    found.append(roi)
+            print(f"         {tag}: merged {found or 'NONE'}  ({mask.sum():,} voxels)")
+        else:
+            mask = np.zeros_like(ct_array, dtype=np.uint8)
+        aux_masks[tag] = mask
+
+    # ── Step 5: Individual PTV masks for SIB ─────────────────────────
+    print("  [5] Rasterizing individual PTVs for SIB mapping...")
     individual_ptv_masks = {}
     for p_name in ptv_names:
         individual_ptv_masks[p_name] = rtstruct_contour_to_mask(rs_ds, p_name, ct_image)
-    bladder_mask = rtstruct_contour_to_mask(rs_ds, bladder_name, ct_image)
-    anorectum_mask = rtstruct_contour_to_mask(rs_ds, anorectum_name, ct_image)
 
-    # Auxiliary OARs: Bag_Bowel and Femur heads.
-    # These are optional — if missing in a patient, an empty mask is used.
-    # They are NOT model input channels; saved separately for loss enforcement only.
-    bowel_name   = match_structure_name(roi_names, "Bag_Bowel")
-    femur_l_name = match_structure_name(roi_names, "Femur_L")
-    femur_r_name = match_structure_name(roi_names, "Femur_R")
-
-    if bowel_name:
-        bowel_mask = rtstruct_contour_to_mask(rs_ds, bowel_name, ct_image)
-        print(f"         Bag_Bowel: {bowel_name}  ({bowel_mask.sum():,} voxels)")
-    else:
-        bowel_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
-        print("         Bag_Bowel: NOT FOUND — using empty mask")
-
-    femur_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
-    for fname in [femur_l_name, femur_r_name]:
-        if fname:
-            femur_mask = np.maximum(femur_mask,
-                                    rtstruct_contour_to_mask(rs_ds, fname, ct_image))
-    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, "
-          f"R={femur_r_name or 'NOT FOUND'}  ({femur_mask.sum():,} voxels)")
-
-    # Penile Bulb — new v3 OAR.  Saved as model input Channel 6 (_0006.nii.gz).
-    # Optional: empty mask used gracefully when absent (loss term → 0).
-    penile_name = match_structure_name(roi_names, "Penile_Bulb")
-    if penile_name:
-        penile_bulb_mask = rtstruct_contour_to_mask(rs_ds, penile_name, ct_image)
-        print(f"         Penile_Bulb: {penile_name}  ({penile_bulb_mask.sum():,} voxels)")
-    else:
-        penile_bulb_mask = np.zeros_like(ptv_mask, dtype=np.uint8)
-        print("         Penile_Bulb: NOT FOUND — using empty mask (loss term = 0)")
-
-    if ptv_mask.sum() == 0:
-        print(f"  *** SKIPPING: PTV mask is empty ***")
-        return False
-
-    print("  [4/8] Computing signed distance maps...")
-    spacing_zyx = (spacing[2], spacing[1], spacing[0])
-    bladder_sdm = compute_signed_distance_map(bladder_mask, spacing_zyx)
-    anorectum_sdm = compute_signed_distance_map(anorectum_mask, spacing_zyx)
-
-    print("  [5/8] Loading and resampling RTDose...")
-    dose_image = load_rtdose_as_sitk(dose_files, ct_image)
-    dose_array = sitk.GetArrayFromImage(dose_image)
-
-    print("  [6/8] Computing Body Mask from RTStruct (Channel 4)...")
-    body_name = match_structure_name(roi_names, "Body")
-    
-    if body_name:
-        print(f"         Using RTStruct contour: {body_name}")
-        body_mask_array = rtstruct_contour_to_mask(rs_ds, body_name, ct_image).astype(np.float32)
-    else:
-        print("         WARNING: No Body/External contour found. Falling back to HU threshold.")
-        BODY_HU_THRESHOLD = -300.0
-        body_mask_array = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
-        
-    print(f"         Body Mask Voxels: {int(body_mask_array.sum()):,}")
-
-    print("  [7/8] Generating BEV Frustum Beam Mask (Channel 6)...")
-    beam_mask_array = generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
-
-    print("\n  [Summary] Matched Structures for this Patient:")
-    print(f"         PTVs: {ptv_names}")
-    print(f"         Bladder: {bladder_name}")
-    print(f"         Anorectum: {anorectum_name}")
-    print(f"         Bag_Bowel: {bowel_name or 'NOT FOUND'}")
-    print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}")
-    print(f"         Penile_Bulb: {penile_name or 'NOT FOUND'}\n")
-    print("  [8/8] Saving NIfTI files...")
-    case_name = f"prostate_{pid}"
-
-    sitk.WriteImage(numpy_to_sitk(ct_array.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_0000.nii.gz"))
-    
-    sitk.WriteImage(numpy_to_sitk(ptv_mask.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_0001.nii.gz"))
-    
-    sitk.WriteImage(numpy_to_sitk(bladder_sdm, ct_image),
-                    os.path.join(images_dir, f"{case_name}_0002.nii.gz"))
-    
-    sitk.WriteImage(numpy_to_sitk(anorectum_sdm, ct_image),
-                    os.path.join(images_dir, f"{case_name}_0003.nii.gz"))
-
-    # Channel 4: Body Mask (Shifted from 5)
-    sitk.WriteImage(numpy_to_sitk(body_mask_array.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_0004.nii.gz"))
-
-    # Channel 5: Penile Bulb binary mask
-    sitk.WriteImage(numpy_to_sitk(penile_bulb_mask.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
-
-    # Channel 6: BEV Frustum Beam Mask
-    sitk.WriteImage(numpy_to_sitk(beam_mask_array, ct_image),
-                    os.path.join(images_dir, f"{case_name}_0006.nii.gz"))
-
-    # Auxiliary OAR masks (loss-only, NOT model input channels).
-    # Bag_Bowel: V45Gy < 90cc constraint in loss function (hardcoded threshold).
-    # Femur (merged L+R): D_max < 40 Gy constraint in loss function.
-    sitk.WriteImage(numpy_to_sitk(bowel_mask.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_bowel.nii.gz"))
-    sitk.WriteImage(numpy_to_sitk(femur_mask.astype(np.float32), ct_image),
-                    os.path.join(images_dir, f"{case_name}_femur.nii.gz"))
-
-    SIB_CANONICAL = {
-        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",   # v3 canonical
-        r"^ptv.*62|^ctv.*62": "PTV60",            # legacy PTV62 → maps to PTV60
-        r"^ptv.*55|^ctv.*55": "PTV55",
-        r"^ptv.*54|^ctv.*54": "PTV54",
-        r"^ptv.*44|^ctv.*44": "PTV44",
-        r"^ptv.*36|^ctv.*36": "PTV36",
-        r"^ptv.*25|^ctv.*25": "PTV25",
-    }
-
-    # 1. Accumulate and merge masks by canonical name to prevent overwriting
+    # Map each matched PTV to its canonical dose level from YAML ptv_levels
+    ptv_levels = cfg.get("ptv_levels", [])
     accumulated_ptvs = {}
     for p_name, p_mask in individual_ptv_masks.items():
         canonical = None
-        for pattern, cname in SIB_CANONICAL.items():
-            if re.match(pattern, p_name, re.IGNORECASE):
-                canonical = cname
+        for level in ptv_levels:
+            dose_num = level.split("_")[-1]   # "PTV_60" → "60"
+            if re.search(dose_num, p_name, re.IGNORECASE):
+                canonical = level.replace("_", "")  # "PTV_60" → "PTV60"
                 break
-        
         if canonical is None:
             canonical = p_name.replace(" ", "_").replace("/", "_")
-            
         if canonical in accumulated_ptvs:
-            # Merge overlapping or adjacent volumes targeting the same dose
             accumulated_ptvs[canonical] = np.maximum(accumulated_ptvs[canonical], p_mask)
         else:
             accumulated_ptvs[canonical] = p_mask
 
-    # 2. Write the safely accumulated canonical masks to disk
+    # ── Step 6: Load RTDose label ────────────────────────────────────
+    print("  [6] Loading and resampling RTDose...")
+    dose_image = load_rtdose_as_sitk(dose_files, ct_image)
+    dose_array = sitk.GetArrayFromImage(dose_image)
+
+    # ── Step 7: Save NIfTI files ─────────────────────────────────────
+    print("  [7] Saving NIfTI files...")
+    n_channels = len(channel_arrays)
+
+    for idx, arr in enumerate(channel_arrays):
+        fpath = os.path.join(images_dir, f"{case_name}_{idx:04d}.nii.gz")
+        sitk.WriteImage(numpy_to_sitk(arr.astype(np.float32), ct_image), fpath)
+
+    for tag, mask in aux_masks.items():
+        fpath = os.path.join(images_dir, f"{case_name}_{tag}.nii.gz")
+        sitk.WriteImage(numpy_to_sitk(mask.astype(np.float32), ct_image), fpath)
+
     for canonical, p_mask in accumulated_ptvs.items():
-        sitk.WriteImage(numpy_to_sitk(p_mask.astype(np.float32), ct_image),
-                        os.path.join(images_dir, f"{case_name}_{canonical}.nii.gz"))
+        fpath = os.path.join(images_dir, f"{case_name}_{canonical}.nii.gz")
+        sitk.WriteImage(numpy_to_sitk(p_mask.astype(np.float32), ct_image), fpath)
 
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    print(f"  ✓ Done! Saved 7 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
+    n_aux = len(aux_masks)
+    n_sib = len(accumulated_ptvs)
+    print(f"  ✓ Done! Saved {n_channels} channels + {n_aux} aux masks + {n_sib} SIB masks + 1 label")
     return True
 
 def create_dataset_json(output_dir, num_cases):
+    channel_names = {
+        str(i): ch["name"] for i, ch in enumerate(SITE_CONFIG["channels"])
+    }
+    label_cfg = SITE_CONFIG.get("label", {"name": "dose"})
     dataset_json = {
-        "channel_names": {
-            "0": "CT",
-            "1": "PTV_mask",
-            "2": "Bladder_SDM",
-            "3": "Anorectum_SDM",
-            "4": "Body_Mask",
-            "5": "Penile_Bulb_mask",
-            "6": "BEV_Beam_Frustum",
-        },
-        "labels": {"0": "dose"},
+        "channel_names": channel_names,
+        "labels": {"0": label_cfg["name"]},
         "numTraining": num_cases,
         "file_ending": ".nii.gz",
     }

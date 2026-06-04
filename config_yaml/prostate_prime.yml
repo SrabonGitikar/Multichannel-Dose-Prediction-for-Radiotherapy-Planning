@@ -1,17 +1,66 @@
 name: ProstatePrime
 protocol: prime
 version: 1.0
-structures:
-  OAR:
-    1: Bladder
-    2: Anorectum
-    3: Bag_Bowel
-    4: Femur_Head_L
-    5: Femur_Head_R
-    6: Penilebulb
-  PTV:
-    1: PTV_62/20
-    2: PTV_44/20
-    
-prescription_dose: 62
+prescription_dose_gy: 60
 fractions: 20
+
+# ── Input channels (saved as _0000.nii.gz, _0001.nii.gz, …) ──────────
+# type: ct | binary_mask | sdm | bev_beam
+# structure: RTStruct ROI name to rasterize (ignored for ct / bev_beam)
+# optional: if true, missing structure → empty mask (no skip)
+
+channels:
+  - name: CT
+    type: ct
+
+  - name: PTV_mask
+    type: ptv_union
+
+  - name: Bladder_SDM
+    type: sdm
+    structure: Bladder
+    optional: false
+
+  - name: Anorectum_SDM
+    type: sdm
+    structure: Anorectum
+    optional: false
+
+  - name: Body_Mask
+    type: body_mask
+    structure: Body
+    optional: true
+
+  - name: Penile_Bulb_mask
+    type: binary_mask
+    structure: Penile_Bulb
+    optional: true
+
+  - name: BEV_Beam_Frustum
+    type: bev_beam
+
+# ── Auxiliary masks (saved as _{tag}.nii.gz, used by loss only) ────────
+auxiliary_masks:
+  - tag: bowel
+    structure: Bag_Bowel
+    optional: true
+
+  - tag: femur
+    structures:            # merged L + R into one mask
+      - Femur_Head_L
+      - Femur_Head_R
+    optional: true
+
+# ── PTV dose levels for SIB individual masks ──────────────────────────
+ptv_levels:
+  - PTV_60
+  - PTV_55
+  - PTV_54
+  - PTV_44
+  - PTV_36
+  - PTV_25
+
+# ── Label ──────────────────────────────────────────────────────────────
+label:
+  name: dose
+  type: rtdose

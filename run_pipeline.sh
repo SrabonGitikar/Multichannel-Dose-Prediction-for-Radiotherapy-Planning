@@ -15,8 +15,8 @@ echo "=========================================="
 # python utils/dicom_to_nnunet.py
 
 # Step 2: Training
-echo ""
-echo "[2/3] Starting training..."
+# echo ""
+# echo "[2/3] Starting training..."
 python train_dummy_physics.py
 
 # Step 3: Git commit and push
