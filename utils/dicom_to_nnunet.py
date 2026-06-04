@@ -9,9 +9,9 @@ Input channels:
   1 = PTV binary mask (union of all target volumes)
   2 = Bladder signed distance map (mm, negative inside organ)
   3 = Anorectum signed distance map (mm, negative inside organ)
-  4 = IMRT Beam Prior (binary mask, dynamic-radius cylinders along gantry angles)
-  5 = Body Mask (binary: 1 = inside patient, 0 = air outside body)
-  6 = Penile Bulb binary mask (binary: 1 = inside organ, 0 = outside)  [v3]
+  4 = Body Mask (binary: 1 = inside patient, 0 = air outside body)
+  5 = Penile Bulb binary mask (binary: 1 = inside organ, 0 = outside)
+  6 = BEV Beam Frustum Mask (binary: 1 = intersected by beam frustum + 7 mm penumbra margin)
 
 Label:
   RTDose in Gy (continuous values for regression)
@@ -35,8 +35,8 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/Prostate PRIME Standard arm d69"
-OUTPUT_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/nnUNet_raw/Dataset001_ProstateDose"
+DATA_DIR = "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+OUTPUT_DIR = "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
 DATASET_NAME = "Dataset001_ProstateDose"
 
 # Structure name matching patterns (case-insensitive, priority order)
@@ -254,6 +254,133 @@ def numpy_to_sitk(array, reference_image):
     return sitk_image
 
 
+# ===========================================================================
+# BEV FRUSTUM BEAM MASK GENERATION (Channel 6)
+# ===========================================================================
+
+DEFAULT_GANTRY_ANGLES = [0, 51, 102, 154, 205, 257, 308]  # 7 equispaced angles (fallback)
+SAD_MM = 1000.0          # Standard Source-to-Axis Distance in mm
+PENUMBRA_MM = 7.0        # Uniform isotropic penumbra margin in mm
+
+def _parse_gantry_angles(plan_files):
+    """
+    Extract unique macro gantry angles from the first control point of each
+    treatment beam in an RTPlan DICOM.
+    Falls back to DEFAULT_GANTRY_ANGLES if no plan or no angles are found.
+    """
+    if not plan_files:
+        print("         WARNING: No RTPlan found. Defaulting to 7 equispaced gantry angles.")
+        return DEFAULT_GANTRY_ANGLES
+    try:
+        plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
+        angles = []
+        if hasattr(plan, 'BeamSequence'):
+            for beam in plan.BeamSequence:
+                d_type = getattr(beam, 'TreatmentDeliveryType', '')
+                b_type = getattr(beam, 'BeamType', '')
+                if d_type == 'TREATMENT' or b_type == 'STATIC':
+                    if hasattr(beam, 'ControlPointSequence') and len(beam.ControlPointSequence) > 0:
+                        cp0 = beam.ControlPointSequence[0]
+                        if hasattr(cp0, 'GantryAngle'):
+                            angles.append(float(cp0.GantryAngle))
+        if not angles:
+            print("         WARNING: No gantry angles in RTPlan. Defaulting to 7 equispaced angles.")
+            return DEFAULT_GANTRY_ANGLES
+        unique_angles = sorted(set(angles))
+        print(f"         Gantry Angles from RTPlan: {unique_angles}")
+        return unique_angles
+    except Exception as e:
+        print(f"         WARNING: Could not read RTPlan ({e}). Defaulting to 7 equispaced angles.")
+        return DEFAULT_GANTRY_ANGLES
+
+
+def generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
+    """
+    Build a 3-D binary BEV frustum mask.
+
+    For each gantry angle:
+      1. Place a virtual point source at SAD_MM distance along the beam direction.
+      2. Ray-cast a divergent frustum from the source through every PTV voxel.
+      3. Expand by PENUMBRA_MM (uniform isotropic margin).
+
+    Returns a binary float32 numpy array (ZYX, same shape as CT).
+    """
+    gantry_angles = _parse_gantry_angles(plan_files)
+
+    shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
+    origin   = np.array(ct_image.GetOrigin())             # (x, y, z)
+    spacing  = np.array(ct_image.GetSpacing())            # (sx, sy, sz)
+    direction = np.array(ct_image.GetDirection()).reshape(3, 3)
+
+    # Build physical-coordinate grid (ZYX → XYZ vectorised)
+    zi, yi, xi = np.meshgrid(
+        np.arange(shape_zyx[0]),
+        np.arange(shape_zyx[1]),
+        np.arange(shape_zyx[2]),
+        indexing='ij'
+    )  # all shape (Z, Y, X)
+    voxel_indices = np.stack([xi.ravel(), yi.ravel(), zi.ravel()], axis=1)  # (N, 3) XYZ
+    phys_pts = origin + (voxel_indices * spacing) @ direction.T              # (N, 3) in mm
+
+    # PTV centre of mass in physical space (isocenter)
+    ptv_z, ptv_y, ptv_x = np.where(ptv_mask_array > 0.5)
+    if len(ptv_z) == 0:
+        print("         WARNING: PTV mask empty — returning blank beam mask.")
+        return np.zeros(shape_zyx, dtype=np.float32)
+
+    iso_idx = np.array([
+        ptv_x.mean(),
+        ptv_y.mean(),
+        ptv_z.mean(),
+    ])  # XYZ voxel indices
+    iso_phys = origin + (iso_idx * spacing) @ direction.T   # mm, shape (3,)
+    print(f"         PTV isocenter (mm): {np.round(iso_phys, 1)}")
+
+    beam_flat = np.zeros(len(phys_pts), dtype=np.float32)
+
+    for angle_deg in gantry_angles:
+        theta = np.deg2rad(angle_deg)
+        # IEC 61217 gantry: beam arrives from +Y rotated by theta
+        #   beam_dir points FROM source TOWARD isocenter (i.e. beam travel direction)
+        beam_dir = np.array([np.sin(theta), -np.cos(theta), 0.0])  # unit vector (XYZ)
+        source_pos = iso_phys - beam_dir * SAD_MM                   # virtual point source
+
+        # Vector from source to every voxel
+        vec = phys_pts - source_pos                         # (N, 3)
+
+        # Project onto beam axis → denominator for divergence
+        depth = vec @ beam_dir                              # (N,)
+
+        # Perpendicular distance in the plane transverse to beam
+        proj_along = depth[:, np.newaxis] * beam_dir       # (N, 3)
+        perp_vec   = vec - proj_along                       # (N, 3)
+        perp_dist  = np.linalg.norm(perp_vec, axis=1)      # (N,) in mm
+
+        # Frustum radius at each voxel: grows linearly with depth from source
+        # PTV half-width at isocenter (SAD from source) → sets the opening angle
+        ptv_indices = np.stack([ptv_x, ptv_y, ptv_z], axis=1)  # (M, 3) XYZ
+        ptv_phys = origin + (ptv_indices * spacing) @ direction.T  # (M, 3) physical coords
+        vec_ptv = ptv_phys - source_pos                    # (M, 3)
+        depth_ptv = vec_ptv @ beam_dir                     # (M,)
+        perp_ptv  = np.linalg.norm(vec_ptv - depth_ptv[:, np.newaxis] * beam_dir, axis=1)
+
+        # Frustum half-angle (half-angle in radians)
+        if depth_ptv.max() > 0:
+            half_angle = np.arctan2(perp_ptv.max(), depth_ptv[depth_ptv > 0].min())
+        else:
+            half_angle = np.deg2rad(5.0)  # fallback 5°
+
+        # Radius at each voxel depth (divergent frustum) + penumbra
+        radius_at_voxel = np.abs(depth) * np.tan(half_angle) + PENUMBRA_MM
+
+        # Mark voxels inside the frustum
+        inside = (depth > 0) & (perp_dist <= radius_at_voxel)
+        beam_flat[inside] = 1.0
+
+    beam_zyx = beam_flat.reshape(shape_zyx[0], shape_zyx[1], shape_zyx[2])
+    n_voxels = int(beam_zyx.sum())
+    print(f"         BEV Beam Mask Voxels (all {len(gantry_angles)} beams): {n_voxels:,}")
+    return beam_zyx
 
 
 # ===========================================================================
@@ -373,7 +500,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     dose_image = load_rtdose_as_sitk(dose_files, ct_image)
     dose_array = sitk.GetArrayFromImage(dose_image)
 
-    print("  [6/7] Computing Body Mask from RTStruct (Channel 4)...")
+    print("  [6/8] Computing Body Mask from RTStruct (Channel 4)...")
     body_name = match_structure_name(roi_names, "Body")
     
     if body_name:
@@ -386,6 +513,9 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
         
     print(f"         Body Mask Voxels: {int(body_mask_array.sum()):,}")
 
+    print("  [7/8] Generating BEV Frustum Beam Mask (Channel 6)...")
+    beam_mask_array = generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
+
     print("\n  [Summary] Matched Structures for this Patient:")
     print(f"         PTVs: {ptv_names}")
     print(f"         Bladder: {bladder_name}")
@@ -393,7 +523,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     print(f"         Bag_Bowel: {bowel_name or 'NOT FOUND'}")
     print(f"         Femur Heads: L={femur_l_name or 'NOT FOUND'}, R={femur_r_name or 'NOT FOUND'}")
     print(f"         Penile_Bulb: {penile_name or 'NOT FOUND'}\n")
-    print("  [7/7] Saving NIfTI files...")
+    print("  [8/8] Saving NIfTI files...")
     case_name = f"prostate_{case_id:03d}"
 
     sitk.WriteImage(numpy_to_sitk(ct_array.astype(np.float32), ct_image),
@@ -412,9 +542,13 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(body_mask_array.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_0004.nii.gz"))
 
-    # Channel 5: Penile Bulb binary mask (Shifted from 6)
+    # Channel 5: Penile Bulb binary mask
     sitk.WriteImage(numpy_to_sitk(penile_bulb_mask.astype(np.float32), ct_image),
                     os.path.join(images_dir, f"{case_name}_0005.nii.gz"))
+
+    # Channel 6: BEV Frustum Beam Mask
+    sitk.WriteImage(numpy_to_sitk(beam_mask_array, ct_image),
+                    os.path.join(images_dir, f"{case_name}_0006.nii.gz"))
 
     # Auxiliary OAR masks (loss-only, NOT model input channels).
     # Bag_Bowel: V45Gy < 90cc constraint in loss function (hardcoded threshold).
@@ -460,7 +594,7 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     sitk.WriteImage(numpy_to_sitk(dose_array.astype(np.float32), ct_image),
                     os.path.join(labels_dir, f"{case_name}.nii.gz"))
 
-    print(f"  ✓ Done! Saved 6 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
+    print(f"  ✓ Done! Saved 7 input channels + 2 auxiliary OAR masks + 1 label for {case_name}")
     return True
 
 def create_dataset_json(output_dir, num_cases):
@@ -472,6 +606,7 @@ def create_dataset_json(output_dir, num_cases):
             "3": "Anorectum_SDM",
             "4": "Body_Mask",
             "5": "Penile_Bulb_mask",
+            "6": "BEV_Beam_Frustum",
         },
         "labels": {"0": "dose"},
         "numTraining": num_cases,
