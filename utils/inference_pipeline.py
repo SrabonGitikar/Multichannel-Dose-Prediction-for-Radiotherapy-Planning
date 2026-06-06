@@ -341,12 +341,41 @@ def preprocess_dicom(dicom_dir: str, images_dir: str, case_name: str = "patient_
         return path
 
     _save(ct_array,    "0000")   # ch_0: CT
-    _save(ptv_mask,    "0001")   # ch_1: PTV binary mask (CreateDiscretePTVMapd consumes this)
+    _save(ptv_mask,    "0001")   # ch_1: PTV union binary (raw, for _CreateDiscretePTVMapd)
     _save(bladder_sdm, "0002")   # ch_2: Bladder SDM
     _save(anorect_sdm, "0003")   # ch_3: Anorectum SDM
     _save(body_mask,   "0004")   # ch_4: Body Mask
     _save(penile_mask, "0005")   # ch_5: Penile Bulb
     _save(beam_mask,   "0006")   # ch_6: BEV Frustum
+
+    # Write individual canonical PTV files for proper discrete SIB mapping
+    # Mirrors the SIB_CANONICAL + accumulation logic in dicom_to_nnunet.py
+    SIB_CANONICAL_INF = {
+        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",
+        r"^ptv.*62|^ctv.*62":        "PTV60",
+        r"^ptv.*55|^ctv.*55":        "PTV55",
+        r"^ptv.*54|^ctv.*54":        "PTV54",
+        r"^ptv.*44|^ctv.*44":        "PTV44",
+        r"^ptv.*36|^ctv.*36":        "PTV36",
+        r"^ptv.*25|^ctv.*25":        "PTV25",
+    }
+    accumulated_ptvs = {}
+    for p_name in ptv_names:
+        canonical = None
+        for pattern, cname in SIB_CANONICAL_INF.items():
+            if re.match(pattern, p_name, re.IGNORECASE):
+                canonical = cname
+                break
+        if canonical is None:
+            canonical = p_name.replace(" ", "_").replace("/", "_")
+        single = _contour_to_mask(rs_ds, p_name, ct_image)
+        if canonical in accumulated_ptvs:
+            accumulated_ptvs[canonical] = np.maximum(accumulated_ptvs[canonical], single)
+        else:
+            accumulated_ptvs[canonical] = single
+    for canonical, p_mask in accumulated_ptvs.items():
+        _save(p_mask.astype(np.float32), canonical)  # e.g. case_PTV60.nii.gz
+    print(f"  [preprocess] Individual PTVs written: {list(accumulated_ptvs.keys())}")
 
     print(f"  [preprocess] 7 channels saved → {images_dir}/{case_name}_000[0-6].nii.gz")
 
@@ -375,35 +404,27 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
     )
     from monai.data import Dataset, DataLoader
 
-    # ---- Replicate CreateDiscretePTVMapd from training script ----------------
+    SIB_KEYS_INF = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]
     SIB_ORDER = [
         ("PTV25", 25.0), ("PTV36", 36.0), ("PTV44", 44.0),
         ("PTV54", 54.0), ("PTV55", 55.0), ("PTV60", 60.0),
     ]
-    SIB_CANONICAL = {
-        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",
-        r"^ptv.*62|^ctv.*62": "PTV60",
-        r"^ptv.*55|^ctv.*55": "PTV55",
-        r"^ptv.*54|^ctv.*54": "PTV54",
-        r"^ptv.*44|^ctv.*44": "PTV44",
-        r"^ptv.*36|^ctv.*36": "PTV36",
-        r"^ptv.*25|^ctv.*25": "PTV25",
-    }
 
     class _CreateDiscretePTVMapd(MapTransform):
-        """Mirrors CreateDiscretePTVMapd from train_dummy_physics_new.py."""
+        """Full Painter's Algorithm — identical to CreateDiscretePTVMapd in training."""
         def __call__(self, data):
             d = dict(data)
             discrete_ptv = torch.zeros_like(d["ch_0"])
-            # Build individual PTV keys from ch_1 using canonical names
-            # For inference we only have the union mask in ch_1;
-            # assign it the highest dose level present (PTV60 → 60.0)
-            ptv_union = d["ch_1"]
-            discrete_ptv = torch.where(
-                ptv_union >= 0.5,
-                torch.tensor(60.0, device=ptv_union.device),
-                discrete_ptv,
-            )
+            for p_key, dose_val in SIB_ORDER:
+                if p_key in d:
+                    mask = d[p_key] >= 0.5
+                    discrete_ptv = torch.where(
+                        mask,
+                        torch.tensor(dose_val, dtype=discrete_ptv.dtype,
+                                     device=discrete_ptv.device),
+                        discrete_ptv,
+                    )
+                    del d[p_key]
             d["discrete_ptv"] = discrete_ptv
             return d
 
@@ -420,19 +441,20 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
     model.eval()
     print(f"  [inference] Model loaded: {model_path}")
 
-    _CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"]
-    _CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest")
+    _CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"] + SIB_KEYS_INF
+    _CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest") + ("nearest",)*len(SIB_KEYS_INF)
 
     transforms = Compose([
-        LoadImaged(keys=_CH_KEYS),
-        EnsureChannelFirstd(keys=_CH_KEYS),
-        Spacingd(keys=_CH_KEYS, pixdim=TARGET_SPACING, mode=_CH_MODES),
-        _CreateDiscretePTVMapd(keys=["ch_0"]),   # ch_1 → discrete_ptv
+        LoadImaged(keys=_CH_KEYS, allow_missing_keys=True),
+        EnsureChannelFirstd(keys=_CH_KEYS, allow_missing_keys=True),
+        Spacingd(keys=_CH_KEYS, pixdim=TARGET_SPACING, mode=_CH_MODES,
+                 allow_missing_keys=True),
+        _CreateDiscretePTVMapd(keys=["ch_0"]),   # Painter's Algorithm → discrete_ptv
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         # Concat order mirrors ConcatItemsd in training script exactly
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"],
                      name="image"),
-        DeleteItemsd(keys=_CH_KEYS),
+        DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"]),
         ToTensord(keys=["image"]),
     ])
 
@@ -440,8 +462,14 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
         f"ch_{i}": os.path.join(images_dir, f"{case_name}_{ch}.nii.gz")
         for i, ch in enumerate(CHANNELS)
     }
-    for path in pt_dict.values():
-        assert os.path.exists(path), f"Missing channel file: {path}"
+    # Add individual canonical PTV files if they exist (allow_missing_keys handles absence)
+    for ptv_key in SIB_KEYS_INF:
+        p = os.path.join(images_dir, f"{case_name}_{ptv_key}.nii.gz")
+        if os.path.exists(p):
+            pt_dict[ptv_key] = p
+    for key, path in pt_dict.items():
+        if key not in SIB_KEYS_INF:   # core channels must exist
+            assert os.path.exists(path), f"Missing channel file: {path}"
 
     ds     = Dataset(data=[pt_dict], transform=transforms)
     loader = DataLoader(ds, batch_size=1)
