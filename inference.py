@@ -8,8 +8,6 @@ import torch.nn.functional as F
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
-import nibabel as nib
-# pyrefly: ignore [missing-import]
 import SimpleITK as sitk
 # pyrefly: ignore [missing-import]
 from monai.networks.nets import UNet
@@ -24,108 +22,156 @@ from monai.transforms import (
     NormalizeIntensityd,
     ConcatItemsd,
     ToTensord,
-    SpatialPadd,
-    DeleteItemsd
+    DeleteItemsd,
+    MapTransform,
 )
 # pyrefly: ignore [missing-import]
 from monai.data import Dataset, DataLoader
 
-# Configuration - uses same paths as training
-# DATA_DIR = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
-DATA_DIR = "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/raw_dicom_nifti"
-
+# ── Configuration — must stay in sync with train_dummy_physics_new.py ─────────
+DATA_DIR   = os.path.join(os.getcwd(), "./nnUNet_raw/Dataset001_ProstateDose")
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
-TARGET_SPACING = (1.27, 1.27, 2.5)  # Physical mm - must match training
-PATCH_SIZE = (128, 128, 64)  # Must match training
-MODEL_PATH = "best_dose_model_physics.pth"
-PRESCRIPTION_DOSE_GY = 75.0
+TARGET_SPACING        = (1.27, 1.27, 2.5)
+PATCH_SIZE            = (128, 128, 64)
+MODEL_PATH            = "best_dose_model_physics_jun3.pth"
+PRESCRIPTION_DOSE_GY  = 75.0
 
-# Input channels — must stay in sync with CHANNELS in train_dummy_physics_new.py
-CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005"]  # CT, PTV, Bladder SDM, Anorectum SDM, Beam, Body Mask
+# 7 input channels — Ch0=CT, Ch1=PTV_binary, Ch2=Bladder_SDM, Ch3=Anorectum_SDM,
+#                    Ch4=Body_Mask, Ch5=Penile_Bulb, Ch6=BEV_Beam_Frustum
+CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]
 
-# Spacingd interpolation modes — binary masks use 'nearest', continuous fields 'bilinear'
-# Order matches CHANNELS: CT=bilinear, PTV=nearest, Bladder SDM=bilinear,
-#   Anorectum SDM=bilinear, Beam Mask=nearest, Body Mask=nearest
-_CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"]
-_CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest")
+# SIB canonical keys — individual per-dose PTV files written by dicom_to_nnunet.py
+SIB_KEYS = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]
+SIB_ORDER = [
+    ("PTV25", 25.0), ("PTV36", 36.0), ("PTV44", 44.0),
+    ("PTV54", 54.0), ("PTV55", 55.0), ("PTV60", 60.0),
+]
+
+# ── CreateDiscretePTVMapd — identical to train_dummy_physics_new.py ────────────
+class CreateDiscretePTVMapd(MapTransform):
+    """
+    Painter's Algorithm: lowest dose first, highest dose last.
+    Reads PTV60/PTV44/… keys and writes 'discrete_ptv' with literal Gy values.
+    Mirrors CreateDiscretePTVMapd in train_dummy_physics_new.py exactly.
+    """
+    def __call__(self, data):
+        d = dict(data)
+        discrete_ptv = torch.zeros_like(d["ch_0"])
+        for p_key, dose_val in SIB_ORDER:
+            if p_key in d:
+                mask = d[p_key] >= 0.5
+                discrete_ptv = torch.where(
+                    mask,
+                    torch.tensor(dose_val, dtype=discrete_ptv.dtype,
+                                 device=discrete_ptv.device),
+                    discrete_ptv,
+                )
+                del d[p_key]
+        d["discrete_ptv"] = discrete_ptv
+        return d
+
+# ── Transform pipeline — mirrors val_transforms in train_dummy_physics_new.py ──
+_CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"] + SIB_KEYS
+_CH_MODES = (
+    "bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest",  # ch_0–ch_6
+) + ("nearest",) * len(SIB_KEYS)
 
 inference_transforms = Compose([
-    LoadImaged(keys=_CH_KEYS),
-    EnsureChannelFirstd(keys=_CH_KEYS),
-    Spacingd(
-        keys=_CH_KEYS,
-        pixdim=TARGET_SPACING,
-        mode=_CH_MODES,
-    ),
+    LoadImaged(keys=_CH_KEYS, allow_missing_keys=True),
+    EnsureChannelFirstd(keys=_CH_KEYS, allow_missing_keys=True),
+    Spacingd(keys=_CH_KEYS, pixdim=TARGET_SPACING, mode=_CH_MODES,
+             allow_missing_keys=True),
+    CreateDiscretePTVMapd(keys=["ch_0"]),          # Painter's Algorithm → discrete_ptv
     NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-    ConcatItemsd(keys=_CH_KEYS, name="image"),
-    DeleteItemsd(keys=_CH_KEYS),
-    ToTensord(keys=["image"])
+    # Concat order matches ConcatItemsd in training exactly
+    ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"],
+                 name="image"),
+    DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"]),
+    ToTensord(keys=["image"]),
 ])
 
-def run_inference(patient_id, output_dir=".", save_nifti=True):
+
+def run_inference(patient_id, output_dir=".", model_path=None, save_nifti=True):
     """
-    Run dose prediction inference on a single patient.
-    
+    Run dose prediction inference on a single already-preprocessed patient.
+
     Args:
-        patient_id: Patient ID (e.g., "prostate_000")
-        output_dir: Directory to save output files
-        save_nifti: Whether to save output as NIfTI file
-    
+        patient_id : Patient ID matching imagesTr files, e.g. 'prostate_000'
+        output_dir : Directory to save NIfTI output
+        model_path : Path to .pth checkpoint (overrides global MODEL_PATH)
+        save_nifti : Save predicted dose as NIfTI if True
+
     Returns:
-        pred_dose: numpy array of predicted dose [D, H, W] in Gy
-        metadata: dict with spacing and patient info
+        pred_dose : numpy array [D, H, W] in Gy
+        metadata  : dict with spacing / origin / dose range
     """
-    # Auto-select device (GPU if available)
+    global MODEL_PATH
+    if model_path is not None:
+        MODEL_PATH = model_path
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    # Load Model
+
+    # ── Model (must match training exactly) ───────────────────────────────────
     print(f"Loading model on {device}...")
     model = UNet(
         spatial_dims=3,
-        in_channels=6,  # CT, PTV, Bladder SDM, Anorectum SDM, Beam Prior, Body Mask
+        in_channels=7,   # CT, discrete_PTV, Bladder_SDM, Anorectum_SDM, Body, PenileBulb, BEV_Beam
         out_channels=1,
-        channels=(16, 32, 64, 128),  # 4-level UNet — must match training
+        channels=(16, 32, 64, 128),
         strides=(2, 2, 2),
         num_res_units=2,
     ).to(device)
-    
-    if os.path.exists(MODEL_PATH):
-        model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-        print(f"Model weights loaded from {MODEL_PATH}")
-    else:
+
+    if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(f"Model file '{MODEL_PATH}' not found. Train the model first.")
-    
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    print(f"Model weights loaded from {MODEL_PATH}")
     model.eval()
 
     print(f"\nRunning inference for {patient_id}...")
-    
-    # Build input dictionary with all 6 channels
+
+    # ── Build input dict — core channels + individual PTV files ───────────────
     pt_dict = {}
     for i, ch in enumerate(CHANNELS):
         ch_path = os.path.join(IMAGES_DIR, f"{patient_id}_{ch}.nii.gz")
         if not os.path.exists(ch_path):
             raise FileNotFoundError(f"Input file not found: {ch_path}")
         pt_dict[f"ch_{i}"] = ch_path
-        
-    # Apply transforms
-    ds = Dataset(data=[pt_dict], transform=inference_transforms)
+
+    # Individual canonical PTV files (allow_missing_keys handles absent ones)
+    for ptv_key in SIB_KEYS:
+        p = os.path.join(IMAGES_DIR, f"{patient_id}_{ptv_key}.nii.gz")
+        if os.path.exists(p):
+            pt_dict[ptv_key] = p
+
+    # ── Apply transforms ───────────────────────────────────────────────────────
+    ds     = Dataset(data=[pt_dict], transform=inference_transforms)
     loader = DataLoader(ds, batch_size=1)
-    
-    batch = next(iter(loader))
+    batch  = next(iter(loader))
     inputs = batch["image"].to(device)
 
-    # Capture the affine matrix from MONAI's MetaTensor for ch_0.
-    # This affine encodes spacing + origin + direction in one 4x4 matrix,
-    # exactly as written by dicom_to_nnunet.py — no axis reordering needed.
-    ref_nib = nib.load(pt_dict["ch_0"])
-    ref_affine = ref_nib.affine  # (4,4) float64, RAS convention
+    # Capture spatial metadata from the resampled CT for NIfTI alignment
+    ct_sitk = sitk.ReadImage(pt_dict["ch_0"])
+    ct_resampled = sitk.Resample(
+        ct_sitk,
+        [int(round(ct_sitk.GetSize()[i] * ct_sitk.GetSpacing()[i] / TARGET_SPACING[i]))
+         for i in range(3)],
+        sitk.Transform(),
+        sitk.sitkLinear,
+        ct_sitk.GetOrigin(),
+        TARGET_SPACING,
+        ct_sitk.GetDirection(),
+        0.0,
+        ct_sitk.GetPixelID(),
+    )
+    grid_origin    = ct_resampled.GetOrigin()
+    grid_direction = ct_resampled.GetDirection()
 
-    print(f"Input tensor shape: {inputs.shape}")  # [1, 6, D, H, W]
+    print(f"Input tensor shape: {inputs.shape}")   # [1, 7, D, H, W]
 
-    # Run inference with sliding window + mixed precision
+    # ── Sliding-window inference ───────────────────────────────────────────────
     with torch.no_grad():
-        with torch.amp.autocast('cuda', enabled=device.type == 'cuda'):
+        with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
             outputs = sliding_window_inference(
                 inputs=inputs,
                 roi_size=PATCH_SIZE,
@@ -135,64 +181,62 @@ def run_inference(patient_id, output_dir=".", save_nifti=True):
                 mode="gaussian",
             )
 
-    # Apply Softplus outside autocast in float32 — matches the training loop exactly.
-    # (float16 saturates at ~65504; Softplus inside AMP could silently overflow.)
-    # MONAI's Spacingd preserves (Z, Y, X) = (D, H, W) ordering, so no transpose needed.
-    outputs_activated = F.softplus(outputs.float())  # (1, 1, H, W, D) — MONAI axis order
+    # Apply Softplus in float32 — matches training loop exactly.
+    outputs_activated = F.softplus(outputs.float())   # (1, 1, D, H, W)
 
-    # Hard-zero dose outside the patient body — mirrors training loop.
-    # ch_5 = body mask: 1.0 inside body (CT > -300 HU), 0.0 in air.
-    body_mask_hard = (inputs[:, 5:6, ...] > 0.5).float()
+    # Hard-zero dose outside body — Ch_4 = Body Mask (matches training channel layout)
+    body_mask_hard = (inputs[:, 4:5, ...] > 0.5).float()
     outputs_activated = outputs_activated * body_mask_hard
 
-    # MONAI tensor axis order: (B, C, X, Y, Z) after Spacingd+ConcatItemsd.
-    # nibabel NIfTI axis order: (X, Y, Z) — same order, no transpose needed.
-    pred_dose = outputs_activated[0, 0].cpu().numpy()  # (X, Y, Z)
-    pred_dose = pred_dose * PRESCRIPTION_DOSE_GY        # denormalise to Gy
-    pred_dose = np.clip(pred_dose, 0.0, None)           # dose cannot be negative
+    pred_dose = outputs_activated[0, 0].cpu().numpy()   # (D, H, W)
+    pred_dose = pred_dose * PRESCRIPTION_DOSE_GY         # denormalise to Gy
+    pred_dose = np.clip(pred_dose, 0.0, None)
 
     print(f"Prediction complete. Shape: {pred_dose.shape}")
     print(f"Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
 
-    # Save using nibabel with the reference affine — guaranteed correct orientation.
-    # nibabel stores arrays as (X, Y, Z) with the affine encoding physical space.
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
-        nib_img = nib.Nifti1Image(pred_dose.astype(np.float32), affine=ref_affine)
-        nib.save(nib_img, out_file)
+        sitk_img = sitk.GetImageFromArray(pred_dose.astype(np.float32))
+        sitk_img.SetSpacing(TARGET_SPACING)
+        sitk_img.SetOrigin(grid_origin)
+        sitk_img.SetDirection(grid_direction)
+        sitk.WriteImage(sitk_img, out_file)
         print(f"Saved predicted dose to: {out_file}")
 
     metadata = {
         "patient_id": patient_id,
-        "affine": ref_affine,
-        "shape": pred_dose.shape,
-        "dose_min": float(pred_dose.min()),
-        "dose_max": float(pred_dose.max()),
+        "spacing":    TARGET_SPACING,
+        "origin":     grid_origin,
+        "direction":  grid_direction,
+        "shape":      pred_dose.shape,
+        "dose_min":   float(pred_dose.min()),
+        "dose_max":   float(pred_dose.max()),
     }
-    
     return pred_dose, metadata
 
 
 def main():
     global MODEL_PATH
-    
-    parser = argparse.ArgumentParser(description="Dose prediction inference")
-    parser.add_argument("--patient", type=str, required=True, 
-                        help="Patient ID (e.g., prostate_000)")
+
+    parser = argparse.ArgumentParser(description="Dose prediction inference (preprocessed patients)")
+    parser.add_argument("--patient",    type=str, required=True,
+                        help="Patient ID matching imagesTr files, e.g. prostate_000")
     parser.add_argument("--output-dir", type=str, default=".",
-                        help="Output directory for predicted dose")
-    parser.add_argument("--model", type=str, default=MODEL_PATH,
-                        help="Path to model checkpoint")
-    
+                        help="Output directory for predicted dose NIfTI")
+    parser.add_argument("--model",      type=str, default=MODEL_PATH,
+                        help=f"Path to model checkpoint (default: {MODEL_PATH})")
     args = parser.parse_args()
     MODEL_PATH = args.model
-    
+
     try:
         pred_dose, metadata = run_inference(args.patient, args.output_dir)
         print("\n=== Dose Grid Summary ===")
-        print(f"Patient:   {metadata['patient_id']}")
-        print(f"Shape:     {metadata['shape']}  (X, Y, Z voxels)")
+        print(f"Patient:    {metadata['patient_id']}")
+        print(f"Shape:      {metadata['shape']}  (Z, Y, X voxels)")
+        print(f"Spacing:    {metadata['spacing']} mm")
+        print(f"Origin:     {tuple(round(v, 2) for v in metadata['origin'])} mm")
         print(f"Dose range: [{metadata['dose_min']:.2f}, {metadata['dose_max']:.2f}] Gy")
         print("=========================")
     except Exception as e:
