@@ -54,23 +54,32 @@ from utils.create_dummy_plan import create_dummy_plan_dicom
 # ─────────────────────────────────────────────────────────────────────────────
 STRUCTURE_PATTERNS = {
     "PTV": [
-        r"^CTVP$", r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$",
+        r"^CTVP$",
+        r"^CTV_?60", r"^PTV_?60",
+        r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$",
+        r"^CTV_55", r"^PTV_55", r"^CTV55$", r"^PTV55$",
+        r"^CTV_54", r"^PTV_54", r"^CTV54$", r"^PTV54$",
         r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36",
         r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25",
         r"^CTV 25", r"^PTV 25",
     ],
-    "Bladder":   [r"^Bladder$", r"^BLADDER$"],
-    "Anorectum": [r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$"],
-    "Bag_Bowel": [r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*"],
-    "Femur_L":   [r"^Femur_?Head_?L.*", r"^L_?Femur.*", r"^Left_?Femur.*"],
-    "Femur_R":   [r"^Femur_?Head_?R.*", r"^R_?Femur.*", r"^Right_?Femur.*"],
+    "Bladder":     [r"^Bladder$", r"^BLADDER$"],
+    "Anorectum":   [r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$"],
+    "Bag_Bowel":   [r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*"],
+    "Body":        [r"^Body$", r"^EXTERNAL$", r"^Patient$", r"^Skin$"],
+    "Femur_L":     [r"^Femur_?Head_?L.*", r"^L_?Femur.*", r"^Left_?Femur.*"],
+    "Femur_R":     [r"^Femur_?Head_?R.*", r"^R_?Femur.*", r"^Right_?Femur.*"],
+    "Penile_Bulb": [r"^Penile_?Bulb.*", r"^PenileBulb.*", r"^Penile Bulb.*"],
 }
 
 BODY_HU_THRESHOLD = -300.0
 TARGET_SPACING    = (1.27, 1.27, 2.5)     # must match training
 PATCH_SIZE        = (128, 128, 64)         # must match training
 PRESCRIPTION_GY   = 75.0
-CHANNELS          = ["0000", "0001", "0002", "0003", "0004", "0005"]
+CHANNELS          = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]
+SAD_MM            = 1000.0
+PENUMBRA_MM       = 7.0
+DEFAULT_GANTRY_ANGLES = [0, 51, 102, 154, 205, 257, 308]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -140,64 +149,79 @@ def _signed_distance_map(binary_mask, spacing_mm):
     d_in  = distance_transform_edt(binary_mask == 1, sampling=spacing_mm)
     return (d_out - d_in).astype(np.float32)
 
-def _generate_beam_mask(plan_files, ct_image, ptv_mask):
+def _parse_gantry_angles_inf(plan_files):
     if not plan_files:
-        print("  [pipeline] WARNING: No RTPLAN found — beam prior set to zeros.")
-        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
+        print("  [pipeline] No RTPlan — defaulting to 7 equispaced gantry angles.")
+        return DEFAULT_GANTRY_ANGLES
+    try:
+        plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
+        angles = []
+        if hasattr(plan, 'BeamSequence'):
+            for beam in plan.BeamSequence:
+                d_type = getattr(beam, 'TreatmentDeliveryType', '')
+                b_type = getattr(beam, 'BeamType', '')
+                if d_type == 'TREATMENT' or b_type == 'STATIC':
+                    if hasattr(beam, 'ControlPointSequence') and len(beam.ControlPointSequence) > 0:
+                        cp0 = beam.ControlPointSequence[0]
+                        if hasattr(cp0, 'GantryAngle'):
+                            angles.append(float(cp0.GantryAngle))
+        if not angles:
+            print("  [pipeline] No gantry angles — defaulting to 7 equispaced angles.")
+            return DEFAULT_GANTRY_ANGLES
+        unique_angles = sorted(set(angles))
+        print(f"  [pipeline] Gantry Angles: {unique_angles}")
+        return unique_angles
+    except Exception as e:
+        print(f"  [pipeline] RTPlan read error ({e}) — using fallback angles.")
+        return DEFAULT_GANTRY_ANGLES
 
-    plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
-    isocenter_mm, gantry_angles = None, []
-    if hasattr(plan, "BeamSequence"):
-        for beam in plan.BeamSequence:
-            b_type = getattr(beam, "BeamType", "")
-            d_type = getattr(beam, "TreatmentDeliveryType", "")
-            if b_type == "STATIC" or d_type == "TREATMENT":
-                if hasattr(beam, "ControlPointSequence") and beam.ControlPointSequence:
-                    cp0 = beam.ControlPointSequence[0]
-                    if isocenter_mm is None and hasattr(cp0, "IsocenterPosition"):
-                        isocenter_mm = np.array(cp0.IsocenterPosition)
-                    if hasattr(cp0, "GantryAngle"):
-                        gantry_angles.append(float(cp0.GantryAngle))
 
-    if isocenter_mm is None or not gantry_angles:
-        print("  [pipeline] WARNING: No isocenter/gantry angles — beam prior set to zeros.")
-        return np.zeros(sitk.GetArrayViewFromImage(ct_image).shape, dtype=np.float32)
-
-    ptv_z, ptv_y, ptv_x = np.where(ptv_mask > 0.5)
-    if len(ptv_x):
-        pts = np.array([
-            ct_image.TransformIndexToPhysicalPoint((int(x), int(y), int(z)))
-            for x, y, z in zip(ptv_x, ptv_y, ptv_z)
-        ])
-        cylinder_radius_mm = np.max(np.linalg.norm(pts - isocenter_mm, axis=1)) + 10.0
-    else:
-        cylinder_radius_mm = 50.0
-
+def _generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
+    """IEC 61217 BEV frustum mask — mirrors dicom_to_nnunet.py exactly."""
+    gantry_angles = _parse_gantry_angles_inf(plan_files)
     shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
-    shape_xyz = (shape_zyx[2], shape_zyx[1], shape_zyx[0])
-    spacing   = np.array(ct_image.GetSpacing())
     origin    = np.array(ct_image.GetOrigin())
+    spacing   = np.array(ct_image.GetSpacing())
     direction = np.array(ct_image.GetDirection()).reshape(3, 3)
 
-    xi, yi, zi = np.meshgrid(
-        np.arange(shape_xyz[0]), np.arange(shape_xyz[1]), np.arange(shape_xyz[2]),
-        indexing="ij"
-    )
-    indices  = np.stack([xi.ravel(), yi.ravel(), zi.ravel()], axis=1)
-    physical = origin + np.dot(indices * spacing, direction.T)
-    beam_flat = np.zeros(len(physical), dtype=np.float32)
+    zi, yi, xi = np.meshgrid(np.arange(shape_zyx[0]), np.arange(shape_zyx[1]),
+                              np.arange(shape_zyx[2]), indexing='ij')
+    voxel_indices = np.stack([xi.ravel(), yi.ravel(), zi.ravel()], axis=1)
+    phys_pts = origin + (voxel_indices * spacing) @ direction.T
 
-    for angle in gantry_angles:
-        theta = np.deg2rad(angle)
-        bdir  = np.array([np.sin(theta), -np.cos(theta), 0.0])
-        bdir /= np.linalg.norm(bdir)
-        vec   = physical - isocenter_mm
-        proj  = np.sum(vec * bdir, axis=1, keepdims=True) * bdir
-        perp  = np.linalg.norm(vec - proj, axis=1)
-        beam_flat[perp <= cylinder_radius_mm] = 1.0
+    ptv_z, ptv_y, ptv_x = np.where(ptv_mask_array > 0.5)
+    if len(ptv_z) == 0:
+        print("  [pipeline] WARNING: PTV empty — blank beam mask.")
+        return np.zeros(shape_zyx, dtype=np.float32)
 
-    beam_xyz = beam_flat.reshape(shape_xyz)
-    return np.transpose(beam_xyz, (2, 1, 0))  # ZYX
+    iso_idx  = np.array([ptv_x.mean(), ptv_y.mean(), ptv_z.mean()])
+    iso_phys = origin + (iso_idx * spacing) @ direction.T
+    print(f"  [pipeline] PTV isocenter (mm): {np.round(iso_phys, 1)}")
+
+    beam_flat = np.zeros(len(phys_pts), dtype=np.float32)
+    for angle_deg in gantry_angles:
+        theta    = np.deg2rad(angle_deg)
+        beam_dir = np.array([np.sin(theta), -np.cos(theta), 0.0])
+        source   = iso_phys - beam_dir * SAD_MM
+        vec      = phys_pts - source
+        depth    = vec @ beam_dir
+        perp_dist = np.linalg.norm(vec - depth[:, np.newaxis] * beam_dir, axis=1)
+
+        ptv_indices = np.stack([ptv_x, ptv_y, ptv_z], axis=1)
+        ptv_phys    = origin + (ptv_indices * spacing) @ direction.T
+        vec_ptv     = ptv_phys - source
+        depth_ptv   = vec_ptv @ beam_dir
+        perp_ptv    = np.linalg.norm(vec_ptv - depth_ptv[:, np.newaxis] * beam_dir, axis=1)
+
+        half_angle = (np.arctan2(perp_ptv.max(), depth_ptv[depth_ptv > 0].min())
+                      if depth_ptv.max() > 0 else np.deg2rad(5.0))
+        radius = np.abs(depth) * np.tan(half_angle) + PENUMBRA_MM
+        beam_flat[(depth > 0) & (perp_dist <= radius)] = 1.0
+
+    beam_zyx = beam_flat.reshape(shape_zyx)
+    print(f"  [pipeline] BEV voxels: {int(beam_zyx.sum()):,}")
+    return beam_zyx
+
 
 
 def _numpy_to_sitk(array, reference):
@@ -257,7 +281,9 @@ def _scan_dicom_dir(dicom_dir):
 def preprocess_dicom(dicom_dir: str, images_dir: str, case_name: str = "patient_001") -> None:
     """
     Preprocess a DICOM folder for inference.
-    Writes 6 NIfTI channel files to *images_dir* (RTDose is NOT required).
+    Writes 7 NIfTI channel files to *images_dir* matching the training layout exactly.
+    Ch0=CT, Ch1=PTV_binary, Ch2=Bladder_SDM, Ch3=Anorectum_SDM,
+    Ch4=Body_Mask, Ch5=Penile_Bulb, Ch6=BEV_Beam_Frustum
     """
     os.makedirs(images_dir, exist_ok=True)
     ct_image, rs_ds, plan_files = _scan_dicom_dir(dicom_dir)
@@ -276,10 +302,10 @@ def preprocess_dicom(dicom_dir: str, images_dir: str, case_name: str = "patient_
     print(f"  [preprocess] PTV structures: {ptv_names}")
     print(f"  [preprocess] Bladder={bladder_name}  Anorectum={anorect_name}")
 
-    # Masks
-    ptv_mask      = _union_contours_to_mask(rs_ds, ptv_names, ct_image)
-    bladder_mask  = _contour_to_mask(rs_ds, bladder_name, ct_image)
-    anorect_mask  = _contour_to_mask(rs_ds, anorect_name, ct_image)
+    # Core masks
+    ptv_mask     = _union_contours_to_mask(rs_ds, ptv_names, ct_image)
+    bladder_mask = _contour_to_mask(rs_ds, bladder_name, ct_image)
+    anorect_mask = _contour_to_mask(rs_ds, anorect_name, ct_image)
     assert ptv_mask.sum() > 0, "PTV mask is empty — check contour names."
 
     # Signed distance maps
@@ -287,26 +313,42 @@ def preprocess_dicom(dicom_dir: str, images_dir: str, case_name: str = "patient_
     bladder_sdm = _signed_distance_map(bladder_mask, spacing_zyx)
     anorect_sdm = _signed_distance_map(anorect_mask, spacing_zyx)
 
-    # Beam prior
-    beam_mask = _generate_beam_mask(plan_files, ct_image, ptv_mask)
+    # Ch4: Body Mask — prefer RTStruct contour, fall back to HU threshold
+    body_name = _match_structure(roi_names, "Body")
+    if body_name:
+        print(f"  [preprocess] Body contour: {body_name}")
+        body_mask = _contour_to_mask(rs_ds, body_name, ct_image).astype(np.float32)
+    else:
+        print("  [preprocess] No Body contour — using HU threshold fallback.")
+        body_mask = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
 
-    # Body mask
-    body_mask = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
+    # Ch5: Penile Bulb — empty mask if absent
+    penile_name = _match_structure(roi_names, "Penile_Bulb")
+    if penile_name:
+        penile_mask = _contour_to_mask(rs_ds, penile_name, ct_image).astype(np.float32)
+        print(f"  [preprocess] Penile_Bulb: {penile_name}")
+    else:
+        penile_mask = np.zeros_like(ptv_mask, dtype=np.float32)
+        print("  [preprocess] Penile_Bulb: NOT FOUND — using empty mask.")
 
-    # Write channels
+    # Ch6: BEV Frustum Beam Mask
+    beam_mask = _generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
+
+    # Write channels in training order
     def _save(arr, suffix):
         path = os.path.join(images_dir, f"{case_name}_{suffix}.nii.gz")
         sitk.WriteImage(_numpy_to_sitk(arr.astype(np.float32), ct_image), path)
         return path
 
-    _save(ct_array,      "0000")   # ch_0: CT
-    _save(ptv_mask,      "0001")   # ch_1: PTV binary mask
-    _save(bladder_sdm,   "0002")   # ch_2: Bladder SDM
-    _save(anorect_sdm,   "0003")   # ch_3: Anorectum SDM
-    _save(beam_mask,     "0004")   # ch_4: IMRT beam prior
-    _save(body_mask,     "0005")   # ch_5: body mask
+    _save(ct_array,    "0000")   # ch_0: CT
+    _save(ptv_mask,    "0001")   # ch_1: PTV binary mask (CreateDiscretePTVMapd consumes this)
+    _save(bladder_sdm, "0002")   # ch_2: Bladder SDM
+    _save(anorect_sdm, "0003")   # ch_3: Anorectum SDM
+    _save(body_mask,   "0004")   # ch_4: Body Mask
+    _save(penile_mask, "0005")   # ch_5: Penile Bulb
+    _save(beam_mask,   "0006")   # ch_6: BEV Frustum
 
-    print(f"  [preprocess] 6 channels saved → {images_dir}/{case_name}_000[0-5].nii.gz")
+    print(f"  [preprocess] 7 channels saved → {images_dir}/{case_name}_000[0-6].nii.gz")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -317,7 +359,9 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
                   output_dir: str) -> str:
     """
     Run sliding-window inference and save predicted dose as NIfTI.
-    Returns the path to the saved .nii.gz file.
+    Channel layout fed to model (must exactly match training):
+      0=CT(norm)  1=discrete_ptv  2=Bladder_SDM  3=Anorectum_SDM
+      4=Body  5=PenileBulb  6=BEV_Beam
     """
     import torch
     import torch.nn.functional as F
@@ -327,14 +371,47 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
     from monai.transforms import (
         Compose, LoadImaged, EnsureChannelFirstd, Spacingd,
         NormalizeIntensityd, ConcatItemsd, ToTensord, DeleteItemsd,
+        MapTransform,
     )
     from monai.data import Dataset, DataLoader
+
+    # ---- Replicate CreateDiscretePTVMapd from training script ----------------
+    SIB_ORDER = [
+        ("PTV25", 25.0), ("PTV36", 36.0), ("PTV44", 44.0),
+        ("PTV54", 54.0), ("PTV55", 55.0), ("PTV60", 60.0),
+    ]
+    SIB_CANONICAL = {
+        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",
+        r"^ptv.*62|^ctv.*62": "PTV60",
+        r"^ptv.*55|^ctv.*55": "PTV55",
+        r"^ptv.*54|^ctv.*54": "PTV54",
+        r"^ptv.*44|^ctv.*44": "PTV44",
+        r"^ptv.*36|^ctv.*36": "PTV36",
+        r"^ptv.*25|^ctv.*25": "PTV25",
+    }
+
+    class _CreateDiscretePTVMapd(MapTransform):
+        """Mirrors CreateDiscretePTVMapd from train_dummy_physics_new.py."""
+        def __call__(self, data):
+            d = dict(data)
+            discrete_ptv = torch.zeros_like(d["ch_0"])
+            # Build individual PTV keys from ch_1 using canonical names
+            # For inference we only have the union mask in ch_1;
+            # assign it the highest dose level present (PTV60 → 60.0)
+            ptv_union = d["ch_1"]
+            discrete_ptv = torch.where(
+                ptv_union >= 0.5,
+                torch.tensor(60.0, device=ptv_union.device),
+                discrete_ptv,
+            )
+            d["discrete_ptv"] = discrete_ptv
+            return d
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"  [inference] Device: {device}")
 
     model = UNet(
-        spatial_dims=3, in_channels=6, out_channels=1,
+        spatial_dims=3, in_channels=7, out_channels=1,
         channels=(16, 32, 64, 128), strides=(2, 2, 2), num_res_units=2,
     ).to(device)
 
@@ -343,15 +420,18 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
     model.eval()
     print(f"  [inference] Model loaded: {model_path}")
 
-    _CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5"]
-    _CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest")
+    _CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"]
+    _CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest")
 
     transforms = Compose([
         LoadImaged(keys=_CH_KEYS),
         EnsureChannelFirstd(keys=_CH_KEYS),
         Spacingd(keys=_CH_KEYS, pixdim=TARGET_SPACING, mode=_CH_MODES),
+        _CreateDiscretePTVMapd(keys=["ch_0"]),   # ch_1 → discrete_ptv
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=_CH_KEYS, name="image"),
+        # Concat order mirrors ConcatItemsd in training script exactly
+        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"],
+                     name="image"),
         DeleteItemsd(keys=_CH_KEYS),
         ToTensord(keys=["image"]),
     ])
@@ -380,7 +460,8 @@ def run_inference(images_dir: str, case_name: str, model_path: str,
             )
 
     outputs_activated = F.softplus(outputs.float())
-    body_hard = (inputs[:, 5:6, ...] > 0.5).float()
+    # Ch_4 = Body Mask (correct index after training layout fix)
+    body_hard = (inputs[:, 4:5, ...] > 0.5).float()
     outputs_activated = outputs_activated * body_hard
 
     pred_dose = outputs_activated[0, 0].cpu().numpy() * PRESCRIPTION_GY
