@@ -4,6 +4,25 @@
 # =============================================================================
 
 # ---------------------------------------------------------------------------
+# Preprocessing  (dicom_to_nnunet.py)
+# ---------------------------------------------------------------------------
+preprocessing:
+  # Raw DICOM source directory (one sub-folder per patient)
+  dicom_dir: "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
+  # Where to write imagesTr / labelsTr
+  output_dir: "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
+  # Prefix for case names: e.g. "prostate" → prostate_000, prostate_001 …
+  case_prefix: "prostate"
+  # dataset.json dataset name field
+  dataset_name: "Dataset001_ProstateDose"
+
+  # ---- BEV frustum beam mask parameters --------------------------------
+  bev:
+    sad_mm: 1000.0          # Source-to-Axis Distance (mm)
+    penumbra_mm: 7.0        # Isotropic penumbra margin (mm)
+    default_gantry_angles: [0, 51, 102, 154, 205, 257, 308]   # fallback if no RTPlan
+
+# ---------------------------------------------------------------------------
 # Filesystem paths
 # ---------------------------------------------------------------------------
 dataset:
@@ -143,6 +162,19 @@ organs_at_risk:
     aliases: ["Femur_Head_L", "Femur_Head_R", "L_Femur", "R_Femur",
               "Left_Femoral_Head", "Right_Femoral_Head", "FemurHead_L",
               "FemurHead_R", "Femur_L", "Femur_R"]
+    split_laterality: true
+    patterns_left:
+      - "^Femur_?Head_?L.*"
+      - "^L_?Femur.*"
+      - "^Left_?Femur.*"
+      - "^FemurHead_L.*"
+      - "^Femur_L.*"
+    patterns_right:
+      - "^Femur_?Head_?R.*"
+      - "^R_?Femur.*"
+      - "^Right_?Femur.*"
+      - "^FemurHead_R.*"
+      - "^Femur_R.*"
     requires_sdm: false
     extra_file_key: "femur_mask"
     file_suffix: "femur"
@@ -190,25 +222,32 @@ body_hu_threshold: -300.0        # HU below this → outside body
 clinical_targets:
   prescription_dose_gy: 75.0
   physical_max_gy: 70.0
-  sib_levels:
+
+  targets:
     - name: "PTV25"
       rx_gy: 25.0
       ceil_gy: 26.50
+      patterns: ["^PTV25$", "^CTV25$"]
     - name: "PTV36"
       rx_gy: 36.0
       ceil_gy: 38.16
+      patterns: ["^PTV36$", "^CTV36$"]
     - name: "PTV44"
       rx_gy: 44.0
       ceil_gy: 46.64
+      patterns: ["^PTV44$", "^CTV44$"]
     - name: "PTV54"
       rx_gy: 54.0
       ceil_gy: 57.24
+      patterns: ["^PTV54$", "^CTV54$"]
     - name: "PTV55"
       rx_gy: 55.0
       ceil_gy: 58.30
+      patterns: ["^PTV55$", "^CTV55$"]
     - name: "PTV60"
       rx_gy: 60.0
       ceil_gy: 64.20
+      patterns: ["^PTV60$", "^CTV60$", "^CTVP$", "^PTV62$", "^CTV62$"]
 
 # ---------------------------------------------------------------------------
 # Physics engine
@@ -279,3 +318,4 @@ constraints:
 # ---------------------------------------------------------------------------
 evaluation:
   oar_v_metrics_gy: [59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0]
+
