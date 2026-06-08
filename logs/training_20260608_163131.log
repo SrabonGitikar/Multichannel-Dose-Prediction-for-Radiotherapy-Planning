@@ -1,0 +1,6 @@
+2026-06-08 16:31:31 [INFO] Training log started: logs/training_20260608_163131.log
+2026-06-08 16:31:31 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-08 16:31:31 [INFO] Loading clinical constraints (inline config) ...
+2026-06-08 16:31:31 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-06-08 16:31:31 [INFO] Model ready on cuda, epochs=300, AMP=ON
+2026-06-08 16:31:31 [INFO] Epoch 1/300 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
