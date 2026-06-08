@@ -377,7 +377,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 "rx":   lvl["rx_gy"],
                 "ceil": lvl["ceil_gy"],
             }
-            for lvl in config["clinical_targets"]["sib_levels"]
+            for lvl in config["clinical_targets"]["targets"]
         }
 
         loss_ptv = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
@@ -666,7 +666,7 @@ class CreateDiscretePTVMapd(MapTransform):
         # Dynamically load from config, preserving order (lowest to highest dose)
         self.processing_order = [
             (level["name"], level["rx_gy"])
-            for level in config["clinical_targets"]["sib_levels"]
+            for level in config["clinical_targets"]["targets"]
         ]
 
     def __call__(self, data):
@@ -789,7 +789,7 @@ class CreateFalloffRingd(MapTransform):
         d["ring_mask"] = compute_ring_mask(ptv)
         return d
 
-SIB_KEYS = [lvl["name"] for lvl in config["clinical_targets"]["sib_levels"]]
+SIB_KEYS = [lvl["name"] for lvl in config["clinical_targets"]["targets"]]
 ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
             "bowel_mask", "femur_mask",
             "dose_label"] + SIB_KEYS
@@ -1481,7 +1481,7 @@ def main():
                 # SIB Mapping from CreateDiscretePTVMapd
                 sib_eval_targets = {
                     lvl["name"]: lvl["rx_gy"]
-                    for lvl in config["clinical_targets"]["sib_levels"]
+                    for lvl in config["clinical_targets"]["targets"]
                 }
                 bladder_dose = outputs_gy[bladder_mask.bool()].cpu()
                 rectum_dose  = outputs_gy[rectum_mask.bool()].cpu()
