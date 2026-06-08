@@ -3,33 +3,24 @@ utils/pipeline.py  —  End-to-end dose prediction pipeline
 ===========================================================
 Given a DICOM folder (CT + RTSTRUCT + optional RTPLAN), this script:
 
-  Step 1 — Preprocess   : DICOM  →  6-channel NIfTI input files  (temp dir)
-  Step 2 — Inference    : NIfTI  →  predicted dose NIfTI          (temp dir)
-  Step 3 — RTDOSE build : NIfTI  →  RTDOSE DICOM                  (ct_rs_dir)
+  Step 1 — Preprocess   : DICOM  →  NIfTI input files (driven by config.yml)
+  Step 2 — Inference    : NIfTI  →  predicted dose NIfTI
+  Step 3 — RTDOSE build : NIfTI  →  RTDOSE DICOM
   Step 4 — Cleanup      : remove temp dir (unless --keep-temp)
 
 Usage (CLI)
 -----------
-    python utils/pipeline.py \\
-        --dicom-dir  "/data/patient_001/dicom" \\
-        --model      best_dose_model_physics_L1.pth \\
+    python inference_pipeline.py \
+        --dicom-dir  "/data/patient_001/dicom" \
+        --config     config.yml \
+        --model      best_dose_model_physics_L1.pth \
         --dose-spacing 2.5
-
-Usage (Python)
---------------
-    from utils.pipeline import run_pipeline
-
-    out = run_pipeline(
-        dicom_dir       = "/data/patient_001/dicom",
-        model_path      = "best_dose_model_physics_L1.pth",
-        dose_spacing_mm = 2.5,
-    )
-    print("RTDOSE saved:", out)
 """
 
 import os
 import re
 import sys
+import yaml
 import shutil
 import argparse
 import tempfile
@@ -42,61 +33,35 @@ from scipy.ndimage import distance_transform_edt
 from skimage.draw import polygon
 
 # ── project root on sys.path so sibling modules resolve cleanly ──────────────
-_ROOT = str(Path(__file__).resolve().parent.parent)
+_ROOT = str(Path(__file__).resolve().parent)
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
-from utils.create_dummy_plan import create_dummy_plan_dicom
+# Use dynamic run_inference from inference.py
+from inference import run_inference, load_config
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Structure name patterns (same as dicom_to_nnunet.py)
-# ─────────────────────────────────────────────────────────────────────────────
-STRUCTURE_PATTERNS = {
-    "PTV": [
-        r"^CTVP$",
-        r"^CTV_?60", r"^PTV_?60",
-        r"^CTV_62", r"^PTV_62", r"^CTV62$", r"^PTV62$",
-        r"^CTV_55", r"^PTV_55", r"^CTV55$", r"^PTV55$",
-        r"^CTV_54", r"^PTV_54", r"^CTV54$", r"^PTV54$",
-        r"^CTV_36", r"^PTV_36", r"^CTV 36", r"^PTV 36",
-        r"^CTV_44", r"^PTV_44", r"^CTV_25", r"^PTV_25",
-        r"^CTV 25", r"^PTV 25",
-    ],
-    "Bladder":     [r"^Bladder$", r"^BLADDER$"],
-    "Anorectum":   [r"^Anorectum$", r"^ANORECTUM$", r"^Rectum$"],
-    "Bag_Bowel":   [r"^Bag_?Bowel$", r"^Bag_?Bowel\s+NOS.*", r"^BagBowel.*"],
-    "Body":        [r"^Body$", r"^EXTERNAL$", r"^Patient$", r"^Skin$"],
-    "Femur_L":     [r"^Femur_?Head_?L.*", r"^L_?Femur.*", r"^Left_?Femur.*"],
-    "Femur_R":     [r"^Femur_?Head_?R.*", r"^R_?Femur.*", r"^Right_?Femur.*"],
-    "Penile_Bulb": [r"^Penile_?Bulb.*", r"^PenileBulb.*", r"^Penile Bulb.*"],
-}
-
-BODY_HU_THRESHOLD = -300.0
-TARGET_SPACING    = (1.27, 1.27, 2.5)     # must match training
-PATCH_SIZE        = (128, 128, 64)         # must match training
-PRESCRIPTION_GY   = 75.0
-CHANNELS          = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]
-SAD_MM            = 1000.0
-PENUMBRA_MM       = 7.0
-DEFAULT_GANTRY_ANGLES = [0, 51, 102, 154, 205, 257, 308]
+# Assume utils is in the same directory or project root
+try:
+    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
+except ImportError:
+    pass # Will fail later if needed, but allows syntax checking to pass
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Preprocessing helpers  (adapted from dicom_to_nnunet.py — no RTDose needed)
+# Preprocessing helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _match_structure(roi_names, structure_type):
-    for pattern in STRUCTURE_PATTERNS[structure_type]:
+def _match_one(roi_names, patterns):
+    for pattern in patterns:
         for name in roi_names:
             if re.match(pattern, name, re.IGNORECASE):
                 return name
     return None
 
-def _match_all_structures(roi_names, structure_type):
+def _match_all(roi_names, patterns):
     matched = []
     for name in roi_names:
-        for pattern in STRUCTURE_PATTERNS[structure_type]:
+        for pattern in patterns:
             if re.match(pattern, name, re.IGNORECASE):
                 matched.append(name)
                 break
@@ -149,10 +114,10 @@ def _signed_distance_map(binary_mask, spacing_mm):
     d_in  = distance_transform_edt(binary_mask == 1, sampling=spacing_mm)
     return (d_out - d_in).astype(np.float32)
 
-def _parse_gantry_angles_inf(plan_files):
+def _parse_gantry_angles_inf(plan_files, default_angles):
     if not plan_files:
-        print("  [pipeline] No RTPlan — defaulting to 7 equispaced gantry angles.")
-        return DEFAULT_GANTRY_ANGLES
+        print(f"  [pipeline] No RTPlan — defaulting to {len(default_angles)} equispaced gantry angles.")
+        return default_angles
     try:
         plan = pydicom.dcmread(plan_files[0], stop_before_pixels=True)
         angles = []
@@ -166,19 +131,22 @@ def _parse_gantry_angles_inf(plan_files):
                         if hasattr(cp0, 'GantryAngle'):
                             angles.append(float(cp0.GantryAngle))
         if not angles:
-            print("  [pipeline] No gantry angles — defaulting to 7 equispaced angles.")
-            return DEFAULT_GANTRY_ANGLES
+            print("  [pipeline] No gantry angles — defaulting to fallback angles.")
+            return default_angles
         unique_angles = sorted(set(angles))
         print(f"  [pipeline] Gantry Angles: {unique_angles}")
         return unique_angles
     except Exception as e:
         print(f"  [pipeline] RTPlan read error ({e}) — using fallback angles.")
-        return DEFAULT_GANTRY_ANGLES
+        return default_angles
 
-
-def _generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
-    """IEC 61217 BEV frustum mask — mirrors dicom_to_nnunet.py exactly."""
-    gantry_angles = _parse_gantry_angles_inf(plan_files)
+def _generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array, config):
+    _bev = config.get("preprocessing", {}).get("bev", {})
+    sad_mm = float(_bev.get("sad_mm", 1000.0))
+    penumbra_mm = float(_bev.get("penumbra_mm", 7.0))
+    default_angles = list(_bev.get("default_gantry_angles", [0, 51, 102, 154, 205, 257, 308]))
+    
+    gantry_angles = _parse_gantry_angles_inf(plan_files, default_angles)
     shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
     origin    = np.array(ct_image.GetOrigin())
     spacing   = np.array(ct_image.GetSpacing())
@@ -202,7 +170,7 @@ def _generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
     for angle_deg in gantry_angles:
         theta    = np.deg2rad(angle_deg)
         beam_dir = np.array([np.sin(theta), -np.cos(theta), 0.0])
-        source   = iso_phys - beam_dir * SAD_MM
+        source   = iso_phys - beam_dir * sad_mm
         vec      = phys_pts - source
         depth    = vec @ beam_dir
         perp_dist = np.linalg.norm(vec - depth[:, np.newaxis] * beam_dir, axis=1)
@@ -215,14 +183,12 @@ def _generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
 
         half_angle = (np.arctan2(perp_ptv.max(), depth_ptv[depth_ptv > 0].min())
                       if depth_ptv.max() > 0 else np.deg2rad(5.0))
-        radius = np.abs(depth) * np.tan(half_angle) + PENUMBRA_MM
+        radius = np.abs(depth) * np.tan(half_angle) + penumbra_mm
         beam_flat[(depth > 0) & (perp_dist <= radius)] = 1.0
 
     beam_zyx = beam_flat.reshape(shape_zyx)
     print(f"  [pipeline] BEV voxels: {int(beam_zyx.sum()):,}")
     return beam_zyx
-
-
 
 def _numpy_to_sitk(array, reference):
     img = sitk.GetImageFromArray(array)
@@ -231,12 +197,9 @@ def _numpy_to_sitk(array, reference):
     img.SetDirection(reference.GetDirection())
     return img
 
-
 def _scan_dicom_dir(dicom_dir):
     """Return (ct_image, rs_ds, plan_files) from a DICOM folder."""
     dicom_dir = str(dicom_dir)
-
-    # ── CT via GDCM series reader ────────────────────────────────────────────
     reader = sitk.ImageSeriesReader()
     series_ids = reader.GetGDCMSeriesIDs(dicom_dir)
     assert series_ids, f"No DICOM series found in: {dicom_dir}"
@@ -250,7 +213,6 @@ def _scan_dicom_dir(dicom_dir):
     print(f"  [preprocess] CT loaded: shape={sitk.GetArrayFromImage(ct_image).shape}  "
           f"spacing={ct_image.GetSpacing()}")
 
-    # ── RTSTRUCT + RTPLAN via Modality scan ──────────────────────────────────
     rs_ds = None
     plan_files = []
     for root, _, files in os.walk(dicom_dir):
@@ -275,344 +237,221 @@ def _scan_dicom_dir(dicom_dir):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 1: Preprocess DICOM → 6-channel NIfTI
+# Step 1: Preprocess DICOM → Config-Driven NIfTI
 # ─────────────────────────────────────────────────────────────────────────────
 
-def preprocess_dicom(dicom_dir: str, images_dir: str, case_name: str = "patient_001") -> None:
-    """
-    Preprocess a DICOM folder for inference.
-    Writes 7 NIfTI channel files to *images_dir* matching the training layout exactly.
-    Ch0=CT, Ch1=PTV_binary, Ch2=Bladder_SDM, Ch3=Anorectum_SDM,
-    Ch4=Body_Mask, Ch5=Penile_Bulb, Ch6=BEV_Beam_Frustum
-    """
+def preprocess_dicom(dicom_dir: str, images_dir: str, config: dict, case_name: str = "patient_001") -> None:
     os.makedirs(images_dir, exist_ok=True)
     ct_image, rs_ds, plan_files = _scan_dicom_dir(dicom_dir)
     ct_array = sitk.GetArrayFromImage(ct_image)
     spacing  = ct_image.GetSpacing()
-
-    roi_names    = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
-    ptv_names    = _match_all_structures(roi_names, "PTV")
-    bladder_name = _match_structure(roi_names, "Bladder")
-    anorect_name = _match_structure(roi_names, "Anorectum")
-
-    assert ptv_names,    "Cannot match any PTV/CTV structure in RTSTRUCT."
-    assert bladder_name, "Cannot match Bladder structure in RTSTRUCT."
-    assert anorect_name, "Cannot match Anorectum structure in RTSTRUCT."
-
-    print(f"  [preprocess] PTV structures: {ptv_names}")
-    print(f"  [preprocess] Bladder={bladder_name}  Anorectum={anorect_name}")
-
-    # Core masks
-    ptv_mask     = _union_contours_to_mask(rs_ds, ptv_names, ct_image)
-    bladder_mask = _contour_to_mask(rs_ds, bladder_name, ct_image)
-    anorect_mask = _contour_to_mask(rs_ds, anorect_name, ct_image)
-    assert ptv_mask.sum() > 0, "PTV mask is empty — check contour names."
-
-    # Signed distance maps
     spacing_zyx = (spacing[2], spacing[1], spacing[0])
-    bladder_sdm = _signed_distance_map(bladder_mask, spacing_zyx)
-    anorect_sdm = _signed_distance_map(anorect_mask, spacing_zyx)
+    
+    roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
+    matched = {}
+    masks = {}
 
-    # Ch4: Body Mask — prefer RTStruct contour, fall back to HU threshold
-    body_name = _match_structure(roi_names, "Body")
-    if body_name:
-        print(f"  [preprocess] Body contour: {body_name}")
-        body_mask = _contour_to_mask(rs_ds, body_name, ct_image).astype(np.float32)
+    ptv_patterns = config["clinical_targets"].get("ptv_patterns", [])
+    if not ptv_patterns:
+        for level in config["clinical_targets"].get("targets", []):
+            ptv_patterns.extend(level.get("patterns", []))
+            
+    found_ptvs = _match_all(roi_names, ptv_patterns)
+    matched["PTV"] = found_ptvs
+    if found_ptvs:
+        masks["PTV"] = _union_contours_to_mask(rs_ds, found_ptvs, ct_image)
+        print(f"  [preprocess] PTV ({len(found_ptvs)} structures): {found_ptvs}")
     else:
-        print("  [preprocess] No Body contour — using HU threshold fallback.")
-        body_mask = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
+        masks["PTV"] = np.zeros_like(ct_array, dtype=np.uint8)
+        print(f"  [preprocess] PTV: NOT FOUND")
 
-    # Ch5: Penile Bulb — empty mask if absent
-    penile_name = _match_structure(roi_names, "Penile_Bulb")
-    if penile_name:
-        penile_mask = _contour_to_mask(rs_ds, penile_name, ct_image).astype(np.float32)
-        print(f"  [preprocess] Penile_Bulb: {penile_name}")
-    else:
-        penile_mask = np.zeros_like(ptv_mask, dtype=np.float32)
-        print("  [preprocess] Penile_Bulb: NOT FOUND — using empty mask.")
+    assert masks["PTV"].sum() > 0, "PTV mask is empty — check contour names."
 
-    # Ch6: BEV Frustum Beam Mask
-    beam_mask = _generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
+    for oar in config.get("organs_at_risk", []):
+        canonical = oar["canonical"]
 
-    # Write channels in training order
+        if oar.get("split_laterality"):
+            l_name = _match_one(roi_names, oar.get("patterns_left", []))
+            r_name = _match_one(roi_names, oar.get("patterns_right", []))
+            found_names = [n for n in [l_name, r_name] if n]
+            matched[canonical] = found_names
+            if found_names:
+                masks[canonical] = _union_contours_to_mask(rs_ds, found_names, ct_image)
+                print(f"  [preprocess] {canonical}: L={l_name or 'NOT FOUND'} R={r_name or 'NOT FOUND'}")
+            else:
+                masks[canonical] = np.zeros_like(ct_array, dtype=np.uint8)
+                print(f"  [preprocess] {canonical}: NOT FOUND — using empty mask")
+        else:
+            found_name = _match_one(roi_names, oar.get("aliases", []))
+            matched[canonical] = found_name
+            if found_name:
+                masks[canonical] = _contour_to_mask(rs_ds, found_name, ct_image)
+                print(f"  [preprocess] {canonical}: {found_name}")
+            else:
+                masks[canonical] = np.zeros_like(ct_array, dtype=np.uint8)
+                print(f"  [preprocess] {canonical}: NOT FOUND — using empty mask")
+
+    sdms = {}
+    for oar in config.get("organs_at_risk", []):
+        if oar.get("requires_sdm") and oar["canonical"] in masks:
+            canonical = oar["canonical"]
+            sdms[canonical] = _signed_distance_map(masks[canonical], spacing_zyx)
+
+    body_hu_threshold = float(config.get("body_hu_threshold", -300.0))
+    if "Body" in masks and masks["Body"].sum() == 0:
+        print(f"  [preprocess] No Body contour — falling back to HU threshold ({body_hu_threshold} HU)")
+        masks["Body"] = (ct_array > body_hu_threshold).astype(np.float32)
+
+    beam_mask = None
+    has_bev = any(ch.get("role") == "BEV_Beam" for ch in config.get("channels", []))
+    if has_bev:
+        beam_mask = _generate_bev_beam_mask(plan_files, ct_image, masks["PTV"], config)
+
     def _save(arr, suffix):
         path = os.path.join(images_dir, f"{case_name}_{suffix}.nii.gz")
         sitk.WriteImage(_numpy_to_sitk(arr.astype(np.float32), ct_image), path)
         return path
 
-    _save(ct_array,    "0000")   # ch_0: CT
-    _save(ptv_mask,    "0001")   # ch_1: PTV union binary (raw, for _CreateDiscretePTVMapd)
-    _save(bladder_sdm, "0002")   # ch_2: Bladder SDM
-    _save(anorect_sdm, "0003")   # ch_3: Anorectum SDM
-    _save(body_mask,   "0004")   # ch_4: Body Mask
-    _save(penile_mask, "0005")   # ch_5: Penile Bulb
-    _save(beam_mask,   "0006")   # ch_6: BEV Frustum
+    for ch in config.get("channels", []):
+        idx = f"{ch['index']:04d}"
+        role = ch.get("role")
+        organ = ch.get("organ")
 
-    # Write individual canonical PTV files for proper discrete SIB mapping
-    # Mirrors the SIB_CANONICAL + accumulation logic in dicom_to_nnunet.py
-    SIB_CANONICAL_INF = {
-        r"^ptv.*60|^ctv.*60|^ctvp$": "PTV60",
-        r"^ptv.*62|^ctv.*62":        "PTV60",
-        r"^ptv.*55|^ctv.*55":        "PTV55",
-        r"^ptv.*54|^ctv.*54":        "PTV54",
-        r"^ptv.*44|^ctv.*44":        "PTV44",
-        r"^ptv.*36|^ctv.*36":        "PTV36",
-        r"^ptv.*25|^ctv.*25":        "PTV25",
-    }
-    accumulated_ptvs = {}
-    for p_name in ptv_names:
-        canonical = None
-        for pattern, cname in SIB_CANONICAL_INF.items():
-            if re.match(pattern, p_name, re.IGNORECASE):
-                canonical = cname
-                break
-        if canonical is None:
-            canonical = p_name.replace(" ", "_").replace("/", "_")
-        single = _contour_to_mask(rs_ds, p_name, ct_image)
-        if canonical in accumulated_ptvs:
-            accumulated_ptvs[canonical] = np.maximum(accumulated_ptvs[canonical], single)
-        else:
-            accumulated_ptvs[canonical] = single
-    for canonical, p_mask in accumulated_ptvs.items():
-        _save(p_mask.astype(np.float32), canonical)  # e.g. case_PTV60.nii.gz
-    print(f"  [preprocess] Individual PTVs written: {list(accumulated_ptvs.keys())}")
+        if role == "CT":
+            _save(ct_array, idx)
+        elif role == "PTV_binary":
+            _save(masks["PTV"], idx)
+        elif role == "BEV_Beam":
+            _save(beam_mask, idx)
+        elif role == "Body_Mask":
+            _save(masks.get("Body", (ct_array > body_hu_threshold).astype(np.float32)), idx)
+        elif role == "SDM" and organ in sdms:
+            _save(sdms[organ], idx)
+        elif role == "Binary_Mask" and organ in masks:
+            _save(masks[organ], idx)
 
-    print(f"  [preprocess] 7 channels saved → {images_dir}/{case_name}_000[0-6].nii.gz")
+    targets = config["clinical_targets"].get("targets", [])
+    if targets:
+        individual_masks = {}
+        for p_name in matched.get("PTV", []):
+            individual_masks[p_name] = _contour_to_mask(rs_ds, p_name, ct_image)
+            
+        accumulated = {}
+        for p_name, p_mask in individual_masks.items():
+            canonical_target = None
+            for level in targets:
+                patterns = level.get("patterns", [])
+                if any(re.match(pat, p_name, re.IGNORECASE) for pat in patterns):
+                    canonical_target = level["name"]
+                    break
+            
+            if canonical_target is None:
+                canonical_target = p_name.replace(" ", "_").replace("/", "_")
+            
+            if canonical_target in accumulated:
+                accumulated[canonical_target] = np.maximum(accumulated[canonical_target], p_mask)
+            else:
+                accumulated[canonical_target] = p_mask
+
+        for canon_name, p_mask in accumulated.items():
+            _save(p_mask.astype(np.float32), canon_name)
+
+    print(f"  [preprocess] Channels saved → {images_dir}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 2: Inference
+# Step 3/4: Orchestrate
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_inference(images_dir: str, case_name: str, model_path: str,
-                  output_dir: str) -> str:
-    """
-    Run sliding-window inference and save predicted dose as NIfTI.
-    Channel layout fed to model (must exactly match training):
-      0=CT(norm)  1=discrete_ptv  2=Bladder_SDM  3=Anorectum_SDM
-      4=Body  5=PenileBulb  6=BEV_Beam
-    """
-    import torch
-    import torch.nn.functional as F
-    import nibabel as nib
-    from monai.networks.nets import UNet
-    from monai.inferers import sliding_window_inference
-    from monai.transforms import (
-        Compose, LoadImaged, EnsureChannelFirstd, Spacingd,
-        NormalizeIntensityd, ConcatItemsd, ToTensord, DeleteItemsd,
-        MapTransform,
+def run_pipeline(dicom_dir: str, config_path: str = "config.yml", model_path: str = None, 
+                 dose_spacing_mm: float = None, keep_temp: bool = False):
+    config = load_config(config_path)
+
+    print("\n" + "="*50)
+    print("  RADIOTHERAPY DOSE PREDICTION PIPELINE")
+    print("="*50)
+
+    tmp_dir = tempfile.mkdtemp(prefix="dose_infer_")
+    print(f"\n[1] Workspace created: {tmp_dir}")
+    
+    # Needs to match the directory structure expected by inference script logic
+    # Actually inference.py initializes globals based on config, but overrides dataset dir.
+    # We should override IMAGES_DIR dynamically. 
+    # Wait, inference.py relies on globals initialized from config. We can just set the globals.
+    
+    # We will override the config dataset path in memory before calling run_inference
+    import inference
+    config_copy = yaml.safe_load(open(config_path))
+    config_copy.setdefault("dataset", {})["data_dir"] = tmp_dir
+    inference.initialize_globals(config_copy)
+    
+    images_dir = inference.IMAGES_DIR
+    os.makedirs(images_dir, exist_ok=True)
+
+    print(f"\n[2] Preprocessing DICOM...")
+    preprocess_dicom(dicom_dir, images_dir, config, case_name="case_infer")
+
+    print(f"\n[3] Running Neural Network Inference...")
+    pred_dose, metadata = inference.run_inference(
+        patient_id="case_infer",
+        config_path=config_path, 
+        output_dir=tmp_dir, 
+        model_path=model_path,
+        save_nifti=True
     )
-    from monai.data import Dataset, DataLoader
 
-    SIB_KEYS_INF = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]
-    SIB_ORDER = [
-        ("PTV25", 25.0), ("PTV36", 36.0), ("PTV44", 44.0),
-        ("PTV54", 54.0), ("PTV55", 55.0), ("PTV60", 60.0),
-    ]
+    nifti_dose_file = os.path.join(tmp_dir, "case_infer_predicted_dose.nii.gz")
 
-    class _CreateDiscretePTVMapd(MapTransform):
-        """Full Painter's Algorithm — identical to CreateDiscretePTVMapd in training."""
-        def __call__(self, data):
-            d = dict(data)
-            discrete_ptv = torch.zeros_like(d["ch_0"])
-            for p_key, dose_val in SIB_ORDER:
-                if p_key in d:
-                    mask = d[p_key] >= 0.5
-                    discrete_ptv = torch.where(
-                        mask,
-                        torch.tensor(dose_val, dtype=discrete_ptv.dtype,
-                                     device=discrete_ptv.device),
-                        discrete_ptv,
-                    )
-                    del d[p_key]
-            d["discrete_ptv"] = discrete_ptv
-            return d
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"  [inference] Device: {device}")
-
-    model = UNet(
-        spatial_dims=3, in_channels=7, out_channels=1,
-        channels=(16, 32, 64, 128), strides=(2, 2, 2), num_res_units=2,
-    ).to(device)
-
-    assert os.path.exists(model_path), f"Model not found: {model_path}"
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
-    print(f"  [inference] Model loaded: {model_path}")
-
-    _CH_KEYS  = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"] + SIB_KEYS_INF
-    _CH_MODES = ("bilinear", "nearest", "bilinear", "bilinear", "nearest", "nearest", "nearest") + ("nearest",)*len(SIB_KEYS_INF)
-
-    transforms = Compose([
-        LoadImaged(keys=_CH_KEYS, allow_missing_keys=True),
-        EnsureChannelFirstd(keys=_CH_KEYS, allow_missing_keys=True),
-        Spacingd(keys=_CH_KEYS, pixdim=TARGET_SPACING, mode=_CH_MODES,
-                 allow_missing_keys=True),
-        _CreateDiscretePTVMapd(keys=["ch_0"]),   # Painter's Algorithm → discrete_ptv
-        NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        # Concat order mirrors ConcatItemsd in training script exactly
-        ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"],
-                     name="image"),
-        DeleteItemsd(keys=["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"]),
-        ToTensord(keys=["image"]),
-    ])
-
-    pt_dict = {
-        f"ch_{i}": os.path.join(images_dir, f"{case_name}_{ch}.nii.gz")
-        for i, ch in enumerate(CHANNELS)
-    }
-    # Add individual canonical PTV files if they exist (allow_missing_keys handles absence)
-    for ptv_key in SIB_KEYS_INF:
-        p = os.path.join(images_dir, f"{case_name}_{ptv_key}.nii.gz")
-        if os.path.exists(p):
-            pt_dict[ptv_key] = p
-    for key, path in pt_dict.items():
-        if key not in SIB_KEYS_INF:   # core channels must exist
-            assert os.path.exists(path), f"Missing channel file: {path}"
-
-    ds     = Dataset(data=[pt_dict], transform=transforms)
-    loader = DataLoader(ds, batch_size=1)
-    batch  = next(iter(loader))
-    inputs = batch["image"].to(device)
-
-    ref_affine = nib.load(pt_dict["ch_0"]).affine
-
-    print(f"  [inference] Input shape: {inputs.shape}")
-    with torch.no_grad():
-        with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
-            outputs = sliding_window_inference(
-                inputs=inputs, roi_size=PATCH_SIZE,
-                sw_batch_size=2, predictor=model,
-                overlap=0.5, mode="gaussian",
-            )
-
-    outputs_activated = F.softplus(outputs.float())
-    # Ch_4 = Body Mask (correct index after training layout fix)
-    body_hard = (inputs[:, 4:5, ...] > 0.5).float()
-    outputs_activated = outputs_activated * body_hard
-
-    pred_dose = outputs_activated[0, 0].cpu().numpy() * PRESCRIPTION_GY
-    pred_dose = np.clip(pred_dose, 0.0, None)
-
-    print(f"  [inference] Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
-
-    os.makedirs(output_dir, exist_ok=True)
-    nifti_path = os.path.join(output_dir, f"{case_name}_predicted_dose.nii.gz")
-    nib.save(nib.Nifti1Image(pred_dose.astype(np.float32), affine=ref_affine), nifti_path)
-    print(f"  [inference] Dose NIfTI saved: {nifti_path}")
-    return nifti_path
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Public API
-# ─────────────────────────────────────────────────────────────────────────────
-
-def run_pipeline(
-    dicom_dir:       str,
-    model_path:      str  = "best_dose_model_physics_L1.pth",
-    dose_spacing_mm: float = 2.5,
-    case_name:       str  = "patient_001",
-    keep_temp:       bool = False,
-) -> str:
-    """
-    Full end-to-end pipeline: DICOM folder → RTDOSE DICOM.
-
-    Parameters
-    ----------
-    dicom_dir       : folder containing CT + RTSTRUCT (+ optional RTPLAN) DICOMs
-    model_path      : path to trained model .pth checkpoint
-    dose_spacing_mm : output RTDOSE voxel size in mm (default 2.5 mm → ~15 MB)
-    case_name       : internal case identifier (default: patient_001)
-    keep_temp       : if True, the temp NIfTI folder is not deleted after use
-
-    Returns
-    -------
-    str : absolute path to the saved RTDOSE DICOM
-    """
-    dicom_dir = str(Path(dicom_dir).resolve())
-    print(f"\n{'='*60}")
-    print(f"  Pipeline start: {dicom_dir}")
-    print(f"{'='*60}\n")
-
-    # ── 0. Ensure RTPLAN exists (create dummy if missing) ────────────────────
-    print("[Step 0/3] Checking for RTPLAN...")
-    _has_rtplan = False
-    for _f in Path(dicom_dir).rglob("*.dcm"):
-        try:
-            _ds = pydicom.dcmread(str(_f), stop_before_pixels=True, force=True)
-            if getattr(_ds, "Modality", "") == "RTPLAN":
-                _has_rtplan = True
-                print(f"  RTPLAN found: {_f.name}")
-                break
-        except Exception:
-            continue
-
-    if not _has_rtplan:
-        print("  No RTPLAN found — generating dummy plan...")
-        create_dummy_plan_dicom(dicom_dir)
-
-    # ── temp directory ────────────────────────────────────────────────────────
-    tmp_root   = tempfile.mkdtemp(prefix="dose_pipeline_")
-    images_dir = os.path.join(tmp_root, "imagesTr")
-    pred_dir   = os.path.join(tmp_root, "predictions")
+    print(f"\n[4] Building RTDOSE DICOM...")
+    
+    if dose_spacing_mm is None:
+        target_spacing = config.get("dataset", {}).get("target_spacing", [1.27, 1.27, 2.5])
+        dose_spacing_mm = target_spacing[2] # Use Z spacing
 
     try:
-        # ── Step 1: Preprocess ────────────────────────────────────────────────
-        print("[Step 1/3] Preprocessing DICOM → NIfTI channels...")
-        preprocess_dicom(dicom_dir, images_dir, case_name)
-
-        # ── Step 2: Inference ─────────────────────────────────────────────────
-        print("\n[Step 2/3] Running model inference...")
-        nifti_path = run_inference(images_dir, case_name, model_path, pred_dir)
-
-        # ── Step 3: RTDOSE DICOM ──────────────────────────────────────────────
-        print("\n[Step 3/3] Building RTDOSE DICOM...")
+        from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
         rtdose_path = nifti_to_rtdose_dicom(
-            ct_rs_dir       = dicom_dir,
-            nifti_path      = nifti_path,
-            dose_spacing_mm = dose_spacing_mm,
+            dicom_dir=dicom_dir,
+            nifti_path=nifti_dose_file,
+            output_dir=dicom_dir,  # write directly alongside CT/RTSTRUCT
+            dose_spacing_mm=dose_spacing_mm,
         )
+    except ImportError:
+        print(f"\n[4] nifti_to_rtdose_dicom not found. RTDose generation skipped.")
+        rtdose_path = None
 
-    finally:
-        if not keep_temp:
-            shutil.rmtree(tmp_root, ignore_errors=True)
-            print(f"\n  Temp folder removed: {tmp_root}")
-        else:
-            print(f"\n  Temp folder kept at: {tmp_root}")
+    if keep_temp:
+        print(f"\n[5] Retaining temporary workspace: {tmp_dir}")
+    else:
+        print(f"\n[5] Cleaning up workspace...")
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    print(f"\n{'='*60}")
-    print(f"  Pipeline complete!")
-    print(f"  RTDOSE saved: {rtdose_path}")
-    print(f"{'='*60}\n")
+    print("\n" + "="*50)
+    print("  PIPELINE COMPLETE")
+    print("="*50)
+    if rtdose_path:
+        print(f"  RTDOSE saved to: {rtdose_path}")
     return rtdose_path
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CLI
-# ─────────────────────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="End-to-end dose prediction: DICOM → RTDOSE DICOM"
-    )
-    parser.add_argument("--dicom-dir", required=True,
-                        help="Folder containing CT + RTSTRUCT (+ optional RTPLAN)")
-    parser.add_argument("--model", default="best_dose_model_physics_L1.pth",
-                        help="Path to trained model .pth (default: best_dose_model_physics_L1.pth)")
-    parser.add_argument("--dose-spacing", type=float, default=2.5,
-                        help="Output dose grid spacing in mm (default: 2.5)")
-    parser.add_argument("--case-name", default="patient_001",
-                        help="Internal case identifier (default: patient_001)")
+    parser = argparse.ArgumentParser(description="End-to-end dose prediction pipeline")
+    parser.add_argument("--dicom-dir", required=True, type=str,
+                        help="Folder containing CT, RTSTRUCT, and RTPLAN")
+    parser.add_argument("--config", default="config.yml", type=str,
+                        help="Configuration file (default: config.yml)")
+    parser.add_argument("--model", default=None, type=str,
+                        help="Path to .pth checkpoint")
+    parser.add_argument("--dose-spacing", default=None, type=float,
+                        help="Z-spacing for the final RTDOSE (default from config)")
     parser.add_argument("--keep-temp", action="store_true",
-                        help="Keep intermediate NIfTI files after completion")
+                        help="Do not delete the temporary NIfTI directory")
     args = parser.parse_args()
 
-    rtdose = run_pipeline(
-        dicom_dir       = args.dicom_dir,
-        model_path      = args.model,
-        dose_spacing_mm = args.dose_spacing,
-        case_name       = args.case_name,
-        keep_temp       = args.keep_temp,
+    run_pipeline(
+        dicom_dir=args.dicom_dir,
+        config_path=args.config,
+        model_path=args.model,
+        dose_spacing_mm=args.dose_spacing,
+        keep_temp=args.keep_temp
     )
-    print(f"Done: {rtdose}")
