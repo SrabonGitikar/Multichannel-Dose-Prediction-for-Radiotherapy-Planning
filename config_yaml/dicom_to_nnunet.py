@@ -28,8 +28,9 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-# Default to config.yml unless a different file is passed as an argument
-_CONFIG_FILE = sys.argv[1] if len(sys.argv) > 1 else "config.yml"
+# Default to config.yml in same directory as script unless a different file is passed
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_CONFIG_FILE = sys.argv[1] if len(sys.argv) > 1 else os.path.join(_SCRIPT_DIR, "config.yml")
 
 with open(_CONFIG_FILE, "r") as _f:
     config = yaml.safe_load(_f)
@@ -308,7 +309,9 @@ def generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
 
 def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     pid = os.path.basename(patient_dir)[:12]
-    case_name = f"{CASE_PREFIX}_{case_id:03d}"
+    # Use patient ID from folder name for more descriptive filenames
+    safe_pid = pid.replace(".", "_").replace("-", "_")
+    case_name = f"{CASE_PREFIX}_{safe_pid}"
     print(f"\n{'='*60}")
     print(f"  Converting: {pid}  (case: {case_name})")
     print(f"{'='*60}")
@@ -483,8 +486,9 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
                 accumulated[canonical_target] = p_mask
 
         for canon_name, p_mask in accumulated.items():
-            _write(p_mask, canon_name)
-            print(f"         SIB: {canon_name}  ({p_mask.sum():,} voxels)")
+            safe_name = canon_name.replace("/", "_").replace(" ", "_")
+            _write(p_mask, safe_name)
+            print(f"         SIB: {canon_name} → {safe_name}  ({p_mask.sum():,} voxels)")
 
     # ---- Dose label ----------------------------------------------------
     print("  [8/8] Saving Dose label...")
@@ -521,8 +525,10 @@ def create_dataset_json(output_dir, num_cases):
 # ===========================================================================
 
 if __name__ == "__main__":
-    images_dir = os.path.join(OUTPUT_DIR, "imagesTr")
-    labels_dir = os.path.join(OUTPUT_DIR, "labelsTr")
+    # Include dataset name in path for proper nnUNet structure
+    dataset_dir = os.path.join(OUTPUT_DIR, DATASET_NAME)
+    images_dir = os.path.join(dataset_dir, "imagesTr")
+    labels_dir = os.path.join(dataset_dir, "labelsTr")
     os.makedirs(images_dir, exist_ok=True)
     os.makedirs(labels_dir, exist_ok=True)
 
@@ -546,7 +552,7 @@ if __name__ == "__main__":
             print(f"\n  *** ERROR processing {os.path.basename(pdir)[:12]}: {e} ***")
             failed.append(os.path.basename(pdir)[:12])
 
-    create_dataset_json(OUTPUT_DIR, success_count)
+    create_dataset_json(dataset_dir, success_count)
     print(f"\n{'='*60}")
     print(f"CONVERSION SUMMARY")
     print(f"{'='*60}")
