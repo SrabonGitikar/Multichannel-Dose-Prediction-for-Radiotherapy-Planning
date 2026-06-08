@@ -13,6 +13,7 @@ import os
 import re
 import json
 import yaml
+import sys
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
@@ -27,32 +28,31 @@ from skimage.draw import polygon
 # CONFIGURATION
 # ===========================================================================
 
-with open("config.yml", "r") as _f:
+# Default to config.yml unless a different file is passed as an argument
+_CONFIG_FILE = sys.argv[1] if len(sys.argv) > 1 else "config.yml"
+
+with open(_CONFIG_FILE, "r") as _f:
     config = yaml.safe_load(_f)
 
 _pre  = config["preprocessing"]
-_bev  = _pre["bev"]
+_bev  = _pre.get("bev", {})
 
 DATA_DIR      = _pre["dicom_dir"]
 OUTPUT_DIR    = _pre["output_dir"]
 CASE_PREFIX   = _pre["case_prefix"]
 DATASET_NAME  = _pre["dataset_name"]
 
-SAD_MM              = float(_bev["sad_mm"])
-PENUMBRA_MM         = float(_bev["penumbra_mm"])
-DEFAULT_GANTRY_ANGLES = list(_bev["default_gantry_angles"])
+SAD_MM              = float(_bev.get("sad_mm", 1000.0))
+PENUMBRA_MM         = float(_bev.get("penumbra_mm", 7.0))
+DEFAULT_GANTRY_ANGLES = list(_bev.get("default_gantry_angles", [0, 51, 102, 154, 205, 257, 308]))
 
-BODY_HU_THRESHOLD   = float(config["body_hu_threshold"])
+BODY_HU_THRESHOLD   = float(config.get("body_hu_threshold", -300.0))
 
 # Build channel-name map for dataset.json from config
 _CHANNEL_NAMES = {
     str(ch["index"]): ch.get("organ", ch["role"])
     for ch in sorted(config["channels"], key=lambda c: c["index"])
 }
-
-# Structure-matching rules indexed by canonical name for fast access
-_STRUCT_RULES = {s["canonical"]: s for s in _pre["structure_matching"]}
-
 
 # ===========================================================================
 # STRUCTURE MATCHING — driven entirely by config
@@ -76,6 +76,12 @@ def _match_all(roi_names, patterns):
                 break
     return matched
 
+def _get_channel_index(key_str):
+    """Extracts integer index from string like 'ch_2' and returns formatted '0002'"""
+    if not key_str:
+        return None
+    idx = int(key_str.split('_')[1])
+    return f"{idx:04d}"
 
 # ===========================================================================
 # DICOM I/O HELPERS
@@ -208,7 +214,7 @@ def numpy_to_sitk(array, reference_image):
 
 
 # ===========================================================================
-# BEV FRUSTUM BEAM MASK GENERATION  — parameters from config.preprocessing.bev
+# BEV FRUSTUM BEAM MASK GENERATION
 # ===========================================================================
 
 def _parse_gantry_angles(plan_files):
@@ -238,10 +244,6 @@ def _parse_gantry_angles(plan_files):
         return DEFAULT_GANTRY_ANGLES
 
 def generate_bev_beam_mask(plan_files, ct_image, ptv_mask_array):
-    """
-    Build a 3-D binary BEV frustum mask using parameters from config.yml.
-    SAD and penumbra margin are read from config.preprocessing.bev.
-    """
     gantry_angles = _parse_gantry_angles(plan_files)
     shape_zyx = sitk.GetArrayViewFromImage(ct_image).shape
     origin    = np.array(ct_image.GetOrigin())
@@ -344,20 +346,36 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
     rs_ds   = pydicom.dcmread(rs_file)
     roi_names = [roi.ROIName for roi in rs_ds.StructureSetROISequence]
 
-    # ---- Match all structures from config ------------------------------
+    # ---- Match PTVs ----------------------------------------------------
     print("  [3/8] Matching structures from config...")
-    matched   = {}   # canonical → matched roi_name(s)
-    masks     = {}   # canonical → numpy uint8 array
-    skip      = False
+    matched = {}
+    masks = {}
 
-    for rule in _pre["structure_matching"]:
-        canonical = rule["canonical"]
-        if rule.get("generated"):
-            continue   # BEV handled separately
+    ptv_patterns = config["clinical_targets"].get("ptv_patterns", [])
+    if not ptv_patterns:
+        for level in config["clinical_targets"].get("targets", []):
+            ptv_patterns.extend(level.get("patterns", []))
+            
+    found_ptvs = _match_all(roi_names, ptv_patterns)
+    matched["PTV"] = found_ptvs
+    if found_ptvs:
+        masks["PTV"] = rtstruct_union_mask(rs_ds, found_ptvs, ct_image)
+        print(f"         PTV ({len(found_ptvs)} structures): {found_ptvs}")
+    else:
+        masks["PTV"] = np.zeros_like(ct_array, dtype=np.uint8)
+        print(f"         PTV: NOT FOUND")
 
-        if rule.get("split_laterality"):
-            l_name = _match_one(roi_names, rule["patterns_left"])
-            r_name = _match_one(roi_names, rule["patterns_right"])
+    if masks["PTV"].sum() == 0:
+        print("  *** SKIPPING: PTV mask is empty ***")
+        return False
+
+    # ---- Match OARs from config ----------------------------------------
+    for oar in config["organs_at_risk"]:
+        canonical = oar["canonical"]
+
+        if oar.get("split_laterality"):
+            l_name = _match_one(roi_names, oar.get("patterns_left", []))
+            r_name = _match_one(roi_names, oar.get("patterns_right", []))
             found_names = [n for n in [l_name, r_name] if n]
             matched[canonical] = found_names
             if found_names:
@@ -368,18 +386,8 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
             else:
                 masks[canonical] = np.zeros_like(ct_array, dtype=np.uint8)
                 print(f"         {canonical}: NOT FOUND — using empty mask")
-
-        elif rule.get("merge"):
-            found_names = _match_all(roi_names, rule["patterns"])
-            matched[canonical] = found_names
-            if found_names:
-                masks[canonical] = rtstruct_union_mask(rs_ds, found_names, ct_image)
-                print(f"         {canonical} ({len(found_names)} structures): {found_names}")
-            else:
-                masks[canonical] = np.zeros_like(ct_array, dtype=np.uint8)
-                print(f"         {canonical}: NOT FOUND")
         else:
-            found_name = _match_one(roi_names, rule["patterns"])
+            found_name = _match_one(roi_names, oar.get("aliases", []))
             matched[canonical] = found_name
             if found_name:
                 masks[canonical] = rtstruct_contour_to_mask(rs_ds, found_name, ct_image)
@@ -388,113 +396,104 @@ def convert_patient(patient_dir, case_id, images_dir, labels_dir):
                 masks[canonical] = np.zeros_like(ct_array, dtype=np.uint8)
                 print(f"         {canonical}: NOT FOUND — using empty mask")
 
-        # Enforce required structures
-        if rule.get("required") and masks[canonical].sum() == 0:
-            print(f"  *** SKIPPING: required structure '{canonical}' is empty or absent ***")
-            skip = True
-
-    if skip:
-        return False
-
-    ptv_mask = masks["PTV"]
-    if ptv_mask.sum() == 0:
-        print("  *** SKIPPING: PTV mask is empty ***")
-        return False
-
     # ---- SDMs for channels that need them ------------------------------
     print("  [4/8] Computing signed distance maps...")
     spacing_zyx = (spacing[2], spacing[1], spacing[0])
     sdms = {}
-    for rule in _pre["structure_matching"]:
-        if rule.get("compute_sdm") and rule["canonical"] in masks:
-            canonical = rule["canonical"]
+    for oar in config["organs_at_risk"]:
+        if oar.get("requires_sdm") and oar["canonical"] in masks:
+            canonical = oar["canonical"]
             sdms[canonical] = compute_signed_distance_map(masks[canonical], spacing_zyx)
             print(f"         SDM computed for {canonical}")
 
-    # ---- Body mask (with HU-threshold fallback) ------------------------
-    print("  [5/8] Computing Body Mask...")
-    body_mask = masks.get("Body", np.zeros_like(ct_array, dtype=np.uint8))
-    if body_mask.sum() == 0:
+    # ---- Fallback logic for Body mask ----------------------------------
+    if "Body" in masks and masks["Body"].sum() == 0:
         print(f"         No Body contour — falling back to HU threshold ({BODY_HU_THRESHOLD} HU)")
-        body_mask = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
-    else:
-        body_mask = body_mask.astype(np.float32)
-    print(f"         Body Mask Voxels: {int(body_mask.sum()):,}")
+        masks["Body"] = (ct_array > BODY_HU_THRESHOLD).astype(np.float32)
 
     # ---- Load RTDose ---------------------------------------------------
-    print("  [6/8] Loading and resampling RTDose...")
+    print("  [5/8] Loading and resampling RTDose...")
     dose_image = load_rtdose_as_sitk(dose_files, ct_image)
     dose_array = sitk.GetArrayFromImage(dose_image)
 
     # ---- BEV Beam Frustum Mask -----------------------------------------
-    print("  [7/8] Generating BEV Frustum Beam Mask...")
-    beam_mask = generate_bev_beam_mask(plan_files, ct_image, ptv_mask)
+    beam_mask = None
+    has_bev = any(ch.get("role") == "BEV_Beam" for ch in config["channels"])
+    if has_bev:
+        print("  [6/8] Generating BEV Frustum Beam Mask...")
+        beam_mask = generate_bev_beam_mask(plan_files, ct_image, masks["PTV"])
+    else:
+        print("  [6/8] BEV Frustum Mask not required for this configuration.")
 
     # ---- Write NIfTI files from channel layout in config ---------------
-    print("  [8/8] Saving NIfTI files...")
+    print("  [7/8] Saving NIfTI files...")
 
     def _write(arr, suffix):
         path = os.path.join(images_dir, f"{case_name}_{suffix}.nii.gz")
         sitk.WriteImage(numpy_to_sitk(arr.astype(np.float32), ct_image), path)
 
-    for rule in _pre["structure_matching"]:
-        canonical = rule["canonical"]
-        ch_suffix = rule.get("save_as_channel")
-        extra_sfx = rule.get("save_as_extra")
+    # Write channels sequentially
+    for ch in config["channels"]:
+        idx = f"{ch['index']:04d}"
+        role = ch.get("role")
+        organ = ch.get("organ")
 
-        if rule.get("generated"):
-            if ch_suffix:
-                _write(beam_mask, ch_suffix)
-            continue
+        if role == "CT":
+            _write(ct_array, "0000")
+        elif role == "PTV_binary":
+            _write(masks["PTV"], idx)
+        elif role == "BEV_Beam":
+            _write(beam_mask, idx)
+        elif role == "Body_Mask":
+            _write(masks.get("Body", (ct_array > BODY_HU_THRESHOLD).astype(np.float32)), idx)
+        elif role == "SDM" and organ in sdms:
+            _write(sdms[organ], idx)
+        elif role == "Binary_Mask" and organ in masks:
+            _write(masks[organ], idx)
 
-        if ch_suffix:
-            if rule.get("compute_sdm") and canonical in sdms:
-                _write(sdms[canonical], ch_suffix)
-            elif canonical == "Body":
-                _write(body_mask, ch_suffix)
-            elif canonical == "PTV":
-                _write(masks[canonical], ch_suffix)
-            else:
-                _write(masks[canonical], ch_suffix)
-
-        if extra_sfx:
-            _write(masks[canonical], extra_sfx)
+    # Write auxiliary files (loss-only constraints)
+    for oar in config["organs_at_risk"]:
+        if oar.get("extra_file_key") and oar.get("file_suffix"):
+            _write(masks[oar["canonical"]], oar["file_suffix"])
 
     # ---- Individual SIB PTV files (Painter's Algorithm support) --------
-    ptv_rule = _STRUCT_RULES.get("PTV", {})
-    sib_map  = ptv_rule.get("sib_canonical", [])
-    if sib_map:
-        # individual_ptv_masks: one per matched roi_name
+    targets = config["clinical_targets"].get("targets", [])
+    if targets:
         individual_masks = {}
         for p_name in matched.get("PTV", []):
             individual_masks[p_name] = rtstruct_contour_to_mask(rs_ds, p_name, ct_image)
-        # Accumulate into canonical buckets
+            
         accumulated = {}
         for p_name, p_mask in individual_masks.items():
             canonical_target = None
-            for entry in sib_map:
-                if re.match(entry["pattern"], p_name, re.IGNORECASE):
-                    canonical_target = entry["maps_to"]
+            for level in targets:
+                patterns = level.get("patterns", [])
+                if any(re.match(pat, p_name, re.IGNORECASE) for pat in patterns):
+                    canonical_target = level["name"]
                     break
+            
             if canonical_target is None:
                 canonical_target = p_name.replace(" ", "_").replace("/", "_")
+            
             if canonical_target in accumulated:
                 accumulated[canonical_target] = np.maximum(
                     accumulated[canonical_target], p_mask
                 )
             else:
                 accumulated[canonical_target] = p_mask
+
         for canon_name, p_mask in accumulated.items():
             _write(p_mask, canon_name)
             print(f"         SIB: {canon_name}  ({p_mask.sum():,} voxels)")
 
     # ---- Dose label ----------------------------------------------------
+    print("  [8/8] Saving Dose label...")
     sitk.WriteImage(
         numpy_to_sitk(dose_array.astype(np.float32), ct_image),
         os.path.join(labels_dir, f"{case_name}.nii.gz"),
     )
 
-    n_ch = len([r for r in _pre["structure_matching"] if r.get("save_as_channel")])
+    n_ch = len(config["channels"])
     print(f"  ✓ Done! Saved {n_ch} input channels + auxiliary masks + label for {case_name}")
     return True
 
