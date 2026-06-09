@@ -1,0 +1,16 @@
+{
+  "channel_names": {
+    "0": "CT",
+    "1": "PTV_binary",
+    "2": "Bladder",
+    "3": "Anorectum",
+    "4": "Body_Mask",
+    "5": "Penile_Bulb",
+    "6": "BEV_Beam"
+  },
+  "labels": {
+    "0": "dose"
+  },
+  "numTraining": 70,
+  "file_ending": ".nii.gz"
+}

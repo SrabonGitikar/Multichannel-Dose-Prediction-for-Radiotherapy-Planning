@@ -23,8 +23,8 @@ preprocessing:
 # Filesystem paths
 # ---------------------------------------------------------------------------
 dataset:
-  data_dir: "../preprocess/Dataset001_ProstateDose"
-  constraint_csv: "../prostate_prime_constraints_v3.csv"   # used as fallback only
+  data_dir: "preprocess/Dataset001_ProstateDose"
+  constraint_csv: "prostate_prime_constraints_v3.csv"   # used as fallback only
   target_spacing: [1.27, 1.27, 2.5]
   patch_size: [128, 128, 64]
 

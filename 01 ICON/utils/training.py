@@ -659,14 +659,13 @@ def get_data_dicts():
         data_dicts.append(pt_dict)
     return data_dicts
 
-class CreateDiscretePTVMapd(MapTransform):
+class CreateDiscretePTVMapd:
     """
     Creates a single discrete integer PTV Map channel to handle SIB targets.
     Assigns unique, discrete integer values to different PTV volumes.
     Higher-dose regions overwrite lower-dose regions via Painter's Algorithm.
     """
-    def __init__(self, keys, allow_missing_keys=False):
-        super().__init__(keys, allow_missing_keys)
+    def __init__(self, keys=None):
         # Dynamically load from config, preserving order (lowest to highest dose)
         self.processing_order = [
             (level["name"], level["rx_gy"])
@@ -692,7 +691,7 @@ class CreateDiscretePTVMapd(MapTransform):
         d['discrete_ptv'] = discrete_ptv
         return d
 
-class Create5ClassCropMaskd(MapTransform):
+class Create5ClassCropMaskd:
     """
     Builds a 5-class label map for RandCropByLabelClassesd.
 
@@ -712,9 +711,7 @@ class Create5ClassCropMaskd(MapTransform):
       → Classes 1-4  : 25 % each  (perfectly balanced with num_samples=4)
     """
 
-    def __init__(self, keys, body_thresh_hu: float = _BODY_HU_THRESHOLD,
-                 allow_missing_keys: bool = False):
-        super().__init__(keys, allow_missing_keys)
+    def __init__(self, keys=None, body_thresh_hu: float = _BODY_HU_THRESHOLD):
         self.body_thresh_hu = body_thresh_hu
         # Build crop-class rules from config
         self._sdm_classes = [
@@ -735,7 +732,8 @@ class Create5ClassCropMaskd(MapTransform):
         crop_mask[ptv] = 2.0
         # Classes from SDM channels (Bladder=3, Anorectum=4, …)
         for ch_key, cls_id in self._sdm_classes:
-            crop_mask[d[ch_key] <= 0.0] = float(cls_id)
+            if ch_key in d:
+                crop_mask[d[ch_key] <= 0.0] = float(cls_id)
         d["crop_mask"] = crop_mask
         return d
 
@@ -775,7 +773,7 @@ def compute_ring_mask(ptv_binary: torch.Tensor) -> torch.Tensor:
         ring = ring.squeeze(0)                  
     return ring
 
-class CreateFalloffRingd(MapTransform):
+class CreateFalloffRingd:
     """
     Generates the 5 mm falloff ring mask around the PTV.
 
@@ -784,8 +782,8 @@ class CreateFalloffRingd(MapTransform):
     Stores result under the key `ring_mask` for RandCropByLabelClassesd.
     """
 
-    def __init__(self, keys, allow_missing_keys=False):
-        super().__init__(keys, allow_missing_keys)
+    def __init__(self, keys=None):
+        pass
 
     def __call__(self, data):
         d = dict(data)
@@ -810,12 +808,12 @@ train_transforms = Compose(
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
-        CreateDiscretePTVMapd(keys=["ch_0"]),
+        CreateDiscretePTVMapd(),
         
-        Create5ClassCropMaskd(keys=["ch_0"]),
+        Create5ClassCropMaskd(),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         
-        CreateFalloffRingd(keys=["ch_1"]),
+        CreateFalloffRingd(),
         
         RandCropByLabelClassesd(
             keys=ALL_KEYS + ["ring_mask", "discrete_ptv"],
@@ -844,7 +842,7 @@ val_transforms = Compose(
                   "bilinear") + ("nearest",)*len(SIB_KEYS),
             allow_missing_keys=True
         ),
-        CreateDiscretePTVMapd(keys=["ch_0"]),
+        CreateDiscretePTVMapd(),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
         ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
@@ -943,10 +941,12 @@ def main():
 
     # ---- Batch size and workers (env-var overrideable) ---------------
     
+    # NOTE: batch_size=1 is optimal for 8GB GPU with 7-channel 3D U-Net
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
     
-    num_workers     = min(int(os.environ.get("NUM_WORKERS", "2")), 2)
-    prefetch_factor = 1  
+    # Optimized for 8GB GPU: 4 workers, prefetch=2, pin_memory for faster GPU transfer
+    num_workers     = int(os.environ.get("NUM_WORKERS", "4"))
+    prefetch_factor = int(os.environ.get("PREFETCH_FACTOR", "2"))
     print(f"Batch size={batch_size}  num_workers={num_workers}  prefetch={prefetch_factor}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
@@ -964,12 +964,12 @@ def main():
         train_ds,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),
-        prefetch_factor=1,  
-        persistent_workers=False,  
-        pin_memory=False,
+        num_workers=num_workers,
+        prefetch_factor=prefetch_factor,
+        persistent_workers=True,  # Avoid worker respawn overhead
+        pin_memory=True,          # Faster CPU->GPU transfer
         collate_fn=list_data_collate,
-        drop_last=True,  
+        drop_last=True,
     )
 
     val_ds = PersistentDataset(
@@ -977,12 +977,12 @@ def main():
     )
     val_loader = DataLoader(
         val_ds,
-        batch_size=1,              
+        batch_size=1,
         shuffle=False,
-        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),  
-        prefetch_factor=1,  
-        persistent_workers=False,  
-        pin_memory=False,
+        num_workers=max(1, num_workers // 2),  # Fewer workers for validation
+        prefetch_factor=prefetch_factor,
+        persistent_workers=True,
+        pin_memory=True,
     )
 
     # ---- Model -----------------------------------------------------
@@ -1161,7 +1161,7 @@ def main():
                 accum_counter = 0  
 
             train_loss_sum += loss.item()
-            if step % 5 == 0 or step == len(train_loader):
+            if step % 20 == 0 or step == len(train_loader):
                 log_msg = (
                     f"Step {step}/{len(train_loader)} Loss={loss.item():.4f} "
                     f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "

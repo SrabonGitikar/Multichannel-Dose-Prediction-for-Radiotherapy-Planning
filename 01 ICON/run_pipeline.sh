@@ -16,7 +16,7 @@ echo "=========================================="
 # Step 1: DICOM to nnU-Net conversion
 # echo ""
 # echo "[1/3] Running DICOM to nnU-Net conversion..."
-python utils/preprocess.py
+# python utils/preprocess.py
 
 # Step 2: Training
 # echo ""
