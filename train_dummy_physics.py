@@ -51,158 +51,178 @@ from monai.transforms import (
 from monai.networks.nets import UNet
 # pyrefly: ignore [missing-import]
 from monai.inferers import sliding_window_inference
+import yaml
+
+with open("config.yml", "r") as _f:
+    config = yaml.safe_load(_f)
+
+# ── Channel-layout helpers (derived from config once at import time) ────────
+# Index of every channel key
+_CH_INDEX = {ch["key"]: ch["index"] for ch in config["channels"]}
+# Spacingd interpolation modes in channel-index order
+_CH_MODES_TUPLE = tuple(
+    ch["interpolation"]
+    for ch in sorted(config["channels"], key=lambda c: c["index"])
+)
+# Special-role indices
+_BODY_CH_IDX   = next(ch["index"] for ch in config["channels"] if ch.get("role") == "Body_Mask")
+_PTV_CH_IDX    = next(ch["index"] for ch in config["channels"] if ch.get("role") == "PTV_binary")
+_BEV_CH_IDX    = next(ch["index"] for ch in config["channels"] if ch.get("role") == "BEV_Beam")
+# SDM channels keyed by canonical organ name
+_SDM_ORGAN_IDX = {
+    ch["organ"]: ch["index"]
+    for ch in config["channels"]
+    if ch.get("role") == "SDM"
+}
+# Binary-mask channels keyed by canonical organ name
+_BIN_ORGAN_IDX = {
+    ch["organ"]: ch["index"]
+    for ch in config["channels"]
+    if ch.get("role") == "Binary_Mask"
+}
+_PENILE_CH_IDX = _BIN_ORGAN_IDX.get("Penile_Bulb", 5)
+
+# ── OAR helpers ─────────────────────────────────────────────────────────────
+_OAR_BY_CANONICAL  = {oar["canonical"]: oar for oar in config["organs_at_risk"]}
+# Extra-file mask keys (bowel_mask, femur_mask …)
+_EXTRA_MASK_OARS   = [
+    oar for oar in config["organs_at_risk"] if "extra_file_key" in oar
+]
+_EXTRA_MASK_KEYS   = [oar["extra_file_key"] for oar in _EXTRA_MASK_OARS]
+# SDM OARs that feed into organ_map in PhysicsGuidedDoseLoss.forward()
+_SDM_LOSS_OARS = [
+    oar for oar in config["organs_at_risk"]
+    if oar.get("requires_sdm") and "sdm_channel_key" in oar
+]
+# Crop-class config
+_BODY_HU_THRESHOLD = float(config["body_hu_threshold"])
+_CROP_CLASSES = config["crop_classes"]          # list of dicts
+_CROP_RATIOS  = [cc["sample_ratio"] for cc in _CROP_CLASSES]
 
 # ===================================================================
 
 # ===================================================================
-DATA_DIR = os.environ.get("DATA_DIR", "./nnUNet_raw/Dataset001_ProstateDose")
+DATA_DIR = os.environ.get("DATA_DIR", config["dataset"]["data_dir"])
 IMAGES_DIR = os.path.join(DATA_DIR, "imagesTr")
 LABELS_DIR = os.path.join(DATA_DIR, "labelsTr")
 
-CHANNELS = ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]  # 7 input channels (ch_6 = BEV Beam Frustum)
-TARGET_SPACING = (1.27, 1.27, 2.5)
-PATCH_SIZE = (128, 128, 64)  
+CHANNELS = [f"{ch['index']:04d}" for ch in sorted(config["channels"], key=lambda c: c["index"])]
+TARGET_SPACING = tuple(config["dataset"]["target_spacing"])
+PATCH_SIZE = tuple(config["dataset"]["patch_size"])
 
-PRESCRIPTION_DOSE_GY = 75.0  
-CONSTRAINT_CSV = os.environ.get(
-    "CONSTRAINT_CSV", "./prostate_prime_constraints_v3.csv"
-)
+PRESCRIPTION_DOSE_GY = config["clinical_targets"]["prescription_dose_gy"]
+CONSTRAINT_CSV = os.environ.get("CONSTRAINT_CSV", config["dataset"]["constraint_csv"])
 
-GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", "2"))
+GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", config["training"]["grad_accum_steps"]))
 
-VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", "1"))  
+VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", config["training"]["val_every_n_epochs"]))
 
-WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", "30"))
+WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", config["training"]["warmup_epochs"]))
 
 # ===================================================================
 
 # ===================================================================
 
-def load_clinical_constraints(csv_path, patient_class="N0"):
+def load_clinical_constraints(csv_path=None, patient_class="N0"):
     """
-    Parse prostate_prime_constraints_v2.csv into structured dicts.
-
-    V2 schema (one row per tier):
-      Name               — structure name; plain = N0, _Nplus suffix = N+
-      Type               — PTV / CTV / Avoidance
-      Constraint_Type    — D or V
-      Constraint_Value   — numeric dose threshold (Gy) or percentile string
-      Constraint_Unit    — Gy or %
-      Constraint_Priority
-      Evaluation_Type    — <=, >=, <, >
-      Objective_Value    — the limit value (volume fraction or dose fraction)
-      Objective_Unit     — % or Gy or cc
-      Objective_Type     — "Optimal" or "Mandatory"
-
-    Patient class mapping:
-      N0  -> Name in {"Bladder", "Anorectum", "PTV62", "PTV44", "PTV55", ...}
-      N+  -> Name ends with "_Nplus"
-
-    Returns
-    -------
-    dict  with keys:
-        "v_type"  -> {"Bladder": [...], "Anorectum": [...]}
-        "d_type"  -> {"PTV_max_dose_gy": float or None,
-                      "PTV_coverage": [...]}
-    All V-Type dose thresholds are normalised to [0, 1] by dividing
-    by PRESCRIPTION_DOSE_GY (75 Gy).
+    Load clinical constraints from config.yml inline block.
+    Falls back to parsing csv_path if config inline block is absent.
+    Returns the same structure as before:
+      {"v_type": {organ: [...]}, "d_type": {"PTV_max_dose_gy": float, "PTV_coverage": [...]}}
     """
-    
-    v_accum = {}          
+    rx = PRESCRIPTION_DOSE_GY
+
+    # ---- Try inline YAML first -----------------------------------------
+    inline = config.get("constraints", {}).get("v_type")
+    if inline:
+        v_constraints = {}
+        for organ_name, rows in inline.items():
+            entries = []
+            for row in rows:
+                if math.isnan(float(row.get("mandatory_v", float("nan")))):
+                    continue
+                entries.append({
+                    "dose_gy":     float(row["dose_gy"]),
+                    "norm_dose":   float(row["dose_gy"]) / rx,
+                    "optimal_v":   float(row.get("optimal_v", float("nan"))),
+                    "mandatory_v": float(row["mandatory_v"]),
+                })
+        v_constraints[organ_name] = sorted(entries, key=lambda r: r["dose_gy"])
+        # PTV constraints not in inline block — return defaults
+        return {
+            "v_type": v_constraints,
+            "d_type": {"PTV_max_dose_gy": None, "PTV_coverage": []},
+        }
+
+    # ---- CSV fallback --------------------------------------------------
+    if csv_path is None:
+        csv_path = CONSTRAINT_CSV
+    v_accum = {}
     ptv_coverage = []
     ptv_max_dose_gy = None
-
     nplus_suffix = "_Nplus"
-
+    # Collect canonical V-type organ names from OAR config
+    v_type_organs = {
+        oar["csv_constraint_name"]: oar["canonical"]
+        for oar in config["organs_at_risk"]
+        if "csv_constraint_name" in oar
+    }
     with open(csv_path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
             name        = row["Name"].strip()
-            struct_type = row["Type"].strip()           
-            ctype       = row["Constraint_Type"].strip() 
+            struct_type = row["Type"].strip()
+            ctype       = row["Constraint_Type"].strip()
             c_val_raw   = row["Constraint_Value"].strip()
             c_unit      = row["Constraint_Unit"].strip()
             obj_val_raw = row["Objective_Value"].strip()
             obj_unit    = row["Objective_Unit"].strip()
-            obj_type    = row["Objective_Type"].strip()  
-
+            obj_type    = row["Objective_Type"].strip()
             if not obj_val_raw:
                 continue
-
-            # ---- Determine patient class from Name ------------------
             is_nplus = name.endswith(nplus_suffix)
             if patient_class == "N0" and is_nplus:
                 continue
             if patient_class == "N+" and not is_nplus:
                 continue
-
             canonical = name[: -len(nplus_suffix)] if is_nplus else name
-
-            # ---- V-Type constraints (Bladder / Anorectum / Penile_Bulb) -----
-            if ctype == "V" and canonical in ("Bladder", "Anorectum", "Penile_Bulb"):
-                
+            if ctype == "V" and canonical in v_type_organs:
                 if obj_unit.strip() != "%":
-                    continue  
-                
+                    continue
                 dose_thresh_gy = float(c_val_raw)
                 obj_value      = float(obj_val_raw)
-
                 key = (canonical, dose_thresh_gy)
                 if key not in v_accum:
-                    v_accum[key] = {"optimal_v": float("nan"),
-                                    "mandatory_v": float("nan")}
-
+                    v_accum[key] = {"optimal_v": float("nan"), "mandatory_v": float("nan")}
                 if obj_type == "Optimal":
                     v_accum[key]["optimal_v"] = obj_value
                 elif obj_type == "Mandatory":
                     v_accum[key]["mandatory_v"] = obj_value
-
-            # ---- D-Type: PTV max dose -------------------------------
-            if (ctype == "D" and struct_type == "PTV"
-                    and c_val_raw == "Max" and c_unit == "Gy"):
+            if (ctype == "D" and struct_type == "PTV" and c_val_raw == "Max" and c_unit == "Gy"):
                 if obj_type == "Mandatory":
                     ptv_max_dose_gy = float(obj_val_raw)
-
-            # ---- D-Type: PTV coverage (D95 / D98 etc.) -------------
-            
-            if (ctype == "D" and struct_type == "PTV"
-                    and c_unit == "%" and obj_unit == "%"):
+            if (ctype == "D" and struct_type == "PTV" and c_unit == "%" and obj_unit == "%"):
                 try:
                     percentile = float(c_val_raw)
                 except ValueError:
                     continue
                 if percentile >= 90 and obj_type == "Mandatory":
-                    ptv_coverage.append(
-                        {
-                            "metric": f"D{int(percentile)}",
-                            "fraction": float(obj_val_raw),  
-                        }
-                    )
-
-    # ---- Build the final v_constraints list (per organ) -------------
-    v_constraints = {"Bladder": [], "Anorectum": [], "Penile_Bulb": []}
-    for (organ, dose_gy), tiers in sorted(v_accum.items(),
-                                          key=lambda x: x[0][1]):
-        
+                    ptv_coverage.append({"metric": f"D{int(percentile)}", "fraction": float(obj_val_raw)})
+    v_constraints = {oar["canonical"]: [] for oar in config["organs_at_risk"] if "csv_constraint_name" in oar}
+    for (organ, dose_gy), tiers in sorted(v_accum.items(), key=lambda x: x[0][1]):
         if math.isnan(tiers["mandatory_v"]):
             continue
-        norm_dose = dose_gy / PRESCRIPTION_DOSE_GY
-        v_constraints[organ].append(
-            {
-                "dose_gy":     dose_gy,
-                "norm_dose":   norm_dose,
-                "optimal_v":   tiers["optimal_v"],
-                "mandatory_v": tiers["mandatory_v"],
-            }
-        )
-
+        v_constraints.setdefault(organ, []).append({
+            "dose_gy":     dose_gy,
+            "norm_dose":   dose_gy / rx,
+            "optimal_v":   tiers["optimal_v"],
+            "mandatory_v": tiers["mandatory_v"],
+        })
     return {
         "v_type": v_constraints,
-        "d_type": {
-            "PTV_max_dose_gy": ptv_max_dose_gy,
-            "PTV_coverage":    ptv_coverage,
-        },
+        "d_type": {"PTV_max_dose_gy": ptv_max_dose_gy, "PTV_coverage": ptv_coverage},
     }
+
 
 # ===================================================================
 
@@ -317,8 +337,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
                                       dtype=pred_dose.dtype)
 
         organ_map = {
-            "Bladder": bladder_mask,
-            "Anorectum": rectum_mask,
+            oar["canonical"]: (inputs[:, _SDM_ORGAN_IDX[oar["canonical"]]:_SDM_ORGAN_IDX[oar["canonical"]]+1, ...] <= 0.0).float()
+            for oar in _SDM_LOSS_OARS
         }
         # Penile Bulb is handled separately below (has its own lambda).
 
@@ -336,8 +356,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
                 loss_mandatory = loss_mandatory + viol_mand ** 2
 
         # ------ 3. L_PTV  (D-Type coverage) -------------------------
-        # Extract discrete channel (assuming it is channel index 1)
-        ptv_channel = inputs[:, 1:2, ...]
+        # PTV channel index from config
+        ptv_channel = inputs[:, _PTV_CH_IDX:_PTV_CH_IDX+1, ...]
         
         # Dynamically extract independent masks — values match Gy magnitudes from CreateDiscretePTVMapd
         ptv60_mask = (torch.isclose(ptv_channel, torch.tensor(60.0, device=pred_dose.device))).float()
@@ -349,12 +369,15 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # Map targets to their discrete extraction masks with explicit clinical floors/ceilings
         sib_targets = {
-            "ptv60": {"mask": ptv60_mask, "rx": 60.0, "ceil": 64.2},
-            "ptv55": {"mask": ptv55_mask, "rx": 55.0, "ceil": 58.3},
-            "ptv54": {"mask": ptv54_mask, "rx": 54.0, "ceil": 57.24},
-            "ptv44": {"mask": ptv44_mask, "rx": 44.0, "ceil": 46.64},
-            "ptv36": {"mask": ptv36_mask, "rx": 36.0, "ceil": 38.16},
-            "ptv25": {"mask": ptv25_mask, "rx": 25.0, "ceil": 26.50}
+            lvl["name"].lower(): {
+                "mask": (torch.isclose(
+                    ptv_channel,
+                    torch.tensor(lvl["rx_gy"], device=pred_dose.device)
+                )).float(),
+                "rx":   lvl["rx_gy"],
+                "ceil": lvl["ceil_gy"],
+            }
+            for lvl in config["clinical_targets"]["targets"]
         }
 
         loss_ptv = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
@@ -394,9 +417,8 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # the volume-dilution trap (.mean() over 2M voxels) and the
         # denominator-inflation trap (dividing by N_violating).
         K_CEIL = 100
-        # Raised from 63.0 to 64.0 to allow the PTV60 core to reach 57.0 Gy before ceiling fires
-        global_ceil_norm = 64.0 / PRESCRIPTION_DOSE_GY
-        body_pred = pred_dose[inputs[:, 4:5, ...] > 0.5]
+        global_ceil_norm = config["physics_engine"]["thresholds"]["global_ceil_gy"] / PRESCRIPTION_DOSE_GY
+        body_pred = pred_dose[inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5]
 
         loss_global_ceil = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if body_pred.numel() > 0:
@@ -408,7 +430,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 5. L_Ring (Falloff shell penalty) -------------------
         
-        RING_THRESH = 62.0 / PRESCRIPTION_DOSE_GY  # Suppress hotspots instantly outside target
+        RING_THRESH = config["physics_engine"]["thresholds"]["ring_thresh_gy"] / PRESCRIPTION_DOSE_GY
         ring_n = ring_mask.sum()
         if ring_n > 0:
             ring_overdose = torch.relu(pred_dose - RING_THRESH) * ring_mask
@@ -418,13 +440,13 @@ class PhysicsGuidedDoseLoss(nn.Module):
                                      dtype=pred_dose.dtype)
 
         # ------ 5b. Healthy Tissue Bath Suppression (Two-Tier BEV) -------------------
-        # Isolate healthy tissue: Body - (PTV + Bladder + Rectum + 5mm Ring + Bowel + Femur)
+        # Isolate healthy tissue: Body - (PTV + OARs + Ring)
         oar_exclusion = ptv_mask + bladder_mask + rectum_mask + ring_mask + bowel_mask + femur_mask
-        bg_mask = (inputs[:, 4:5, ...] > 0.5).float() - oar_exclusion
+        bg_mask = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5).float() - oar_exclusion
         bg_mask = torch.clamp(bg_mask, min=0.0)
         
-        # Extract the beam corridors (Channel index 6)
-        beam_mask_ch = (inputs[:, 6:7, ...] > 0.5).float()
+        # Extract the beam corridors from config-driven BEV channel index
+        beam_mask_ch = (inputs[:, _BEV_CH_IDX:_BEV_CH_IDX+1, ...] > 0.5).float()
 
         # Split the background into In-Beam and Out-of-Beam
         in_beam_bg_mask  = torch.clamp(bg_mask * beam_mask_ch, min=0.0)
@@ -433,19 +455,19 @@ class PhysicsGuidedDoseLoss(nn.Module):
         loss_bg = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         
         # Tier 1: In-Beam Corridor Falloff (Relaxed to 15.0 Gy to match physical d_max)
-        IN_BEAM_CEIL = 15.0 / PRESCRIPTION_DOSE_GY
+        IN_BEAM_CEIL = config["physics_engine"]["thresholds"]["in_beam_ceil_gy"] / PRESCRIPTION_DOSE_GY
         in_beam_pred = pred_dose[in_beam_bg_mask.bool()]
         if in_beam_pred.numel() > 0:
             in_beam_violations = torch.relu(in_beam_pred - IN_BEAM_CEIL)
             loss_bg = loss_bg + (in_beam_violations ** 2).mean()
 
-        # Tier 2: Out-of-Beam Absolute Dark Zone (physically impossible scatter — strictly 2.0 Gy)
-        OUT_BEAM_CEIL = 2.0 / PRESCRIPTION_DOSE_GY
+        # Tier 2: Out-of-Beam Absolute Dark Zone (physically impossible scatter)
+        OUT_BEAM_CEIL = config["physics_engine"]["thresholds"]["out_beam_ceil_gy"] / PRESCRIPTION_DOSE_GY
         out_beam_pred = pred_dose[out_beam_bg_mask.bool()]
         if out_beam_pred.numel() > 0:
             out_beam_violations = torch.relu(out_beam_pred - OUT_BEAM_CEIL)
-            # 5.0x multiplier aggressively crushes physically impossible radiation
-            loss_bg = loss_bg + 5.0 * (out_beam_violations ** 2).mean()
+            _out_mult = config["physics_engine"]["thresholds"]["out_beam_multiplier"]
+            loss_bg = loss_bg + _out_mult * (out_beam_violations ** 2).mean()
 
         loss_shell_inner = torch.tensor(0.0, device=pred_dose.device, 
                                         dtype=pred_dose.dtype)
@@ -504,7 +526,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 5c. L_Body (Anti-Ghost Suppression) ----------------------
         
-        body_mask = (inputs[:, 4:5, ...] > 0.5).float()
+        body_mask = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5).float()
         outside_body_mask = 1.0 - body_mask
         ghost_dose = pred_dose * outside_body_mask
         n_outside_body = outside_body_mask.sum().clamp(min=1.0)
@@ -535,11 +557,12 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 7. L_Bowel (Bag_Bowel — dual-tier) -------------------
         
-        BOWEL_OPT_THRESH  = 45.0 / PRESCRIPTION_DOSE_GY   
-        BOWEL_OPT_LIMIT   = 0.30
-        BOWEL_MAND_THRESH = 50.0 / PRESCRIPTION_DOSE_GY   
-        BOWEL_MAND_LIMIT  = 0.50
-        MANDATORY_SCALE   = 5.0   
+        _thr = config["physics_engine"]["thresholds"]
+        BOWEL_OPT_THRESH  = _thr["bowel_opt_gy"]  / PRESCRIPTION_DOSE_GY
+        BOWEL_OPT_LIMIT   = _thr["bowel_opt_limit_frac"]
+        BOWEL_MAND_THRESH = _thr["bowel_mand_gy"] / PRESCRIPTION_DOSE_GY
+        BOWEL_MAND_LIMIT  = _thr["bowel_mand_limit_frac"]
+        MANDATORY_SCALE   = 5.0
 
         bowel_v45 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_OPT_THRESH)
         bowel_v50 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_MAND_THRESH)
@@ -549,15 +572,15 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         # ------ 8. L_Femur (merged Femur_Head_L+R — D_max < 40 Gy) -------
         # v3 constraint: D_max < 40 Gy.  Penalise all voxels above 40/75 Gy.
-        FEMUR_MAX_NORM = 40.0 / PRESCRIPTION_DOSE_GY
+        FEMUR_MAX_NORM = config["physics_engine"]["thresholds"]["femur_max_gy"] / PRESCRIPTION_DOSE_GY
         femur_n = femur_mask.sum().clamp(min=1.0)
         loss_femur = ((torch.relu(pred_dose - FEMUR_MAX_NORM) ** 2) * femur_mask).sum() / femur_n
 
-        # ------ 9. L_Penile (Penile Bulb — V47Gy ≤ 50%, v3) ----------
-        # Read Penile Bulb directly from model input channel 6.
-        penile_mask_ch = inputs[:, 5:6, ...]
+        # Penile Bulb: read from config-driven binary channel index
+        penile_mask_ch = inputs[:, _PENILE_CH_IDX:_PENILE_CH_IDX+1, ...]
         loss_penile = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
-        for rule in self.constraints["v_type"].get("Penile_Bulb", []):
+        _penile_key = _OAR_BY_CANONICAL.get("Penile_Bulb", {}).get("csv_constraint_name", "Penile_Bulb")
+        for rule in self.constraints["v_type"].get(_penile_key, []):
             v_frac = self.calculate_dvh_volume(pred_dose, penile_mask_ch, rule["norm_dose"])
             viol = torch.relu(v_frac - rule["mandatory_v"])
             loss_penile = loss_penile + viol ** 2
@@ -619,8 +642,8 @@ def get_data_dicts():
                 IMAGES_DIR, f"{patient_id}_{ch}.nii.gz"
             )
         
-        pt_dict["bowel_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_bowel.nii.gz")
-        pt_dict["femur_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_femur.nii.gz")
+        pt_dict["bowel_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_{oar['file_suffix']}.nii.gz") if (oar := _OAR_BY_CANONICAL.get("Bag_Bowel")) and "file_suffix" in oar else os.path.join(IMAGES_DIR, f"{patient_id}_bowel.nii.gz")
+        pt_dict["femur_mask"] = os.path.join(IMAGES_DIR, f"{patient_id}_{oar['file_suffix']}.nii.gz") if (oar := _OAR_BY_CANONICAL.get("Femur")) and "file_suffix" in oar else os.path.join(IMAGES_DIR, f"{patient_id}_femur.nii.gz")
         
         # Load individual PTV structures for SIB mapping
         import glob as glb
@@ -640,15 +663,10 @@ class CreateDiscretePTVMapd(MapTransform):
     """
     def __init__(self, keys, allow_missing_keys=False):
         super().__init__(keys, allow_missing_keys)
-        # Strict processing order (lowest dose to highest dose)
-        # Uses literal Gy values as the channel identifier — U-Net learns Rx magnitude as a prior
+        # Dynamically load from config, preserving order (lowest to highest dose)
         self.processing_order = [
-            ("PTV25", 25.0),
-            ("PTV36", 36.0),
-            ("PTV44", 44.0),
-            ("PTV54", 54.0),
-            ("PTV55", 55.0),
-            ("PTV60", 60.0)   # v3: PTV60 (was PTV62)
+            (level["name"], level["rx_gy"])
+            for level in config["clinical_targets"]["targets"]
         ]
 
     def __call__(self, data):
@@ -690,27 +708,30 @@ class Create5ClassCropMaskd(MapTransform):
       → Classes 1-4  : 25 % each  (perfectly balanced with num_samples=4)
     """
 
-    def __init__(self, keys, body_thresh_hu: float = -300.0,
+    def __init__(self, keys, body_thresh_hu: float = _BODY_HU_THRESHOLD,
                  allow_missing_keys: bool = False):
         super().__init__(keys, allow_missing_keys)
         self.body_thresh_hu = body_thresh_hu
+        # Build crop-class rules from config
+        self._sdm_classes = [
+            (cc["sdm_channel_key"], cc["class_id"])
+            for cc in _CROP_CLASSES
+            if cc.get("source") == "sdm_channel"
+        ]
 
     def __call__(self, data):
         d = dict(data)
-        
-        ct      = d["ch_0"]           
-        ptv     = d["ch_1"] >= 0.5    
-        bladder = d["ch_2"] <= 0.0    
-        rectum  = d["ch_3"] <= 0.0    
-        body    = ct >= self.body_thresh_hu   
-
+        ct  = d["ch_0"]
+        ptv = d["ch_1"] >= 0.5
+        body = ct >= self.body_thresh_hu
         crop_mask = torch.zeros_like(ct, dtype=torch.float32)
-        
-        crop_mask[body]    = 1.0   
-        crop_mask[ptv]     = 2.0   
-        crop_mask[bladder] = 3.0   
-        crop_mask[rectum]  = 4.0   
-
+        # Class 1: Healthy tissue inside body
+        crop_mask[body] = 1.0
+        # Class 2: PTV
+        crop_mask[ptv] = 2.0
+        # Classes from SDM channels (Bladder=3, Anorectum=4, …)
+        for ch_key, cls_id in self._sdm_classes:
+            crop_mask[d[ch_key] <= 0.0] = float(cls_id)
         d["crop_mask"] = crop_mask
         return d
 
@@ -768,12 +789,18 @@ class CreateFalloffRingd(MapTransform):
         d["ring_mask"] = compute_ring_mask(ptv)
         return d
 
-SIB_KEYS = ["PTV60", "PTV55", "PTV54", "PTV44", "PTV36", "PTV25"]   # v3: PTV62 → PTV60
+SIB_KEYS = [lvl["name"] for lvl in config["clinical_targets"]["targets"]]
 ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
             "bowel_mask", "femur_mask",
             "dose_label"] + SIB_KEYS
 
-train_transforms = Compose(
+# Keys that survive after CreateDiscretePTVMapd deletes the individual PTVs
+CROPPED_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
+                "bowel_mask", "femur_mask", "dose_label", 
+                "discrete_ptv", "ring_mask"]
+
+# --- 1. Deterministic Transforms (Cached) ---
+train_transforms_det = Compose(
     [
         LoadImaged(keys=ALL_KEYS, allow_missing_keys=True),
         EnsureChannelFirstd(keys=ALL_KEYS, allow_missing_keys=True),
@@ -787,19 +814,23 @@ train_transforms = Compose(
         ),
         CreateDiscretePTVMapd(keys=["ch_0"]),
         
-        Create5ClassCropMaskd(keys=["ch_0"], body_thresh_hu=-300.0),
+        Create5ClassCropMaskd(keys=["ch_0"]),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
         
         CreateFalloffRingd(keys=["ch_1"]),
-        
+    ]
+)
+
+# --- 2. Random Transforms (On the fly) ---
+train_transforms_rand = Compose(
+    [
         RandCropByLabelClassesd(
-            keys=ALL_KEYS + ["ring_mask", "discrete_ptv"],   
+            keys=CROPPED_KEYS,
             label_key="crop_mask",
             spatial_size=PATCH_SIZE,
-            num_classes=5,
-            ratios=[0.0, 1.0, 1.0, 1.0, 1.0],
+            num_classes=len(_CROP_CLASSES),
+            ratios=_CROP_RATIOS,
             num_samples=2,
-            allow_missing_keys=True,
         ),
         DeleteItemsd(keys=["crop_mask"]),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
@@ -807,6 +838,7 @@ train_transforms = Compose(
     ]
 )
 
+# Validation transforms can be fully deterministic since they don't crop
 val_transforms = Compose(
     [
         LoadImaged(keys=ALL_KEYS, allow_missing_keys=True),
@@ -844,9 +876,17 @@ def extract_binary_masks(inputs):
 
     Returns ptv_mask, bladder_mask, rectum_mask  — all (B,1,D,H,W) float.
     """
-    ptv_mask = (inputs[:, 1:2, ...] >= 0.5).float()
-    bladder_mask = (inputs[:, 2:3, ...] <= 0.0).float()
-    rectum_mask = (inputs[:, 3:4, ...] <= 0.0).float()
+    ptv_mask = (inputs[:, _PTV_CH_IDX:_PTV_CH_IDX+1, ...] >= 0.5).float()
+    # Build SDM masks from config
+    sdm_masks = {
+        canonical: (inputs[:, idx:idx+1, ...] <= 0.0).float()
+        for canonical, idx in _SDM_ORGAN_IDX.items()
+    }
+    # Resolve SDM canonical names from config (Bladder, Anorectum, …)
+    _bladder_key  = next((oar["canonical"] for oar in config["organs_at_risk"] if oar.get("sdm_channel_key") == "ch_2"), "Bladder")
+    _anorect_key  = next((oar["canonical"] for oar in config["organs_at_risk"] if oar.get("sdm_channel_key") == "ch_3"), "Anorectum")
+    bladder_mask = sdm_masks.get(_bladder_key, torch.zeros_like(ptv_mask))
+    rectum_mask  = sdm_masks.get(_anorect_key, torch.zeros_like(ptv_mask))
     return ptv_mask, bladder_mask, rectum_mask
 
 # ===================================================================
@@ -875,20 +915,21 @@ def main():
     logger.info(f"PATCH_SIZE={PATCH_SIZE}, GRAD_ACCUM_STEPS={GRAD_ACCUM_STEPS}")
 
     # ---- Load constraints ------------------------------------------
-    logger.info(f"Loading clinical constraints from {CONSTRAINT_CSV} ...")
-    print(f"Loading clinical constraints from {CONSTRAINT_CSV} ...")
-    constraints = load_clinical_constraints(CONSTRAINT_CSV, patient_class="N0")
+    logger.info(f"Loading clinical constraints (inline config) ...")
+    print(f"Loading clinical constraints (inline config) ...")
+    constraints = load_clinical_constraints()
 
-    n_bladder = len(constraints["v_type"]["Bladder"])
-    n_rect = len(constraints["v_type"]["Anorectum"])
+    _v_type_oar_names = [oar["canonical"] for oar in config["organs_at_risk"] if "csv_constraint_name" in oar]
+    for oar_name in _v_type_oar_names:
+        n = len(constraints["v_type"].get(oar_name, []))
+        print(f"  V-Type constraints: {oar_name}={n}")
     n_ptv = len(constraints["d_type"]["PTV_coverage"])
     ptv_max = constraints["d_type"]["PTV_max_dose_gy"]
-    print(f"  V-Type constraints:  Bladder={n_bladder}  Anorectum={n_rect}")
-    print(f"  D-Type constraints:  PTV coverage rules={n_ptv}  PTV max={ptv_max} Gy")
+    print(f"  D-Type constraints: PTV coverage rules={n_ptv}  PTV max={ptv_max} Gy")
 
-    for organ in ("Bladder", "Anorectum"):
-        for r in constraints["v_type"][organ]:
-            print(f"    {organ}  V{r['dose_gy']}Gy  "
+    for oar_name in _v_type_oar_names:
+        for r in constraints["v_type"].get(oar_name, []):
+            print(f"    {oar_name}  V{r['dose_gy']}Gy  "
                   f"opt={r['optimal_v']:.2f}  mand={r['mandatory_v']:.2f}  "
                   f"norm_thresh={r['norm_dose']:.4f}")
 
@@ -921,9 +962,14 @@ def main():
     print(f"  NOTE: If you see 'RuntimeError: PytorchStreamReader failed reading zip archive',")
     print(f"        clear the cache with: rm -rf {cache_dir}/*")
 
-    train_ds = PersistentDataset(
-        data=train_files, transform=train_transforms, cache_dir=cache_dir
+    # Wrap the PersistentDataset with standard Dataset to apply random transforms on the fly
+    from monai.data import Dataset
+    
+    train_cache_ds = PersistentDataset(
+        data=train_files, transform=train_transforms_det, cache_dir=cache_dir
     )
+    train_ds = Dataset(data=train_cache_ds, transform=train_transforms_rand)
+    
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
@@ -948,6 +994,7 @@ def main():
         persistent_workers=False,  
         pin_memory=False,
     )
+
 
     # ---- Model -----------------------------------------------------
     print("Building 3D U-Net...")
@@ -994,21 +1041,21 @@ def main():
     loss_function.lambda_body = 0.0  
 
     PHYSICS_TARGET_LAMBDAS = {
-        "lambda_optional":      2.0,
-        "lambda_mandatory":    50.0,
-        "lambda_ptv":          45.0,
-        "lambda_ptv_max":      30.0,
-        "lambda_ring":         25.0,
-        "lambda_smooth":        0.125,
-        "lambda_laplacian":     0.25,
-        "lambda_anticollapse": 150.0,
-        "lambda_homogeneity":  0.0,
-        "lambda_body":         20.0,
-        "lambda_bowel":        15.0,
-        "lambda_femur":        10.0,
-        "lambda_penile":       10.0,
-        "lambda_global_ceil": 300.0,
-        "lambda_bg":           10.0,
+        "lambda_optional":     config["physics_engine"]["target_lambdas"]["optional"],
+        "lambda_mandatory":    config["physics_engine"]["target_lambdas"]["mandatory"],
+        "lambda_ptv":          config["physics_engine"]["target_lambdas"]["ptv"],
+        "lambda_ptv_max":      config["physics_engine"]["target_lambdas"]["ptv_max"],
+        "lambda_ring":         config["physics_engine"]["target_lambdas"]["ring"],
+        "lambda_smooth":       config["physics_engine"]["target_lambdas"]["smooth"],
+        "lambda_laplacian":    config["physics_engine"]["target_lambdas"]["laplacian"],
+        "lambda_anticollapse": config["physics_engine"]["target_lambdas"]["anticollapse"],
+        "lambda_homogeneity":  config["physics_engine"]["target_lambdas"]["homogeneity"],
+        "lambda_body":         config["physics_engine"]["target_lambdas"]["body"],
+        "lambda_bowel":        config["physics_engine"]["target_lambdas"]["bowel"],
+        "lambda_femur":        config["physics_engine"]["target_lambdas"]["femur"],
+        "lambda_penile":       config["physics_engine"]["target_lambdas"]["penile"],
+        "lambda_global_ceil":  config["physics_engine"]["target_lambdas"]["global_ceil"],
+        "lambda_bg":           config["physics_engine"]["target_lambdas"]["bg"],
     }
 
     print(f"\n{'='*60}")
@@ -1020,11 +1067,14 @@ def main():
         f"physics lambdas 0 -> target over {WARMUP_EPOCHS} epochs"
     )
 
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    _lr     = config["training"]["learning_rate"]
+    _lr_min = config["training"]["min_learning_rate"]
+    _epochs = config["training"]["epochs"]
+    optimizer = optim.Adam(model.parameters(), lr=_lr)
 
-    epochs = 300
+    epochs = _epochs
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=epochs, eta_min=1e-6
+        optimizer, T_max=epochs, eta_min=_lr_min
     )
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
@@ -1093,7 +1143,7 @@ def main():
 
             outputs_activated = F.softplus(outputs.float())
 
-            body_mask_hard = (inputs[:, 4:5, ...] > 0.5).float()
+            body_mask_hard = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5).float()
             outputs_activated = outputs_activated * body_mask_hard
 
             loss, components = loss_function(
@@ -1201,7 +1251,7 @@ def main():
 
                     outputs_activated = F.softplus(outputs.float())
 
-                    body_mask_hard = (inputs[:, 4:5, ...] > 0.5).float()
+                    body_mask_hard = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5).float()
                     outputs_activated = outputs_activated * body_mask_hard
 
                     normalized_targets = targets / PRESCRIPTION_DOSE_GY
@@ -1219,7 +1269,7 @@ def main():
                     
                     # 1. Immediately move outputs and masks to CPU
                     outputs_gy = (outputs_activated * PRESCRIPTION_DOSE_GY).cpu()
-                    discrete_ptv = inputs[:, 1:2, ...].cpu()
+                    discrete_ptv = inputs[:, _PTV_CH_IDX:_PTV_CH_IDX+1, ...].cpu()
                     
                     ptv_mask_cpu = ptv_mask.cpu()
                     bladder_mask_cpu = bladder_mask.cpu()
@@ -1257,8 +1307,8 @@ def main():
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
                         n_val_ptv44 += 1
                         
-                    # Penile Bulb (channel 5)
-                    penile_mask_cpu = (inputs[:, 5:6, ...] > 0.5).cpu()
+                    # Penile Bulb from config-driven binary channel index
+                    penile_mask_cpu = (inputs[:, _PENILE_CH_IDX:_PENILE_CH_IDX+1, ...] > 0.5).cpu()
                     penile_dose = outputs_gy[penile_mask_cpu.bool()]
                     if len(penile_dose) > 0: val_penile_mean_sum += penile_dose.mean().item()
                         
@@ -1377,7 +1427,7 @@ def main():
     import pandas as pd  # pyrefly: ignore [missing-import]
 
     # ---- Physical dose ceiling (Gy) — hard clinical constraint ---------
-    PHYSICAL_MAX_GY = 70.0   
+    PHYSICAL_MAX_GY = config["clinical_targets"]["physical_max_gy"]
 
     # ---- DVH helpers ---------------------------------------------------
     def quantile_dose(dose_1d: torch.Tensor, pct: float) -> float:
@@ -1438,22 +1488,18 @@ def main():
                 outputs_gy = torch.clamp(outputs_gy, min=0.0, max=PHYSICAL_MAX_GY)
 
                 # Apply body mask to prevent ghost radiation inflating CSV metrics
-                body_mask_eval = (inputs[:, 4:5, ...] > 0.5).float()
+                body_mask_eval = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5).float()
                 outputs_gy = outputs_gy * body_mask_eval
 
                 ptv_mask, bladder_mask, rectum_mask = extract_binary_masks(inputs)
-                penile_mask_eval = (inputs[:, 5:6, ...] > 0.5)
+                penile_mask_eval = (inputs[:, _PENILE_CH_IDX:_PENILE_CH_IDX+1, ...] > 0.5)
 
-                discrete_ptv = inputs[:, 1:2, ...].cpu()
+                discrete_ptv = inputs[:, _PTV_CH_IDX:_PTV_CH_IDX+1, ...].cpu()
                 
                 # SIB Mapping from CreateDiscretePTVMapd
                 sib_eval_targets = {
-                    "PTV60": 60.0,
-                    "PTV55": 55.0,
-                    "PTV54": 54.0,
-                    "PTV44": 44.0,
-                    "PTV36": 36.0,
-                    "PTV25": 25.0
+                    lvl["name"]: lvl["rx_gy"]
+                    for lvl in config["clinical_targets"]["targets"]
                 }
                 bladder_dose = outputs_gy[bladder_mask.bool()].cpu()
                 rectum_dose  = outputs_gy[rectum_mask.bool()].cpu()
@@ -1483,12 +1529,12 @@ def main():
 
                 row["Bladder_Mean (Gy)"] = bladder_dose.mean().item() if bladder_dose.numel() else float("nan")
                 row["Bladder_Max (Gy)"]  = bladder_dose.max().item()  if bladder_dose.numel() else float("nan")
-                for thresh in (59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0):  # v3 thresholds
+                for thresh in config["evaluation"]["oar_v_metrics_gy"]:
                     row[f"Bladder_V{thresh}Gy (%)"] = v_metric(bladder_dose, thresh)
 
                 row["Rectum_Mean (Gy)"] = rectum_dose.mean().item() if rectum_dose.numel() else float("nan")
                 row["Rectum_Max (Gy)"]  = rectum_dose.max().item()  if rectum_dose.numel() else float("nan")
-                for thresh in (59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0):  # v3 thresholds
+                for thresh in config["evaluation"]["oar_v_metrics_gy"]:
                     row[f"Rectum_V{thresh}Gy (%)"] = v_metric(rectum_dose, thresh)
 
                 row["PenileBulb_Mean (Gy)"] = penile_dose.mean().item() if penile_dose.numel() else float("nan")
