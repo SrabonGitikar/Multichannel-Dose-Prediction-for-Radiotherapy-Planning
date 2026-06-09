@@ -8,9 +8,9 @@
 # ---------------------------------------------------------------------------
 preprocessing:
   # Raw DICOM source directory (one sub-folder per patient)
-  dicom_dir: "data/standard arm cleaned"
+  dicom_dir: "/home/ankit/Dose_pred/Prostate prime d11 CT RT RP and RD"
   # Where to write imagesTr / labelsTr
-  output_dir: "nnUNet_preprocess"
+  output_dir: "/home/ankit/Dose_pred/nnUNet_raw/Dataset001_ProstateDose"
   # Prefix for case names: e.g. "prostate" → prostate_000, prostate_001 …
   case_prefix: "prostate"
   # dataset.json dataset name field
@@ -26,7 +26,7 @@ preprocessing:
 # Filesystem paths
 # ---------------------------------------------------------------------------
 dataset:
-  data_dir: "./nnUNet_preprocess/Dataset001_ProstateDose"
+  data_dir: "./nnUNet_raw/Dataset001_ProstateDose"
   constraint_csv: "./prostate_prime_constraints_v3.csv"   # used as fallback only
   target_spacing: [1.27, 1.27, 2.5]
   patch_size: [128, 128, 64]
@@ -116,7 +116,7 @@ channels:
 # ---------------------------------------------------------------------------
 organs_at_risk:
   - canonical: "Bladder"
-    aliases: ["Bladder"]
+    aliases: ["Bladder", "BLADDER", "bladder", "Urinary_Bladder"]
     requires_sdm: true
     sdm_channel_key: "ch_2"
     loss_key: "bladder"
@@ -124,7 +124,8 @@ organs_at_risk:
     crop_class: 3
 
   - canonical: "Anorectum"
-    aliases: ["Anorectum"]
+    aliases: ["Anorectum", "ANORECTUM", "Rectum", "RECTUM", "rectum",
+              "Anorectum_NOS", "Ano-rectum"]
     requires_sdm: true
     sdm_channel_key: "ch_3"
     loss_key: "anorectum"
@@ -132,14 +133,16 @@ organs_at_risk:
     crop_class: 4
 
   - canonical: "Body"
-    aliases: ["BODY"]
+    aliases: ["Body", "EXTERNAL", "Patient", "Skin", "External",
+              "BODY", "body", "patient"]
     requires_sdm: false
     binary_channel_key: "ch_4"
     loss_key: "body"
     crop_class: 0    # drives HU-threshold fallback in Create5ClassCropMaskd
 
   - canonical: "Penile_Bulb"
-    aliases: ["PenileBulb"]
+    aliases: ["Penile_Bulb", "PenileBulb", "Penile Bulb", "Bulb_Penis",
+              "Penile bulb", "penile_bulb"]
     requires_sdm: false
     binary_channel_key: "ch_5"
     loss_key: "penile"
@@ -147,7 +150,8 @@ organs_at_risk:
     crop_class: 0
 
   - canonical: "Bag_Bowel"
-    aliases: ["Bag_Bowel"]
+    aliases: ["Bag_Bowel", "Bag Bowel", "BagBowel", "Bowel_Bag",
+              "Bowel bag", "bag_bowel", "Bag_of_Bowel"]
     requires_sdm: false
     extra_file_key: "bowel_mask"
     file_suffix: "bowel"
@@ -155,12 +159,22 @@ organs_at_risk:
     crop_class: 0
 
   - canonical: "Femur"
-    aliases: ["Femur_Head_L", "Femur_Head_R"]
+    aliases: ["Femur_Head_L", "Femur_Head_R", "L_Femur", "R_Femur",
+              "Left_Femoral_Head", "Right_Femoral_Head", "FemurHead_L",
+              "FemurHead_R", "Femur_L", "Femur_R"]
     split_laterality: true
     patterns_left:
-      - "Femur_Head_L"
+      - "^Femur_?Head_?L.*"
+      - "^L_?Femur.*"
+      - "^Left_?Femur.*"
+      - "^FemurHead_L.*"
+      - "^Femur_L.*"
     patterns_right:
-      - "Femur_Head_R"
+      - "^Femur_?Head_?R.*"
+      - "^R_?Femur.*"
+      - "^Right_?Femur.*"
+      - "^FemurHead_R.*"
+      - "^Femur_R.*"
     requires_sdm: false
     extra_file_key: "femur_mask"
     file_suffix: "femur"
@@ -210,15 +224,30 @@ clinical_targets:
   physical_max_gy: 70.0
 
   targets:
-    - name: "PTV_62_20"
-      rx_gy: 62.0
-      ceil_gy: 64.20
-      patterns: ["PTV_62/20"]
-
-    - name: "PTV_44_20"
+    - name: "PTV25"
+      rx_gy: 25.0
+      ceil_gy: 26.50
+      patterns: ["^PTV25$", "^CTV25$"]
+    - name: "PTV36"
+      rx_gy: 36.0
+      ceil_gy: 38.16
+      patterns: ["^PTV36$", "^CTV36$"]
+    - name: "PTV44"
       rx_gy: 44.0
       ceil_gy: 46.64
-      patterns: ["PTV_44/20"]
+      patterns: ["^PTV44$", "^CTV44$"]
+    - name: "PTV54"
+      rx_gy: 54.0
+      ceil_gy: 57.24
+      patterns: ["^PTV54$", "^CTV54$"]
+    - name: "PTV55"
+      rx_gy: 55.0
+      ceil_gy: 58.30
+      patterns: ["^PTV55$", "^CTV55$"]
+    - name: "PTV60"
+      rx_gy: 62.0
+      ceil_gy: 65.72
+      patterns: ["^PTV60$", "^CTV60$", "^CTVP$", "^PTV62$", "^CTV62$"]
 
 # ---------------------------------------------------------------------------
 # Physics engine
