@@ -1280,8 +1280,11 @@ def main():
                     body_mask_cpu = body_mask_hard.cpu()
                     
                     # 2. Slice and calculate means on CPU, extracting floats via .item()
-                    # D95 is computed per-structure (no union blend) — values match Gy literals from CreateDiscretePTVMapd
-                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(60.0, device=discrete_ptv.device))]
+                    # D95 is computed per-structure (no union blend) — dynamically fetching rx doses from config
+                    ptv60_rx = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV60"), 60.0)
+                    ptv44_rx = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV44"), 44.0)
+
+                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(ptv60_rx, device=discrete_ptv.device))]
                     if ptv60_dose.numel() > 0:
                         val_ptv60_d95_sum  += torch.quantile(ptv60_dose.float(), 0.05).item()
                         val_ptv60_mean_sum += ptv60_dose.mean().item()
@@ -1296,14 +1299,14 @@ def main():
                         n_val_ptv60 += 1
                         
                     # -- RTOG Conformity Index (CI) --
-                    v_ref = (outputs_gy >= 60.0).sum().item()
+                    v_ref = (outputs_gy >= ptv60_rx).sum().item()
                     v_ptv = ptv60_dose.numel()
                     if v_ptv > 0:
                         val_ci_sum += v_ref / v_ptv
                         
-                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(44.0, device=discrete_ptv.device))]
+                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(ptv44_rx, device=discrete_ptv.device))]
                     if ptv44_dose.numel() > 0:
-                        val_ptv44_d95_sum  += torch.quantile(ptv44_dose, 0.05).item()
+                        val_ptv44_d95_sum  += torch.quantile(ptv44_dose.float(), 0.05).item()
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
                         n_val_ptv44 += 1
                         
@@ -1388,7 +1391,8 @@ def main():
                 logger.info(checkpoint_msg)
 
             current_worst_oar = max(avg_bladder, avg_rectum)
-            ptv_deficit = max(0.0, 60.0 - avg_ptv60_d95)   # v3: PTV60 D95 target
+            ptv60_rx_val = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV60"), 60.0)
+            ptv_deficit = max(0.0, ptv60_rx_val - avg_ptv60_d95)   # v3: PTV60 D95 target
             clinical_score = current_worst_oar + (ptv_deficit * 3.0)
 
             if is_physically_valid and clinical_score < best_clinical_score:
@@ -1543,7 +1547,7 @@ def main():
                 records.append(row)
                 print(
                     f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
-                    f"PTV60 D95={row['PTV60_D95 (Gy)']:.2f} Gy  "
+                    f"PTV60 D95={row.get('PTV60_D95 (Gy)', float('nan')):.2f} Gy  "
                     f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
                     f"Rectum Mean={row['Rectum_Mean (Gy)']:.2f} Gy  "
                     f"PenileBulb Mean={row['PenileBulb_Mean (Gy)']:.2f} Gy"
