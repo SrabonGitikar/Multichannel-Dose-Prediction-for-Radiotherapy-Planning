@@ -5,3 +5,15 @@
 2026-06-10 11:38:35 [INFO] Model ready on cuda, epochs=10, AMP=ON
 2026-06-10 11:38:35 [INFO] Epoch 1/10 [RAMP 1/5 (20% of physics)] ramp=0.200 lr=1.00e-04
 2026-06-10 11:44:27 [INFO] Step 20/56 Loss=167.8970 mse=0.5084 v_opt=0.00000 v_mand=0.00000 ptv=0.1820 ptv_max=0.04381 global_ceil=2.45248 ring=0.00638 smooth=0.3705 laplacian=1.4551 anticollapse=0.00030 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00764 femur=0.08758 penile=0.00000 bg=2.90819
+2026-06-10 11:50:24 [INFO] Step 40/56 Loss=169.1328 mse=0.7874 v_opt=0.00000 v_mand=0.00000 ptv=0.2010 ptv_max=0.03402 global_ceil=2.33106 ring=0.01195 smooth=0.6278 laplacian=2.4860 anticollapse=0.00082 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.01199 femur=0.05968 penile=0.00000 bg=3.59562
+2026-06-10 11:55:46 [INFO] Step 56/56 Loss=152.6463 mse=0.5570 v_opt=0.00000 v_mand=0.00000 ptv=0.1814 ptv_max=0.03996 global_ceil=2.18445 ring=0.01413 smooth=0.5487 laplacian=2.1620 anticollapse=0.00068 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.01362 femur=0.05566 penile=0.00000 bg=2.70798
+2026-06-10 11:55:46 [INFO] Running validation at epoch 1...
+2026-06-10 11:58:22 [INFO] Epoch 1 Summary: Train=241.4396 Val=0.0492 (MSE=0.0492)
+          Coverage D95:  PTV_62_20_D95=29.83Gy  PTV_44_20_D95=23.19Gy
+          SIB Means:    PTV_62_20=42.55Gy PTV_44_20=41.39Gy
+          OAR Metrics:  Bladder=43.56Gy Rectum=39.68Gy Bowel=40.16Gy Femur=40.55Gy Ring=40.77Gy Penile=39.42Gy
+          Physics:      Dmax=125.73Gy BG=39.37Gy HI=1.347 CI=25.43
+2026-06-10 11:58:22 [INFO] [DIAGNOSTIC] Saved fallback model MSE=0.0492
+2026-06-10 11:58:22 [INFO] Epoch 2/10 [RAMP 2/5 (40% of physics)] ramp=0.400 lr=9.76e-05
+2026-06-10 12:01:55 [INFO] Step 20/56 Loss=144.2735 mse=0.4466 v_opt=0.00000 v_mand=0.00000 ptv=0.1480 ptv_max=0.01488 global_ceil=1.00038 ring=0.00405 smooth=0.3038 laplacian=1.1927 anticollapse=0.00025 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.01196 femur=0.03302 penile=0.00000 bg=2.45674
+2026-06-10 12:05:23 [INFO] Step 40/56 Loss=110.9731 mse=0.5030 v_opt=0.00000 v_mand=0.00000 ptv=0.1147 ptv_max=0.00018 global_ceil=0.72728 ring=0.00008 smooth=0.2718 laplacian=1.0693 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00684 femur=0.02414 penile=0.00000 bg=2.19987
