@@ -1,0 +1,10 @@
+2026-06-09 12:27:30 [INFO] Training log started: logs/training_20260609_122730.log
+2026-06-09 12:27:30 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-09 12:27:30 [INFO] Loading clinical constraints (inline config) ...
+2026-06-09 12:27:30 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-06-09 12:27:30 [INFO] Model ready on cuda, epochs=300, AMP=ON
+2026-06-09 12:27:30 [INFO] Epoch 1/300 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
+2026-06-09 12:30:52 [INFO] Step 20/56 Loss=109.7339 mse=2.3676 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=4.72852 ring=0.23990 smooth=0.7915 laplacian=3.1248 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=1.34867 femur=0.48788 penile=0.22108 bg=6.35573
+2026-06-09 12:34:02 [INFO] Step 40/56 Loss=94.4390 mse=2.4931 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=2.92797 ring=0.22860 smooth=0.7213 laplacian=2.8424 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.99680 femur=0.47315 penile=0.21856 bg=5.65695
+2026-06-09 12:36:26 [INFO] Step 56/56 Loss=49.7620 mse=1.2349 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=1.53737 ring=0.24440 smooth=0.4624 laplacian=1.8163 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=1.72578 femur=0.50583 penile=0.24990 bg=6.53761
+2026-06-09 12:36:26 [INFO] Running validation at epoch 1...

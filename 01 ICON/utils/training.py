@@ -32,7 +32,7 @@ import torch.optim as optim
 # pyrefly: ignore [missing-import]
 import monai
 # pyrefly: ignore [missing-import]
-from monai.data import PersistentDataset, DataLoader, list_data_collate
+from monai.data import PersistentDataset, Dataset, DataLoader, list_data_collate
 # pyrefly: ignore [missing-import]
 from monai.transforms import (
     Compose,
@@ -122,6 +122,13 @@ GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", config["training"]["gr
 VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", config["training"]["val_every_n_epochs"]))
 
 WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", config["training"]["warmup_epochs"]))
+
+# PTV target rx values derived from config (replaces hardcoded 60.0 / 44.0)
+_TARGETS_SORTED   = sorted(config["clinical_targets"]["targets"], key=lambda t: t["rx_gy"], reverse=True)
+_PTV_PRIMARY_RX   = float(_TARGETS_SORTED[0]["rx_gy"])                                           # e.g. 62.0
+_PTV_SECONDARY_RX = float(_TARGETS_SORTED[1]["rx_gy"]) if len(_TARGETS_SORTED) > 1 else 44.0    # e.g. 44.0
+_PTV_PRIMARY_NAME   = _TARGETS_SORTED[0]["name"]                                                    # e.g. "PTV_62_20"
+_PTV_SECONDARY_NAME = _TARGETS_SORTED[1]["name"] if len(_TARGETS_SORTED) > 1 else "PTV_44_20"    # e.g. "PTV_44_20"
 
 # ===================================================================
 
@@ -248,24 +255,25 @@ class PhysicsGuidedDoseLoss(nn.Module):
     def __init__(
         self,
         constraints_dict,
-        lambda_mse=10.0,            
-        lambda_optimal=2.0,         
-        lambda_mandatory=50.0,      
-        lambda_ptv=15.0,           
-        lambda_smooth=1.0,          
-        lambda_ring=15.0,           
-        lambda_anticollapse=50.0,   
-        lambda_ptv_max=150.0,       
-        lambda_homogeneity=30.0,    
-        lambda_laplacian=5.0,       
-        lambda_bowel=15.0,          
-        lambda_femur=10.0,          
-        lambda_global_ceil=2.0,     
-        lambda_shell_inner=0.0,     
-        lambda_shell_outer=0.0,     
-        lambda_penile=10.0,         # Penile Bulb V47Gy ≤ 50% (v3)
-        lambda_bg=15.0,
-        k_steepness=50.0,           
+        lambda_mse=0.0,
+        lambda_optimal=0.0,
+        lambda_mandatory=0.0,
+        lambda_ptv=0.0,
+        lambda_smooth=0.0,
+        lambda_ring=0.0,
+        lambda_anticollapse=0.0,
+        lambda_ptv_max=0.0,
+        lambda_homogeneity=0.0,
+        lambda_laplacian=0.0,
+        lambda_bowel=0.0,
+        lambda_femur=0.0,
+        lambda_global_ceil=0.0,
+        lambda_shell_inner=0.0,
+        lambda_shell_outer=0.0,
+        lambda_body=0.0,
+        lambda_penile=0.0,
+        lambda_bg=0.0,
+        k_steepness=50.0,
     ):
         super().__init__()
         self.mse = nn.MSELoss()
@@ -285,7 +293,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         self.lambda_global_ceil = lambda_global_ceil
         self.lambda_shell_inner = lambda_shell_inner
         self.lambda_shell_outer = lambda_shell_outer
-        self.lambda_body = 20.0    
+        self.lambda_body = lambda_body
         self.lambda_penile = lambda_penile   # Penile Bulb (v3)
         self.lambda_bg = lambda_bg
         self.k = k_steepness
@@ -330,8 +338,9 @@ class PhysicsGuidedDoseLoss(nn.Module):
         """
         # ------ 1. L_MSE (dose-weighted) --------------------------------
         
-        DOSE_WEIGHT_SCALE = 9.0
-        dose_weight = 1.0 + DOSE_WEIGHT_SCALE * true_dose.clamp(max=0.96)
+        _thr = config["physics_engine"]["thresholds"]
+        DOSE_WEIGHT_SCALE = _thr["dose_weight_scale"]
+        dose_weight = 1.0 + DOSE_WEIGHT_SCALE * true_dose.clamp(max=_thr["dose_weight_clamp"])
         loss_mse = ((pred_dose - true_dose) ** 2 * dose_weight).mean()
 
         # ------ 2. L_V-Type (Dual-Tier DVH) -------------------------
@@ -363,14 +372,6 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # PTV channel index from config
         ptv_channel = inputs[:, _PTV_CH_IDX:_PTV_CH_IDX+1, ...]
         
-        # Dynamically extract independent masks — values match Gy magnitudes from CreateDiscretePTVMapd
-        ptv60_mask = (torch.isclose(ptv_channel, torch.tensor(60.0, device=pred_dose.device))).float()
-        ptv44_mask = (torch.isclose(ptv_channel, torch.tensor(44.0, device=pred_dose.device))).float()
-        ptv55_mask = (torch.isclose(ptv_channel, torch.tensor(55.0, device=pred_dose.device))).float()
-        ptv36_mask = (torch.isclose(ptv_channel, torch.tensor(36.0, device=pred_dose.device))).float()
-        ptv25_mask = (torch.isclose(ptv_channel, torch.tensor(25.0, device=pred_dose.device))).float()
-        ptv54_mask = (torch.isclose(ptv_channel, torch.tensor(54.0, device=pred_dose.device))).float()
-
         # Map targets to their discrete extraction masks with explicit clinical floors/ceilings
         sib_targets = {
             lvl["name"].lower(): {
@@ -411,7 +412,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         ptv_n = ptv_mask.sum()
         loss_anticollapse = torch.tensor(0.0, device=pred_dose.device, dtype=pred_dose.dtype)
         if ptv_n > 0:
-            ptv_underdose_frac = (torch.relu(0.50 - pred_dose) * ptv_mask).sum() / ptv_n
+            ptv_underdose_frac = (torch.relu(config["physics_engine"]["thresholds"]["anti_collapse_thresh"] - pred_dose) * ptv_mask).sum() / ptv_n
             loss_anticollapse = ptv_underdose_frac ** 2
 
         # ------ Global Hard Ceiling (Fixed-K=1000 Top-K MSE) ------
@@ -420,7 +421,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         # Dividing by constant K_CEIL (not by n_violations) avoids both
         # the volume-dilution trap (.mean() over 2M voxels) and the
         # denominator-inflation trap (dividing by N_violating).
-        K_CEIL = 100
+        K_CEIL = int(config["physics_engine"]["thresholds"]["global_ceil_k"])
         global_ceil_norm = config["physics_engine"]["thresholds"]["global_ceil_gy"] / PRESCRIPTION_DOSE_GY
         body_pred = pred_dose[inputs[:, _BODY_CH_IDX:_BODY_CH_IDX+1, ...] > 0.5]
 
@@ -566,7 +567,7 @@ class PhysicsGuidedDoseLoss(nn.Module):
         BOWEL_OPT_LIMIT   = _thr["bowel_opt_limit_frac"]
         BOWEL_MAND_THRESH = _thr["bowel_mand_gy"] / PRESCRIPTION_DOSE_GY
         BOWEL_MAND_LIMIT  = _thr["bowel_mand_limit_frac"]
-        MANDATORY_SCALE   = 5.0
+        MANDATORY_SCALE   = config["physics_engine"]["thresholds"]["bowel_mandatory_scale"]
 
         bowel_v45 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_OPT_THRESH)
         bowel_v50 = self.calculate_dvh_volume(pred_dose, bowel_mask, BOWEL_MAND_THRESH)
@@ -653,7 +654,8 @@ def get_data_dicts():
         import glob as glb
         ptv_files = glb.glob(os.path.join(IMAGES_DIR, f"{patient_id}_PTV*.nii.gz"))
         for p_file in ptv_files:
-            key_name = os.path.basename(p_file).replace(".nii.gz", "").split("_", 2)[-1]
+            _bn = os.path.basename(p_file).replace(".nii.gz", "")
+            key_name = _bn[len(patient_id) + 1:]  # strip patient_id_ prefix
             pt_dict[key_name] = p_file
             
         data_dicts.append(pt_dict)
@@ -666,11 +668,14 @@ class CreateDiscretePTVMapd:
     Higher-dose regions overwrite lower-dose regions via Painter's Algorithm.
     """
     def __init__(self, keys=None):
-        # Dynamically load from config, preserving order (lowest to highest dose)
-        self.processing_order = [
-            (level["name"], level["rx_gy"])
-            for level in config["clinical_targets"]["targets"]
-        ]
+        # Sort ascending by rx_gy so highest dose overwrites lowest (painter's algorithm)
+        self.processing_order = sorted(
+            [
+                (level["name"], level["rx_gy"])
+                for level in config["clinical_targets"]["targets"]
+            ],
+            key=lambda x: x[1],
+        )
 
     def __call__(self, data):
         d = dict(data)
@@ -796,7 +801,13 @@ ALL_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
             "bowel_mask", "femur_mask",
             "dose_label"] + SIB_KEYS
 
-train_transforms = Compose(
+# Keys that survive after CreateDiscretePTVMapd deletes the individual PTVs
+CROPPED_KEYS = ["ch_0", "ch_1", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6",
+                "bowel_mask", "femur_mask", "dose_label",
+                "discrete_ptv", "ring_mask"]
+
+# --- 1. Deterministic Transforms (Cached by PersistentDataset) ---
+train_transforms_det = Compose(
     [
         LoadImaged(keys=ALL_KEYS, allow_missing_keys=True),
         EnsureChannelFirstd(keys=ALL_KEYS, allow_missing_keys=True),
@@ -809,20 +820,22 @@ train_transforms = Compose(
             allow_missing_keys=True
         ),
         CreateDiscretePTVMapd(),
-        
         Create5ClassCropMaskd(),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        
         CreateFalloffRingd(),
-        
+    ]
+)
+
+# --- 2. Random Transforms (Applied on-the-fly, NOT cached) ---
+train_transforms_rand = Compose(
+    [
         RandCropByLabelClassesd(
-            keys=ALL_KEYS + ["ring_mask", "discrete_ptv"],
+            keys=CROPPED_KEYS,
             label_key="crop_mask",
             spatial_size=PATCH_SIZE,
             num_classes=len(_CROP_CLASSES),
             ratios=_CROP_RATIOS,
             num_samples=2,
-            allow_missing_keys=True,
         ),
         DeleteItemsd(keys=["crop_mask"]),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
@@ -844,8 +857,8 @@ val_transforms = Compose(
         ),
         CreateDiscretePTVMapd(),
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
+        ToTensord(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6", "dose_label", "bowel_mask", "femur_mask"]),
         ConcatItemsd(keys=["ch_0", "discrete_ptv", "ch_2", "ch_3", "ch_4", "ch_5", "ch_6"], name="image"),
-        ToTensord(keys=["image", "dose_label", "bowel_mask", "femur_mask"]),
     ]
 )
 
@@ -941,12 +954,9 @@ def main():
 
     # ---- Batch size and workers (env-var overrideable) ---------------
     
-    # NOTE: batch_size=1 is optimal for 8GB GPU with 7-channel 3D U-Net
     batch_size   = int(os.environ.get("BATCH_SIZE", "1"))
-    
-    # Optimized for 8GB GPU: 4 workers, prefetch=2, pin_memory for faster GPU transfer
-    num_workers     = int(os.environ.get("NUM_WORKERS", "4"))
-    prefetch_factor = int(os.environ.get("PREFETCH_FACTOR", "2"))
+    num_workers     = min(int(os.environ.get("NUM_WORKERS", "2")), 2)
+    prefetch_factor = int(config["training"]["prefetch_factor"])
     print(f"Batch size={batch_size}  num_workers={num_workers}  prefetch={prefetch_factor}")
 
     cache_dir = os.path.join(DATA_DIR, "persistent_cache_physics")
@@ -957,17 +967,18 @@ def main():
     print(f"  NOTE: If you see 'RuntimeError: PytorchStreamReader failed reading zip archive',")
     print(f"        clear the cache with: rm -rf {cache_dir}/*")
 
-    train_ds = PersistentDataset(
-        data=train_files, transform=train_transforms, cache_dir=cache_dir
+    train_cache_ds = PersistentDataset(
+        data=train_files, transform=train_transforms_det, cache_dir=cache_dir
     )
+    train_ds = Dataset(data=train_cache_ds, transform=train_transforms_rand)
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
+        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),
         prefetch_factor=prefetch_factor,
-        persistent_workers=True,  # Avoid worker respawn overhead
-        pin_memory=True,          # Faster CPU->GPU transfer
+        persistent_workers=False,
+        pin_memory=False,
         collate_fn=list_data_collate,
         drop_last=True,
     )
@@ -979,10 +990,10 @@ def main():
         val_ds,
         batch_size=1,
         shuffle=False,
-        num_workers=max(1, num_workers // 2),  # Fewer workers for validation
+        num_workers=min(int(os.environ.get("NUM_WORKERS", "2")), 2),
         prefetch_factor=prefetch_factor,
-        persistent_workers=True,
-        pin_memory=True,
+        persistent_workers=False,
+        pin_memory=False,
     )
 
     # ---- Model -----------------------------------------------------
@@ -995,39 +1006,41 @@ def main():
         torch.backends.cudnn.allow_tf32 = True
         print(f"  CUDA: cuDNN benchmark=ON, TF32=ON")
 
+    _model_cfg = config["model"]
     model = UNet(
         spatial_dims=3,
-        in_channels=7,  # 7 inputs: CT, discrete_PTV, Bladder_SDM, Ano_SDM, Body, PenileBulb, BEV_Beam
+        in_channels=len(config["channels"]),
         out_channels=1,
-        channels=(16, 32, 64, 128),  
-        strides=(2, 2, 2),           
-        num_res_units=2,
+        channels=tuple(_model_cfg["channels"]),
+        strides=tuple(_model_cfg["strides"]),
+        num_res_units=_model_cfg["num_res_units"],
     ).to(device)
 
     # ---- Loss / Optimizer / Scheduler ------------------------------
     
+    _lam = config["physics_engine"]["target_lambdas"]
     loss_function = PhysicsGuidedDoseLoss(
         constraints_dict=constraints,
-        lambda_mse=25.0,            
-        lambda_optimal=0.0,         
-        lambda_mandatory=0.0,       
-        lambda_ptv=0.0,             
-        lambda_ring=0.0,            
-        lambda_smooth=0.0,          
-        lambda_laplacian=0.0,       
-        lambda_anticollapse=0.0,    
-        lambda_ptv_max=0.0,         
-        lambda_homogeneity=0.0,     
-        lambda_global_ceil=2.0,     
-        lambda_shell_inner=0.0,     # disabled — not yet active
-        lambda_shell_outer=0.0,     # disabled — not yet active
-        lambda_bowel=0.0,           
-        lambda_femur=0.0,           
-        lambda_penile=0.0,          # Penile Bulb — ramp in
-        lambda_bg=0.0,              # Added to prevent Epoch 0 shock
-        k_steepness=50.0,
+        lambda_mse=_lam["mse"],
+        lambda_optimal=0.0,
+        lambda_mandatory=0.0,
+        lambda_ptv=0.0,
+        lambda_ring=0.0,
+        lambda_smooth=0.0,
+        lambda_laplacian=0.0,
+        lambda_anticollapse=0.0,
+        lambda_ptv_max=0.0,
+        lambda_homogeneity=0.0,
+        lambda_global_ceil=0.0,
+        lambda_shell_inner=0.0,
+        lambda_shell_outer=0.0,
+        lambda_body=0.0,
+        lambda_bowel=0.0,
+        lambda_femur=0.0,
+        lambda_penile=0.0,
+        lambda_bg=0.0,
+        k_steepness=_model_cfg["k_steepness"],
     )
-    loss_function.lambda_body = 0.0  
 
     PHYSICS_TARGET_LAMBDAS = {
         "lambda_optional":     config["physics_engine"]["target_lambdas"]["optional"],
@@ -1049,10 +1062,10 @@ def main():
 
     print(f"\n{'='*60}")
     print(f"CURRICULUM RAMP: physics lambdas grow linearly over {WARMUP_EPOCHS} epochs")
-    print(f"lambda_mse = 25.0  (constant throughout)")
+    print(f"lambda_mse = {_lam['mse']}  (constant throughout)")
     print(f"{'='*60}")
     logger.info(
-        f"Curriculum ramp: lambda_mse=25.0 constant, "
+        f"Curriculum ramp: lambda_mse={_lam['mse']} constant, "
         f"physics lambdas 0 -> target over {WARMUP_EPOCHS} epochs"
     )
 
@@ -1154,14 +1167,14 @@ def main():
                 
                 scaler.unscale_(optimizer)
                 
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=config["training"]["grad_clip_norm"])
 
                 scaler.step(optimizer)
                 scaler.update()
                 accum_counter = 0  
 
             train_loss_sum += loss.item()
-            if step % 20 == 0 or step == len(train_loader):
+            if step % config["training"]["log_step_freq"] == 0 or step == len(train_loader):
                 log_msg = (
                     f"Step {step}/{len(train_loader)} Loss={loss.item():.4f} "
                     f"mse={components['mse']:.4f} v_opt={components['v_opt']:.5f} "
@@ -1182,7 +1195,7 @@ def main():
 
         if accum_counter % GRAD_ACCUM_STEPS != 0:
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=config["training"]["grad_clip_norm"])
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad()
@@ -1233,9 +1246,9 @@ def main():
                         outputs = sliding_window_inference(
                             inputs=inputs,
                             roi_size=PATCH_SIZE,
-                            sw_batch_size=1,
+                            sw_batch_size=config["training"]["val_sw_batch_size"],
                             predictor=model,
-                            overlap=0.25,
+                            overlap=config["training"]["val_sw_overlap"],
                         )
 
                     outputs_activated = F.softplus(outputs.float())
@@ -1269,8 +1282,8 @@ def main():
                     body_mask_cpu = body_mask_hard.cpu()
                     
                     # 2. Slice and calculate means on CPU, extracting floats via .item()
-                    # D95 is computed per-structure (no union blend) — values match Gy literals from CreateDiscretePTVMapd
-                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(60.0, device=discrete_ptv.device))]
+                    # D95 is computed per-structure — rx values from config (_PTV_PRIMARY_RX/_PTV_SECONDARY_RX)
+                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(_PTV_PRIMARY_RX, device=discrete_ptv.device))]
                     if ptv60_dose.numel() > 0:
                         val_ptv60_d95_sum  += torch.quantile(ptv60_dose.float(), 0.05).item()
                         val_ptv60_mean_sum += ptv60_dose.mean().item()
@@ -1285,12 +1298,12 @@ def main():
                         n_val_ptv60 += 1
                         
                     # -- RTOG Conformity Index (CI) --
-                    v_ref = (outputs_gy >= 60.0).sum().item()
+                    v_ref = (outputs_gy >= _PTV_PRIMARY_RX).sum().item()
                     v_ptv = ptv60_dose.numel()
                     if v_ptv > 0:
                         val_ci_sum += v_ref / v_ptv
                         
-                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(44.0, device=discrete_ptv.device))]
+                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(_PTV_SECONDARY_RX, device=discrete_ptv.device))]
                     if ptv44_dose.numel() > 0:
                         val_ptv44_d95_sum  += torch.quantile(ptv44_dose, 0.05).item()
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
@@ -1357,8 +1370,8 @@ def main():
 
         epoch_summary = (
             f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
-            f"          Coverage D95:  PTV60_D95={avg_ptv60_d95:.2f}Gy  PTV44_D95={avg_ptv44_d95:.2f}Gy\n"
-            f"          SIB Means:    PTV60={avg_ptv60:.2f}Gy PTV44={avg_ptv44:.2f}Gy\n"
+            f"          Coverage D95:  {_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy  {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy\n"
+            f"          SIB Means:    {_PTV_PRIMARY_NAME}={avg_ptv60:.2f}Gy {_PTV_SECONDARY_NAME}={avg_ptv44:.2f}Gy\n"
             f"          OAR Metrics:  Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
             f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy HI={avg_hi:.3f} CI={avg_ci:.2f}"
         )
@@ -1367,25 +1380,25 @@ def main():
 
         if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
             
-            is_physically_valid = (avg_dmax < 80.0)
+            is_physically_valid = (avg_dmax < config["clinical_targets"]["physical_max_gy"])
 
             if is_physically_valid and val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
-                torch.save(model.state_dict(), "model/best_dose_model_physics_jun8.pth")
+                torch.save(model.state_dict(), "model/best_dose_model_physics_june10.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
 
             current_worst_oar = max(avg_bladder, avg_rectum)
-            ptv_deficit = max(0.0, 60.0 - avg_ptv60_d95)   # v3: PTV60 D95 target
-            clinical_score = current_worst_oar + (ptv_deficit * 3.0)
+            ptv_deficit = max(0.0, _PTV_PRIMARY_RX - avg_ptv60_d95)   # primary PTV D95 target
+            clinical_score = current_worst_oar + (ptv_deficit * config["scoring"]["clinical_ptv_weight"])
 
             if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
-                torch.save(model.state_dict(), "model/best_dose_model_clinical_jun8.pth")
+                torch.save(model.state_dict(), "model/best_dose_model_clinical_june10.pth")
                 clinical_msg = (
                     f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
-                    f"PTV60_D95={avg_ptv60_d95:.2f}Gy PTV44_D95={avg_ptv44_d95:.2f}Gy "
+                    f"{_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy "
                     f"Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
                 )
                 print(f"  --> {clinical_msg}")
@@ -1393,7 +1406,7 @@ def main():
 
             if val_loss_avg < best_diagnostic_mse:
                 best_diagnostic_mse = val_loss_avg
-                torch.save(model.state_dict(), "model/best_dose_model_diagnostic_jun8.pth")
+                torch.save(model.state_dict(), "model/best_dose_model_diagnostic_june10.pth")
                 diag_msg = f"[DIAGNOSTIC] Saved fallback model MSE={best_diagnostic_mse:.4f}"
                 print(f"  --> {diag_msg}")
                 logger.info(diag_msg)
@@ -1439,9 +1452,9 @@ def main():
 
     # ---- Dual-model evaluation loop ------------------------------------
     for model_path, csv_name in [
-        ("model/best_dose_model_physics_jun8.pth",    "DVH/validation_physics_summary_jun8.csv"),
-        ("model/best_dose_model_clinical_jun8.pth",   "DVH/validation_clinical_summary_jun8.csv"),
-        ("model/best_dose_model_diagnostic_jun8.pth", "DVH/validation_diagnostic_summary_jun8.csv"),
+        ("model/best_dose_model_physics_june10.pth",    "DVH/validation_physics_summary_june10.csv"),
+        ("model/best_dose_model_clinical_june10.pth",   "DVH/validation_clinical_summary_june10.csv"),
+        ("model/best_dose_model_diagnostic_june10.pth", "DVH/validation_diagnostic_summary_june10.csv"),
     ]:
         print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
@@ -1468,9 +1481,9 @@ def main():
                     outputs = sliding_window_inference(
                         inputs=inputs,
                         roi_size=PATCH_SIZE,
-                        sw_batch_size=1,
+                        sw_batch_size=config["training"]["val_sw_batch_size"],
                         predictor=model,
-                        overlap=0.25,
+                        overlap=config["training"]["val_sw_overlap"],
                     )
 
                 outputs_gy = F.softplus(outputs.float()) * PRESCRIPTION_DOSE_GY
@@ -1532,7 +1545,7 @@ def main():
                 records.append(row)
                 print(
                     f"  [{idx + 1}/{len(val_loader)}] {patient_id}  "
-                    f"PTV60 D95={row['PTV60_D95 (Gy)']:.2f} Gy  "
+                    f"PTV60 D95={row.get(_PTV_PRIMARY_NAME + '_D95 (Gy)', float('nan')):.2f} Gy  "
                     f"Bladder Mean={row['Bladder_Mean (Gy)']:.2f} Gy  "
                     f"Rectum Mean={row['Rectum_Mean (Gy)']:.2f} Gy  "
                     f"PenileBulb Mean={row['PenileBulb_Mean (Gy)']:.2f} Gy"

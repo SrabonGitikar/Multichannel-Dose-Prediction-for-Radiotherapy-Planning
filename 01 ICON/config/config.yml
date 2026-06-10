@@ -24,7 +24,7 @@ preprocessing:
 # ---------------------------------------------------------------------------
 dataset:
   data_dir: "preprocess/Dataset001_ProstateDose"
-  constraint_csv: "prostate_prime_constraints_v3.csv"   # used as fallback only
+  constraint_csv: "prostate_prime_constraints_62_20.csv"   # used as fallback only
   target_spacing: [1.27, 1.27, 2.5]
   patch_size: [128, 128, 64]
 
@@ -32,8 +32,8 @@ dataset:
 # Training hyperparameters
 # ---------------------------------------------------------------------------
 training:
-  epochs: 300
-  warmup_epochs: 30
+  epochs: 10
+  warmup_epochs: 5
   val_every_n_epochs: 1
   batch_size: 1
   num_workers: 2
@@ -41,6 +41,11 @@ training:
   val_split: 0.20
   learning_rate: 1.0e-4
   min_learning_rate: 1.0e-6
+  prefetch_factor: 1
+  grad_clip_norm: 1.0
+  log_step_freq: 20
+  val_sw_overlap: 0.25
+  val_sw_batch_size: 1
 
 # ---------------------------------------------------------------------------
 # Input channel layout
@@ -203,18 +208,18 @@ body_hu_threshold: -300.0        # HU below this → outside body
 # SIB target levels  (lowest to highest — Painter's Algorithm order)
 # ---------------------------------------------------------------------------
 clinical_targets:
-  prescription_dose_gy: 75.0
+  prescription_dose_gy: 62.0
   physical_max_gy: 70.0
 
   targets:
     - name: "PTV_62_20"
       rx_gy: 62.0
-      ceil_gy: 64.20
+      ceil_gy: 66.34
       patterns: ["PTV_62/20"]
 
     - name: "PTV_44_20"
       rx_gy: 44.0
-      ceil_gy: 46.64
+      ceil_gy: 66.34
       patterns: ["PTV_44/20"]
 
 # ---------------------------------------------------------------------------
@@ -222,7 +227,7 @@ clinical_targets:
 # ---------------------------------------------------------------------------
 physics_engine:
   thresholds:
-    global_ceil_gy: 64.0
+    global_ceil_gy: 66.34
     ring_thresh_gy: 62.0
     in_beam_ceil_gy: 15.0
     out_beam_ceil_gy: 2.0
@@ -232,6 +237,11 @@ physics_engine:
     bowel_mand_gy: 50.0
     bowel_mand_limit_frac: 0.50
     femur_max_gy: 40.0
+    dose_weight_scale: 9.0        # coefficient in dose-weighted MSE
+    dose_weight_clamp: 0.96       # upper clamp for dose-weight computation
+    anti_collapse_thresh: 0.50    # normalised dose floor for anti-collapse penalty
+    global_ceil_k: 100            # top-K violations used in global ceiling loss
+    bowel_mandatory_scale: 5.0    # mandatory vs optimal weighting for bowel loss
   target_lambdas:
     mse: 25.0
     optional: 2.0
@@ -251,6 +261,21 @@ physics_engine:
     bg: 10.0
 
 # ---------------------------------------------------------------------------
+# Model architecture
+# ---------------------------------------------------------------------------
+model:
+  channels: [16, 32, 64, 128]
+  strides: [2, 2, 2]
+  num_res_units: 2
+  k_steepness: 50.0       # sigmoid steepness for differentiable DVH
+
+# ---------------------------------------------------------------------------
+# Scoring
+# ---------------------------------------------------------------------------
+scoring:
+  clinical_ptv_weight: 3.0   # penalty multiplier on PTV D95 deficit in clinical score
+
+# ---------------------------------------------------------------------------
 # Inline clinical constraints
 # These replace reading the CSV at runtime.
 # norm_dose is computed automatically: norm_dose = dose_gy / prescription_dose_gy
@@ -261,7 +286,7 @@ constraints:
     Bladder:
       - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
       - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optional_v: 0.70, mandatory_v: 0.80 }
+      - { dose_gy: 24.0, optional_v: 0.70, mandatory_v: 0.80}
       - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
       - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
       - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }
@@ -271,7 +296,7 @@ constraints:
     Anorectum:
       - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
       - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optional_v: 0.65, mandatory_v: 0.75 }
+      - { dose_gy: 24.0, optional_v: 0.65, mandatory_v: 0.75}
       - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
       - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
       - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }

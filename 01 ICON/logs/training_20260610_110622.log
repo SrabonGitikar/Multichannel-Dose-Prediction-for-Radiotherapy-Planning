@@ -1,0 +1,17 @@
+2026-06-10 11:06:22 [INFO] Training log started: logs/training_20260610_110622.log
+2026-06-10 11:06:22 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-10 11:06:22 [INFO] Loading clinical constraints (inline config) ...
+2026-06-10 11:06:22 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 5 epochs
+2026-06-10 11:06:22 [INFO] Model ready on cuda, epochs=10, AMP=ON
+2026-06-10 11:06:22 [INFO] Epoch 1/10 [RAMP 1/5 (20% of physics)] ramp=0.200 lr=1.00e-04
+2026-06-10 11:12:07 [INFO] Step 20/56 Loss=842.4768 mse=2.0278 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=12.84416 ring=0.10552 smooth=1.3681 laplacian=5.4473 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.05725 femur=0.59159 penile=0.02587 bg=9.44575
+2026-06-10 11:17:34 [INFO] Step 40/56 Loss=390.7046 mse=1.3126 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=5.73918 ring=0.08901 smooth=0.8472 laplacian=3.3501 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.05545 femur=0.41827 penile=0.00774 bg=5.94343
+2026-06-10 11:21:54 [INFO] Step 56/56 Loss=345.7853 mse=1.9798 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=4.64002 ring=0.04777 smooth=1.2709 laplacian=5.0826 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.08194 femur=0.23668 penile=0.00000 bg=8.32219
+2026-06-10 11:21:54 [INFO] Running validation at epoch 1...
+2026-06-10 11:24:12 [INFO] Epoch 1 Summary: Train=522.8528 Val=0.1007 (MSE=0.1007)
+          Coverage D95:  PTV60_D95=0.00Gy  PTV44_D95=0.00Gy
+          SIB Means:    PTV60=0.00Gy PTV44=0.00Gy
+          OAR Metrics:  Bladder=51.74Gy Rectum=50.84Gy Bowel=53.94Gy Femur=53.36Gy Ring=0.00Gy Penile=50.28Gy
+          Physics:      Dmax=141.25Gy BG=54.95Gy HI=0.000 CI=0.00
+2026-06-10 11:24:12 [INFO] [DIAGNOSTIC] Saved fallback model MSE=0.1007
+2026-06-10 11:24:12 [INFO] Epoch 2/10 [RAMP 2/5 (40% of physics)] ramp=0.400 lr=9.76e-05

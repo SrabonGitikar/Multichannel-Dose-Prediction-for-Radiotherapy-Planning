@@ -5,3 +5,4 @@
 2026-06-09 11:30:13 [INFO] Model ready on cuda, epochs=300, AMP=ON
 2026-06-09 11:30:13 [INFO] Epoch 1/300 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
 2026-06-09 11:33:34 [INFO] Step 20/56 Loss=112.7761 mse=2.1238 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=5.61318 ring=0.14858 smooth=1.5177 laplacian=6.0450 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.37354 femur=0.43205 penile=0.00000 bg=9.11030
+2026-06-09 11:36:45 [INFO] Step 40/56 Loss=103.2378 mse=1.7268 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=5.72429 ring=0.08986 smooth=1.2487 laplacian=4.9209 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00000 femur=0.57950 penile=0.24929 bg=7.27980

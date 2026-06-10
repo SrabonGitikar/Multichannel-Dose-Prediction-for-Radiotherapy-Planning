@@ -1,0 +1,21 @@
+2026-06-09 13:24:53 [INFO] Training log started: logs/training_20260609_132453.log
+2026-06-09 13:24:53 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-09 13:24:53 [INFO] Loading clinical constraints (inline config) ...
+2026-06-09 13:24:53 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-06-09 13:24:53 [INFO] Model ready on cuda, epochs=300, AMP=ON
+2026-06-09 13:24:53 [INFO] Epoch 1/300 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
+2026-06-09 13:26:51 [INFO] Step 20/56 Loss=64.8316 mse=1.0284 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=3.67583 ring=0.03569 smooth=0.5407 laplacian=2.1335 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.45959 femur=0.14575 penile=0.00000 bg=6.10326
+2026-06-09 13:28:43 [INFO] Step 40/56 Loss=28.9286 mse=0.6865 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.99673 ring=0.00425 smooth=0.2667 laplacian=1.0415 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.86224 femur=0.00000 penile=0.00000 bg=4.06182
+2026-06-09 13:30:22 [INFO] Step 56/56 Loss=23.7813 mse=0.6996 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.45401 ring=0.00722 smooth=0.1646 laplacian=0.6320 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.62366 femur=0.12211 penile=0.18062 bg=3.97789
+2026-06-09 13:30:22 [INFO] Running validation at epoch 1...
+2026-06-09 13:33:15 [INFO] Epoch 1 Summary: Train=57.3573 Val=0.0787 (MSE=0.0787)
+          Coverage D95:  PTV60_D95=0.00Gy  PTV44_D95=0.00Gy
+          SIB Means:    PTV60=0.00Gy PTV44=0.00Gy
+          OAR Metrics:  Bladder=58.60Gy Rectum=60.47Gy Bowel=60.50Gy Femur=60.24Gy Ring=0.00Gy Penile=60.15Gy
+          Physics:      Dmax=101.86Gy BG=61.09Gy HI=0.000 CI=0.00
+2026-06-09 13:33:15 [INFO] [DIAGNOSTIC] Saved fallback model MSE=0.0787
+2026-06-09 13:33:16 [INFO] Epoch 2/300 [RAMP 2/30 (7% of physics)] ramp=0.067 lr=1.00e-04
+2026-06-09 13:35:18 [INFO] Step 20/56 Loss=28.9572 mse=0.8341 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.23817 ring=0.00533 smooth=0.1580 laplacian=0.6197 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.55485 femur=0.08994 penile=0.00000 bg=4.05780
+2026-06-09 13:37:14 [INFO] Step 40/56 Loss=22.1437 mse=0.6630 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.09069 ring=0.00160 smooth=0.0999 laplacian=0.3807 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.92746 femur=0.09559 penile=0.00000 bg=4.13232
+2026-06-09 13:38:45 [INFO] Step 56/56 Loss=24.1340 mse=0.7376 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.10986 ring=0.00094 smooth=0.1273 laplacian=0.4942 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.94417 femur=0.08992 penile=0.17575 bg=3.54513
+2026-06-09 13:38:45 [INFO] Running validation at epoch 2...

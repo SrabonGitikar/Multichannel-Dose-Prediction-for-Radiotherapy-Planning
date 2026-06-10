@@ -1,0 +1,25 @@
+2026-06-10 10:18:01 [INFO] Training log started: logs/training_20260610_101801.log
+2026-06-10 10:18:01 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-10 10:18:01 [INFO] Loading clinical constraints (inline config) ...
+2026-06-10 10:18:01 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 30 epochs
+2026-06-10 10:18:01 [INFO] Model ready on cuda, epochs=300, AMP=ON
+2026-06-10 10:18:01 [INFO] Epoch 1/300 [RAMP 1/30 (3% of physics)] ramp=0.033 lr=1.00e-04
+2026-06-10 10:21:16 [INFO] Step 20/56 Loss=95.6219 mse=0.9307 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=7.08617 ring=0.00731 smooth=0.9537 laplacian=3.7815 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00000 femur=0.16139 penile=0.00000 bg=4.19239
+2026-06-10 10:24:42 [INFO] Step 40/56 Loss=39.6236 mse=0.6200 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=2.28486 ring=0.00232 smooth=0.4666 laplacian=1.8374 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00000 femur=0.06236 penile=0.00000 bg=3.70575
+2026-06-10 10:27:21 [INFO] Step 56/56 Loss=20.9631 mse=0.5327 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.66258 ring=0.00033 smooth=0.4656 laplacian=1.8394 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00000 femur=0.02302 penile=0.00000 bg=2.98235
+2026-06-10 10:27:21 [INFO] Epoch 1 Summary: Train=79.2935 Val=nan (MSE=nan)
+          Coverage D95:  PTV60_D95=nanGy  PTV44_D95=nanGy
+          SIB Means:    PTV60=nanGy PTV44=nanGy
+          OAR Metrics:  Bladder=nanGy Rectum=nanGy Bowel=nanGy Femur=nanGy Ring=nanGy Penile=nanGy
+          Physics:      Dmax=nanGy BG=nanGy HI=nan CI=nan
+2026-06-10 10:27:21 [INFO] Epoch 2/300 [RAMP 2/30 (7% of physics)] ramp=0.067 lr=1.00e-04
+2026-06-10 10:30:49 [INFO] Step 20/56 Loss=26.0697 mse=0.6083 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.42759 ring=0.00036 smooth=0.4765 laplacian=1.8855 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00102 femur=0.04589 penile=0.00000 bg=3.36493
+2026-06-10 10:34:06 [INFO] Step 40/56 Loss=16.5079 mse=0.4832 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.12754 ring=0.00004 smooth=0.3579 laplacian=1.4124 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.01496 femur=0.02891 penile=0.00000 bg=2.72295
+2026-06-10 10:36:52 [INFO] Step 56/56 Loss=18.0028 mse=0.5731 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.08615 ring=0.00004 smooth=0.4209 laplacian=1.6679 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.02416 femur=0.02652 penile=0.00000 bg=2.82042
+2026-06-10 10:36:52 [INFO] Epoch 2 Summary: Train=22.3723 Val=nan (MSE=nan)
+          Coverage D95:  PTV60_D95=nanGy  PTV44_D95=nanGy
+          SIB Means:    PTV60=nanGy PTV44=nanGy
+          OAR Metrics:  Bladder=nanGy Rectum=nanGy Bowel=nanGy Femur=nanGy Ring=nanGy Penile=nanGy
+          Physics:      Dmax=nanGy BG=nanGy HI=nan CI=nan
+2026-06-10 10:36:52 [INFO] Epoch 3/300 [RAMP 3/30 (10% of physics)] ramp=0.100 lr=1.00e-04
+2026-06-10 10:40:22 [INFO] Step 20/56 Loss=19.2505 mse=0.5517 v_opt=0.00000 v_mand=0.00000 ptv=0.0000 ptv_max=0.00000 global_ceil=0.08400 ring=0.00000 smooth=0.4427 laplacian=1.7609 anticollapse=0.00000 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.04463 femur=0.01848 penile=0.00000 bg=2.80411

@@ -1,0 +1,7 @@
+2026-06-10 11:38:35 [INFO] Training log started: logs/training_20260610_113835.log
+2026-06-10 11:38:35 [INFO] PATCH_SIZE=(128, 128, 64), GRAD_ACCUM_STEPS=2
+2026-06-10 11:38:35 [INFO] Loading clinical constraints (inline config) ...
+2026-06-10 11:38:35 [INFO] Curriculum ramp: lambda_mse=25.0 constant, physics lambdas 0 -> target over 5 epochs
+2026-06-10 11:38:35 [INFO] Model ready on cuda, epochs=10, AMP=ON
+2026-06-10 11:38:35 [INFO] Epoch 1/10 [RAMP 1/5 (20% of physics)] ramp=0.200 lr=1.00e-04
+2026-06-10 11:44:27 [INFO] Step 20/56 Loss=167.8970 mse=0.5084 v_opt=0.00000 v_mand=0.00000 ptv=0.1820 ptv_max=0.04381 global_ceil=2.45248 ring=0.00638 smooth=0.3705 laplacian=1.4551 anticollapse=0.00030 shell_inner=0.00000 shell_outer=0.00000 homogeneity=0.0000 body=0.00000 bowel=0.00764 femur=0.08758 penile=0.00000 bg=2.90819
