@@ -53,7 +53,10 @@ from monai.networks.nets import UNet
 from monai.inferers import sliding_window_inference
 import yaml
 
-with open("config.yml", "r") as _f:
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_CONFIG_FILE = os.path.join(_SCRIPT_DIR, "..", "config", "config.yml")
+
+with open(_CONFIG_FILE, "r") as _f:
     config = yaml.safe_load(_f)
 
 # ── Channel-layout helpers (derived from config once at import time) ────────
@@ -118,6 +121,13 @@ GRAD_ACCUM_STEPS = int(os.environ.get("GRAD_ACCUM_STEPS", config["training"]["gr
 VAL_EVERY_N_EPOCHS = int(os.environ.get("VAL_EVERY_N_EPOCHS", config["training"]["val_every_n_epochs"]))
 
 WARMUP_EPOCHS = int(os.environ.get("WARMUP_EPOCHS", config["training"]["warmup_epochs"]))
+
+# PTV target rx values derived from config (no hardcoded names/doses)
+_TARGETS_SORTED   = sorted(config["clinical_targets"]["targets"], key=lambda t: t["rx_gy"], reverse=True)
+_PTV_PRIMARY_RX   = float(_TARGETS_SORTED[0]["rx_gy"])
+_PTV_SECONDARY_RX = float(_TARGETS_SORTED[1]["rx_gy"]) if len(_TARGETS_SORTED) > 1 else _PTV_PRIMARY_RX
+_PTV_PRIMARY_NAME   = _TARGETS_SORTED[0]["name"]
+_PTV_SECONDARY_NAME = _TARGETS_SORTED[1]["name"] if len(_TARGETS_SORTED) > 1 else _TARGETS_SORTED[0]["name"]
 
 # ===================================================================
 
@@ -1284,10 +1294,7 @@ def main():
                     
                     # 2. Slice and calculate means on CPU, extracting floats via .item()
                     # D95 is computed per-structure (no union blend) — dynamically fetching rx doses from config
-                    ptv60_rx = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV60"), 60.0)
-                    ptv44_rx = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV44"), 44.0)
-
-                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(ptv60_rx, device=discrete_ptv.device))]
+                    ptv60_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(_PTV_PRIMARY_RX, device=discrete_ptv.device))]
                     if ptv60_dose.numel() > 0:
                         val_ptv60_d95_sum  += torch.quantile(ptv60_dose.float(), 0.05).item()
                         val_ptv60_mean_sum += ptv60_dose.mean().item()
@@ -1302,12 +1309,12 @@ def main():
                         n_val_ptv60 += 1
                         
                     # -- RTOG Conformity Index (CI) --
-                    v_ref = (outputs_gy >= ptv60_rx).sum().item()
+                    v_ref = (outputs_gy >= _PTV_PRIMARY_RX).sum().item()
                     v_ptv = ptv60_dose.numel()
                     if v_ptv > 0:
                         val_ci_sum += v_ref / v_ptv
                         
-                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(ptv44_rx, device=discrete_ptv.device))]
+                    ptv44_dose = outputs_gy[torch.isclose(discrete_ptv, torch.tensor(_PTV_SECONDARY_RX, device=discrete_ptv.device))]
                     if ptv44_dose.numel() > 0:
                         val_ptv44_d95_sum  += torch.quantile(ptv44_dose.float(), 0.05).item()
                         val_ptv44_mean_sum += ptv44_dose.mean().item()
@@ -1374,8 +1381,8 @@ def main():
 
         epoch_summary = (
             f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
-            f"          Coverage D95:  PTV60_D95={avg_ptv60_d95:.2f}Gy  PTV44_D95={avg_ptv44_d95:.2f}Gy\n"
-            f"          SIB Means:    PTV60={avg_ptv60:.2f}Gy PTV44={avg_ptv44:.2f}Gy\n"
+            f"          Coverage D95:  {_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy  {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy\n"
+            f"          SIB Means:    {_PTV_PRIMARY_NAME}={avg_ptv60:.2f}Gy {_PTV_SECONDARY_NAME}={avg_ptv44:.2f}Gy\n"
             f"          OAR Metrics:  Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
             f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy HI={avg_hi:.3f} CI={avg_ci:.2f}"
         )
@@ -1394,16 +1401,15 @@ def main():
                 logger.info(checkpoint_msg)
 
             current_worst_oar = max(avg_bladder, avg_rectum)
-            ptv60_rx_val = next((lvl["rx_gy"] for lvl in config["clinical_targets"]["targets"] if lvl["name"] == "PTV60"), 60.0)
-            ptv_deficit = max(0.0, ptv60_rx_val - avg_ptv60_d95)   # v3: PTV60 D95 target
-            clinical_score = current_worst_oar + (ptv_deficit * 3.0)
+            ptv_deficit = max(0.0, _PTV_PRIMARY_RX - avg_ptv60_d95)
+            clinical_score = current_worst_oar + (ptv_deficit * config["scoring"]["clinical_ptv_weight"])
 
             if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
                 torch.save(model.state_dict(), "best_dose_model_clinical_jun3.pth")
                 clinical_msg = (
                     f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
-                    f"PTV60_D95={avg_ptv60_d95:.2f}Gy PTV44_D95={avg_ptv44_d95:.2f}Gy "
+                    f"{_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy "
                     f"Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy"
                 )
                 print(f"  --> {clinical_msg}")
