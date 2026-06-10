@@ -157,7 +157,7 @@ def load_clinical_constraints(csv_path=None, patient_class="N0"):
                     "optimal_v":   float(row.get("optimal_v", float("nan"))),
                     "mandatory_v": float(row["mandatory_v"]),
                 })
-        v_constraints[organ_name] = sorted(entries, key=lambda r: r["dose_gy"])
+            v_constraints[organ_name] = sorted(entries, key=lambda r: r["dose_gy"])
         # PTV constraints not in inline block — return defaults
         return {
             "v_type": v_constraints,
@@ -656,7 +656,12 @@ def get_data_dicts():
         import glob as glb
         ptv_files = glb.glob(os.path.join(IMAGES_DIR, f"{patient_id}_PTV*.nii.gz"))
         for p_file in ptv_files:
-            key_name = os.path.basename(p_file).replace(".nii.gz", "").split("_", 2)[-1]
+            # Strip the exact "{patient_id}_" prefix. Using split("_", 2) is
+            # fragile because patient IDs themselves contain underscores
+            # (e.g. "prostate_08fdb709_60a"), which would leave a stray prefix
+            # like "60a_PTV_62_20" and break the discrete-map key match.
+            _bn = os.path.basename(p_file).replace(".nii.gz", "")
+            key_name = _bn[len(patient_id) + 1:]
             pt_dict[key_name] = p_file
             
         data_dicts.append(pt_dict)
@@ -1379,13 +1384,21 @@ def main():
             avg_femur = val_femur_mean_sum / max(n_val, 1)
             avg_penile = val_penile_mean_sum / max(n_val, 1)
 
-        epoch_summary = (
-            f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
-            f"          Coverage D95:  {_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy  {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy\n"
-            f"          SIB Means:    {_PTV_PRIMARY_NAME}={avg_ptv60:.2f}Gy {_PTV_SECONDARY_NAME}={avg_ptv44:.2f}Gy\n"
-            f"          OAR Metrics:  Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
-            f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy HI={avg_hi:.3f} CI={avg_ci:.2f}"
-        )
+        if (epoch + 1) % VAL_EVERY_N_EPOCHS == 0:
+            next_val = epoch + 1
+            epoch_summary = (
+                f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f} Val={val_loss_avg:.4f} (MSE={avg_mse:.4f})\n"
+                f"          Coverage D95:  {_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy  {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy\n"
+                f"          SIB Means:    {_PTV_PRIMARY_NAME}={avg_ptv60:.2f}Gy {_PTV_SECONDARY_NAME}={avg_ptv44:.2f}Gy\n"
+                f"          OAR Metrics:  Bladder={avg_bladder:.2f}Gy Rectum={avg_rectum:.2f}Gy Bowel={avg_bowel:.2f}Gy Femur={avg_femur:.2f}Gy Ring={avg_ring:.2f}Gy Penile={avg_penile:.2f}Gy\n"
+                f"          Physics:      Dmax={avg_dmax:.2f}Gy BG={avg_bg:.2f}Gy HI={avg_hi:.3f} CI={avg_ci:.2f}"
+            )
+        else:
+            next_val = ((epoch // VAL_EVERY_N_EPOCHS) + 1) * VAL_EVERY_N_EPOCHS
+            epoch_summary = (
+                f"Epoch {epoch + 1} Summary: Train={train_loss_avg:.4f}"
+                f"  [validation skipped — next at epoch {next_val}]"
+            )
         print(f"  --> {epoch_summary}")
         logger.info(epoch_summary)
 

@@ -32,8 +32,8 @@ dataset:
 # Training hyperparameters
 # ---------------------------------------------------------------------------
 training:
-  epochs: 10
-  warmup_epochs: 5
+  epochs: 300
+  warmup_epochs: 30
   val_every_n_epochs: 1
   batch_size: 1
   num_workers: 2
@@ -286,7 +286,7 @@ constraints:
     Bladder:
       - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
       - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optional_v: 0.70, mandatory_v: 0.80}
+      - { dose_gy: 24.0, optimal_v: 0.70, mandatory_v: 0.80 }
       - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
       - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
       - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }
@@ -296,7 +296,7 @@ constraints:
     Anorectum:
       - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
       - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optional_v: 0.65, mandatory_v: 0.75}
+      - { dose_gy: 24.0, optimal_v: 0.65, mandatory_v: 0.75 }
       - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
       - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
       - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }
