@@ -393,17 +393,23 @@ class PhysicsGuidedDoseLoss(nn.Module):
 
         for name, data in sib_targets.items():
             mask = data["mask"]
-            if mask.sum() > 0:
+            mask_bool = mask.bool()
+            n_mask = mask.sum()
+            
+            if n_mask > 0:
                 rx_norm = data["rx"] / PRESCRIPTION_DOSE_GY
                 ceil_norm = data["ceil"] / PRESCRIPTION_DOSE_GY
                 
+                # Extract only the voxels physically inside this specific PTV
+                target_voxels = pred_dose[mask_bool]
+                
                 # The Floor: Strict penalty for any underdosing below Rx
-                underdose_penalty = (torch.relu(rx_norm - pred_dose) ** 2) * mask
-                loss_ptv += underdose_penalty.sum() / mask.sum()
+                underdose_penalty = torch.relu(rx_norm - target_voxels) ** 2
+                loss_ptv += underdose_penalty.sum() / n_mask
 
                 # The Ceiling: Strict penalty for any overdosing above ICRU limit
-                overdose_penalty = (torch.relu(pred_dose - ceil_norm) ** 2) * mask
-                loss_ptv_max += overdose_penalty.sum() / mask.sum()
+                overdose_penalty = torch.relu(target_voxels - ceil_norm) ** 2
+                loss_ptv_max += overdose_penalty.sum() / n_mask
                 
                 # Between rx_norm and ceil_norm, the gradient is exactly 0.
 
@@ -675,11 +681,14 @@ class CreateDiscretePTVMapd(MapTransform):
     """
     def __init__(self, keys, allow_missing_keys=False):
         super().__init__(keys, allow_missing_keys)
-        # Dynamically load from config, preserving order (lowest to highest dose)
-        self.processing_order = [
-            (level["name"], level["rx_gy"])
-            for level in config["clinical_targets"]["targets"]
-        ]
+        # Force lowest-to-highest ordering so high-dose boosts are painted last (on top)
+        self.processing_order = sorted(
+            [
+                (level["name"], level["rx_gy"])
+                for level in config["clinical_targets"]["targets"]
+            ],
+            key=lambda x: x[1]
+        )
 
     def __call__(self, data):
         d = dict(data)
@@ -1085,8 +1094,20 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=_lr)
 
     epochs = _epochs
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=epochs, eta_min=_lr_min
+    
+    # Hold LR constant during physics curriculum ramp
+    scheduler_warmup = optim.lr_scheduler.ConstantLR(
+        optimizer, factor=1.0, total_iters=WARMUP_EPOCHS
+    )
+    # Begin cosine decay only after the warmup is complete
+    scheduler_cosine = optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=(epochs - WARMUP_EPOCHS), eta_min=_lr_min
+    )
+    
+    scheduler = optim.lr_scheduler.SequentialLR(
+        optimizer, 
+        schedulers=[scheduler_warmup, scheduler_cosine], 
+        milestones=[WARMUP_EPOCHS]
     )
 
     scaler = torch.amp.GradScaler("cuda", enabled=torch.cuda.is_available())
