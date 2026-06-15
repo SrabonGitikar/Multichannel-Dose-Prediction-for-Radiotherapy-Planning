@@ -27,7 +27,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
+    from nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
@@ -560,7 +560,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="End-to-end dose prediction pipeline")
     parser.add_argument("--dicom-dir", required=True, type=str)
     parser.add_argument("--config", default="config.yml", type=str)
-    parser.add_argument("--model", default="best_dose_model_clinical_jun3.pth", type=str)
+    parser.add_argument("--model", default="/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/01 ICON/model/best_dose_model_clinical_june10.pth", type=str)
     parser.add_argument("--dose-spacing", default=None, type=float)
     parser.add_argument("--keep-temp", action="store_true")
     args = parser.parse_args()
