@@ -225,10 +225,12 @@ def nifti_to_rtdose_dicom(
     print(f"[nifti_to_rtdose] Dose resampled: {pred_gy.shape}  "
           f"[{pred_gy.min():.2f}, {pred_gy.max():.2f}] Gy")
 
-    # ── 3. Gy → uint32 pixel values ──────────────────────────────────────────
+    # ── 3. Gy → uint16 pixel values ─────────────────────────────────────────
+    # RTDOSE OW pixel data is 16-bit. Using 32-bit caused a PyDicom integer
+    # overflow (uint32 cast) that corrupted every pixel value written to disk.
     max_dose    = float(pred_gy.max()) or 1.0
-    new_scaling = max_dose / (2**32 - 1)
-    pixels      = np.round(pred_gy / new_scaling).clip(0, 2**32 - 1).astype(np.uint32)
+    new_scaling = max_dose / (2**16 - 1)
+    pixels      = np.round(pred_gy / new_scaling).clip(0, 2**16 - 1).astype(np.uint16)
 
     # ── 4. Build RTDOSE DICOM ─────────────────────────────────────────────────
     now      = datetime.datetime.now()
@@ -302,9 +304,9 @@ def nifti_to_rtdose_dicom(
     # Pixel data
     rtdose.SamplesPerPixel          = 1
     rtdose.PhotometricInterpretation = "MONOCHROME2"
-    rtdose.BitsAllocated            = 32
-    rtdose.BitsStored               = 32
-    rtdose.HighBit                  = 31
+    rtdose.BitsAllocated            = 16
+    rtdose.BitsStored               = 16
+    rtdose.HighBit                  = 15
     rtdose.PixelRepresentation      = 0
     rtdose.PixelData                = pixels.tobytes()
 
