@@ -28,7 +28,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
+    from nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
@@ -493,7 +493,23 @@ def run_inference(patient_id, images_dir, config, C, output_dir=".",
     ).to(device)
 
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file '{model_path}' not found.")
+        _script_dir = Path(__file__).resolve().parent.parent  # 01 ICON/
+        _basename = Path(model_path).name
+        _candidates = [
+            _script_dir / model_path,
+            _script_dir.parent / model_path,
+            _script_dir / _basename,
+            _script_dir.parent / _basename,
+        ]
+        for _candidate in _candidates:
+            if _candidate.exists():
+                model_path = str(_candidate)
+                break
+        else:
+            raise FileNotFoundError(
+                f"Model file '{model_path}' not found. Searched:\n"
+                + "\n".join(f"  {c}" for c in _candidates)
+            )
     ckpt = torch.load(model_path, map_location=device)
     # Support both raw state-dict and wrapped checkpoint dicts
     if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
@@ -698,6 +714,8 @@ def run_pipeline(dicom_dir, config_path="config.yml", model_path=None,
     print("\n" + "="*50)
     print("  PIPELINE COMPLETE")
     print("="*50)
+    if keep_temp:
+        print(f"  NIfTI dose saved to: {nifti_dose_file}")
     if rtdose_path:
         print(f"  RTDOSE saved to: {rtdose_path}")
     return rtdose_path
