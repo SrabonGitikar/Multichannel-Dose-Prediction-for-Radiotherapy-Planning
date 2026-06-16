@@ -194,3 +194,65 @@ It is not validated for clinical deployment or patient treatment use.
 
 ```
 ```
+
+
+### info
+
+python utils/inference_pipeline.py     --dicom-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/"     --config config/config.yml     --model model/best_dose_model_clinical_june10.pth
+
+==================================================
+  RADIOTHERAPY DOSE PREDICTION PIPELINE
+==================================================
+
+[1] Workspace created: /tmp/dose_infer_xnnp639_
+
+[2] Preprocessing DICOM...
+  [preprocess] CT loaded: shape=(240, 512, 512)  spacing=(1.269531, 1.269531, 2.5)
+  [preprocess] RTSTRUCT: /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/1.2.826.0.1.3680043.10.1561.939.2268.249.1.8608657.322-RTSTRUCT.dcm
+  [preprocess] PTV (6 structures): ['PTV_44/20', 'PTV_62/20', 'PTV_62/20 PLAN', 'PTV_62/20 PLAN1', 'PTV_44/20 PLAN', 'PTV_44/20 PLAN1']
+  [preprocess] Bladder: Bladder
+  [preprocess] Anorectum: Anorectum
+  [preprocess] Body: BODY
+  [preprocess] Penile_Bulb: PenileBulb
+  [preprocess] Bag_Bowel: Bag_Bowel
+  [preprocess] Femur: L=Femur_Head_L R=Femur_Head_R
+  [pipeline] Gantry Angles: [179.0]
+  [pipeline] PTV isocenter (mm): [-8.  -1.8 19.9]
+  [pipeline] BEV voxels: 8,128,706
+  [preprocess] Channels saved → /tmp/dose_infer_xnnp639_/imagesTr
+
+[3] Running Neural Network Inference...
+
+[inference] Loading model on cuda ...
+[inference] Weights loaded from model/best_dose_model_clinical_june10.pth
+[inference] Native CT  : size=(512, 512, 240)  spacing=(1.269531011581421, 1.269531011581421, 2.5)
+[inference] Resampled  : size=[512, 512, 240]  spacing=(1.27, 1.27, 2.5)
+[inference] Input tensor shape : (1, 7, 512, 512, 240)  (B, 7, D, H, W) — at target spacing
+Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
+Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)
+[inference] Body-masked output shape : (1, 1, 512, 512, 240)
+[inference] Prediction complete.
+[inference]   Shape  : (512, 512, 240)  (at target_spacing)
+[inference]   Dose   : [0.00, 63.01] Gy
+[inference] Saved NIfTI → /tmp/dose_infer_xnnp639_/case_infer_predicted_dose.nii.gz
+
+[4] Building RTDOSE DICOM...
+[nifti_to_rtdose] CT: 512×512×240  spacing=(1.270,1.270,2.500) mm
+[nifti_to_rtdose] Patient: Anonymous PatientName | ID: 08fdb709.60a5.4b9e.9dab.68163167ca7c
+[nifti_to_rtdose] RTSTRUCT: 1.2.826.0.1.3680043.10.1561.939.2268.249.1.8608657.322
+[nifti_to_rtdose] Dose grid: 260×260×240  @ 2.5 mm  (~64.9 MB)
+[nifti_to_rtdose] Dose resampled: (240, 260, 260)  [0.00, 52.45] Gy
+invalid value encountered in cast
+[nifti_to_rtdose] Linked RTPLAN: 1.2.826.0.1.3680043.8.498.75760465215771516442147367051732334774
+[nifti_to_rtdose] Saved: /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/predicted-dose-20260616_141956.dcm
+[nifti_to_rtdose] FrameOfReferenceUID : 1.2.826.0.1.3680043.10.1561.939.2268.249.1.76650
+[nifti_to_rtdose] StudyInstanceUID    : 1.2.826.0.1.3680043.10.1561.939.2268.249
+[nifti_to_rtdose] DoseGridScaling     : 1.221086e-08 Gy/count
+
+[5] Cleaning up workspace...
+
+==================================================
+  PIPELINE COMPLETE
+==================================================
+  RTDOSE saved to: /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/predicted-dose-20260616_141956.dcm
+(dose_env) (base) sougata@chavi-dell-precision:/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/01 ICON$ 

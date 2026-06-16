@@ -43,7 +43,7 @@ python inference.py --patient prostate_000 --output-dir data/output/test3 --mode
 
 ```bash
 python utils/nifti_to_rtdose.py \
-    --ct-rs-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/1de3b35a.8614.43b1.8bb4.37877ce504dd" \
+    --ct-rs-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/" \
     --nifti-path "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/data/output/test31/prostate_000_predicted_dose.nii.gz" \
     --dose-spacing 2.5
 ```
@@ -56,11 +56,15 @@ python plot_masks.py
 
 
 ```bash
-python utils/pipeline.py \
-    --dicom-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/raw_dicom_nifti/f40d8cf2.f057.409e.a9cb.434ea5aa8eed/1.2.826.0.1.3680043.10.1561.260.1390.924/" \
-    --model best_dose_model_physics.pth \
+python utils/inference_pipeline.py \
+    --dicom-dir "//mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/" \
+    --model best_dose_model_physics_jun3.pth \
     --dose-spacing 2.5
-
 ```
 
 /mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/f40d8cf2.f057.409e.a9cb.434ea5aa8eed/1.2.826.0.1.3680043.10.1561.260.1390.924/
+
+
+python utils/inference_pipeline.py \
+    --dicom-dir "/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/testdata/test_trained_model_28_05_2026/08fdb709.60a5.4b9e.9dab.68163167ca7c/1.2.826.0.1.3680043.10.1561.939.2268.249/ \
+    --config config/config.yml
