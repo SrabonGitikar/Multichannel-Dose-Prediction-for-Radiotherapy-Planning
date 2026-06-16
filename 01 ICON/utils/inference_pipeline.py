@@ -27,7 +27,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
+    from nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
