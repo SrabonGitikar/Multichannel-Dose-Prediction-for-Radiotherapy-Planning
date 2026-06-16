@@ -27,7 +27,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from nifti_to_rtdose import nifti_to_rtdose_dicom
+    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
@@ -394,26 +394,97 @@ class CreateDiscretePTVMapd(MapTransform):
 
 
 def _build_inference_transforms(C, config):
+    """
+    Build the deterministic inference transform chain that exactly mirrors
+    val_transforms from training.py.
+
+    Channel ordering in the concatenated 'image' tensor:
+      0 = CT (normalized HU)           — ch_0  bilinear → NormalizeIntensityd
+      1 = discrete PTV map (SIB Rx Gy) — discrete_ptv  ← CreateDiscretePTVMapd
+      2 = Bladder SDM                  — ch_2  bilinear
+      3 = Anorectum SDM                — ch_3  bilinear
+      4 = Body Mask                    — ch_4  nearest
+      5 = Penile Bulb binary           — ch_5  nearest
+      6 = BEV Beam Frustum             — ch_6  nearest
+    """
     sib_keys = C["sib_keys"]
-    ch_keys = ["ch_0","ch_1","ch_2","ch_3","ch_4","ch_5","ch_6"] + sib_keys
-    ch_modes = ("bilinear","nearest","bilinear","bilinear","nearest","nearest","nearest") + ("nearest",)*len(sib_keys)
+
+    # ── Channel keys that are loaded from disk ────────────────────────────────
+    # ch_0 … ch_N from config, plus individual PTV structure files for SIB map
+    ch_keys = [f"ch_{ch['index']}" for ch in sorted(config["channels"], key=lambda c: c["index"])]
+    # Add SIB sub-volume keys (e.g. PTV_62_20, PTV_44_20)
+    all_keys = ch_keys + sib_keys
+
+    # ── Spacingd interpolation modes — derived from config (never hardcoded) ──
+    # Config channels sorted by index → same order as ch_keys
+    ch_modes = tuple(
+        ch["interpolation"]
+        for ch in sorted(config["channels"], key=lambda c: c["index"])
+    ) + ("nearest",) * len(sib_keys)   # SIB masks always nearest
+
+    # ── Keys that exist after CreateDiscretePTVMapd (SIB keys are deleted) ───
+    # The individual PTV files (PTV_62_20, PTV_44_20 …) are consumed and
+    # removed by CreateDiscretePTVMapd; do NOT list them in DeleteItemsd.
+    # ch_1 (PTV_binary) is intentionally kept in the dict so that it is
+    # available to the body-mask and ring-mask logic in post-processing;
+    # it is NOT passed to the model (discrete_ptv replaces it in ConcatItemsd).
+    model_concat_keys = [
+        f"ch_{ch['index']}" for ch in sorted(config["channels"], key=lambda c: c["index"])
+        if ch["key"] != "ch_1"        # skip raw PTV_binary — replaced by discrete_ptv
+    ]
+    # Build final concat list: [ch_0, discrete_ptv, ch_2, ch_3, ch_4, ch_5, ch_6]
+    concat_keys = [ch_keys[0], "discrete_ptv"] + [
+        k for k in ch_keys[1:] if k != "ch_1"
+    ]
+
+    # Keys to clean up after concat (do NOT include ch_1 — already gone)
+    delete_keys = [k for k in ch_keys if k != "ch_1"] + ["discrete_ptv"]
+
     return Compose([
-        LoadImaged(keys=ch_keys, allow_missing_keys=True),
-        EnsureChannelFirstd(keys=ch_keys, allow_missing_keys=True),
-        Spacingd(keys=ch_keys, pixdim=C["spacing"], mode=ch_modes, allow_missing_keys=True),
+        # 1. Load every NIfTI from disk
+        LoadImaged(keys=all_keys, allow_missing_keys=True),
+        # 2. Ensure (C, D, H, W) layout
+        EnsureChannelFirstd(keys=all_keys, allow_missing_keys=True),
+        # 3. Resample everything to target_spacing — this is the op we must
+        #    invert later to get back to native CT geometry
+        Spacingd(keys=all_keys, pixdim=C["spacing"], mode=ch_modes,
+                 allow_missing_keys=True),
+        # 4. Paint SIB dose levels onto a single discrete map (Painter's Algo)
+        #    This step DELETES the individual PTV_62_20, PTV_44_20 … keys.
         CreateDiscretePTVMapd(keys=["ch_0"], sib_order=C["sib_order"]),
+        # 5. Z-score normalise CT HU values — MUST happen after Spacingd,
+        #    before ConcatItemsd, exactly as in val_transforms.
         NormalizeIntensityd(keys=["ch_0"], nonzero=False, channel_wise=True),
-        ConcatItemsd(keys=["ch_0","discrete_ptv","ch_2","ch_3","ch_4","ch_5","ch_6"], name="image"),
-        DeleteItemsd(keys=["ch_0","ch_1","ch_2","ch_3","ch_4","ch_5","ch_6"]),
+        # 6. Stack into a single 7-channel tensor
+        #    Channel order: [CT_norm, discrete_ptv, bladder_sdm, ano_sdm,
+        #                    body_mask, penile_bulb, bev_beam]
+        ConcatItemsd(keys=concat_keys, name="image"),
+        # 7. Clean up individual channel keys (ch_1 was already removed above)
+        DeleteItemsd(keys=delete_keys),
+        # 8. Ensure the output is a torch.Tensor
         ToTensord(keys=["image"]),
     ])
 
 
 def run_inference(patient_id, images_dir, config, C, output_dir=".",
                   model_path=None, save_nifti=True):
+    """
+    Run sliding-window inference on one patient.
+
+    Spatial flow
+    ============
+    Native CT  →  [Spacingd @ target_spacing]  →  Model  →  [body-mask]  →
+    NIfTI saved at target_spacing  →  [nifti_to_rtdose resamples back to
+    native CT grid]  →  RTDOSE DICOM
+
+    The NIfTI is saved with the exact origin / direction / spacing of the
+    resampled grid so that SimpleITK can later resample it back to the
+    native CT geometry without any affine mismatch.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    print(f"Loading model on {device}...")
+    # ── 1. Load model ─────────────────────────────────────────────────────────
+    print(f"\n[inference] Loading model on {device} ...")
     model = UNet(
         spatial_dims=3, in_channels=7, out_channels=1,
         channels=C["model_channels"], strides=C["model_strides"],
@@ -422,82 +493,124 @@ def run_inference(patient_id, images_dir, config, C, output_dir=".",
 
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file '{model_path}' not found.")
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    ckpt = torch.load(model_path, map_location=device)
+    # Support both raw state-dict and wrapped checkpoint dicts
+    if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
+        ckpt = ckpt["model_state_dict"]
+    model.load_state_dict(ckpt)
     model.eval()
-    print(f"Model weights loaded from {model_path}")
+    print(f"[inference] Weights loaded from {model_path}")
 
-    # Build input dict
+    # ── 2. Build per-patient input dict ──────────────────────────────────────
     pt_dict = {}
-    for i, ch in enumerate(C["channels"]):
-        ch_path = os.path.join(images_dir, f"{patient_id}_{ch}.nii.gz")
+    # Channel NIfTIs (ch_0 … ch_N)
+    for ch_cfg in sorted(config["channels"], key=lambda c: c["index"]):
+        i = ch_cfg["index"]
+        ch_path = os.path.join(images_dir, f"{patient_id}_{i:04d}.nii.gz")
         if not os.path.exists(ch_path):
-            raise FileNotFoundError(f"Input file not found: {ch_path}")
+            raise FileNotFoundError(f"Input channel not found: {ch_path}")
         pt_dict[f"ch_{i}"] = ch_path
 
-    # Individual PTV files
+    # Individual SIB PTV structure NIfTIs (e.g. PTV_62_20, PTV_44_20)
     for ptv_key in C["sib_keys"]:
         p = os.path.join(images_dir, f"{patient_id}_{ptv_key}.nii.gz")
         if os.path.exists(p):
             pt_dict[ptv_key] = p
+        else:
+            print(f"[inference] WARNING: SIB key '{ptv_key}' not found — "
+                  f"discrete_ptv will not include it.")
 
+    # ── 3. Cache the native CT sitk image for inverse-transform metadata ──────
+    # We record origin/direction/spacing of the target-spacing grid so that
+    # the saved NIfTI carries the correct spatial metadata for nifti_to_rtdose.
+    native_ct_sitk = sitk.ReadImage(pt_dict["ch_0"])
+    native_spacing  = native_ct_sitk.GetSpacing()   # XYZ
+    native_size     = native_ct_sitk.GetSize()       # XYZ
+    native_origin   = native_ct_sitk.GetOrigin()
+    native_direction = native_ct_sitk.GetDirection()
+
+    # Compute the resampled grid size (same formula used by Spacingd internally)
+    resampled_size = [
+        int(round(native_size[i] * native_spacing[i] / C["spacing"][i]))
+        for i in range(3)
+    ]
+    resampled_spacing = tuple(C["spacing"])   # (x, y, z) in mm
+
+    print(f"[inference] Native CT  : size={native_size}  spacing={native_spacing}")
+    print(f"[inference] Resampled  : size={resampled_size}  spacing={resampled_spacing}")
+
+    # ── 4. Apply inference transforms (mirrors val_transforms exactly) ────────
     transforms = _build_inference_transforms(C, config)
-    ds = Dataset(data=[pt_dict], transform=transforms)
+    ds     = Dataset(data=[pt_dict], transform=transforms)
     loader = DataLoader(ds, batch_size=1)
-    batch = next(iter(loader))
+    batch  = next(iter(loader))
     inputs = batch["image"].to(device)
 
-    # Spatial metadata from resampled CT
-    ct_sitk = sitk.ReadImage(pt_dict["ch_0"])
-    ct_resampled = sitk.Resample(
-        ct_sitk,
-        [int(round(ct_sitk.GetSize()[i] * ct_sitk.GetSpacing()[i] / C["spacing"][i])) for i in range(3)],
-        sitk.Transform(), sitk.sitkLinear, ct_sitk.GetOrigin(),
-        C["spacing"], ct_sitk.GetDirection(), 0.0, ct_sitk.GetPixelID(),
-    )
-    grid_origin = ct_resampled.GetOrigin()
-    grid_direction = ct_resampled.GetDirection()
+    print(f"[inference] Input tensor shape : {tuple(inputs.shape)}  "
+          f"(B, 7, D, H, W) — at target spacing")
 
-    print(f"Input tensor shape: {inputs.shape}")
-
+    # ── 5. Sliding-window inference ───────────────────────────────────────────
     with torch.no_grad():
         with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
             outputs = sliding_window_inference(
-                inputs=inputs, roi_size=C["patch"],
-                sw_batch_size=C["sw_batch_size"], predictor=model,
-                overlap=C["sw_overlap"], mode="gaussian",
+                inputs=inputs,
+                roi_size=C["patch"],
+                sw_batch_size=C["sw_batch_size"],
+                predictor=model,
+                overlap=C["sw_overlap"],
+                mode="gaussian",
             )
 
+    # ── 6. Post-activation: softplus keeps output positive & smooth ───────────
     outputs = torch.nan_to_num(outputs, nan=0.0, posinf=10.0, neginf=-10.0)
     outputs_activated = F.softplus(outputs.float())
 
-    body_idx = C["body_ch_idx"]
-    body_mask_hard = (inputs[:, body_idx:body_idx+1, ...] > 0.5).float()
+    # ── 7. Apply RTStruct body mask (suppresses out-of-body ghosting) ─────────
+    # We read the body mask directly from the input tensor using the
+    # config-driven channel index (_BODY_CH_IDX = 4 for this config).
+    # This avoids HU-threshold artefacts from the couch/immobilisation hardware.
+    _BODY_CH_IDX = C["body_ch_idx"]
+    body_mask_hard = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX + 1, ...] > 0.5).float()
     outputs_activated = outputs_activated * body_mask_hard
 
-    pred_dose = outputs_activated[0, 0].cpu().numpy()
-    pred_dose = pred_dose * C["rx"]
-    pred_dose = np.clip(pred_dose, 0.0, None)
+    print(f"[inference] Body-masked output shape : {tuple(outputs_activated.shape)}")
 
-    print(f"Prediction complete. Shape: {pred_dose.shape}")
-    print(f"Dose range: [{pred_dose.min():.2f}, {pred_dose.max():.2f}] Gy")
+    # ── 8. Denormalise: [0, 1] → Gy ──────────────────────────────────────────
+    pred_dose_np = outputs_activated[0, 0].cpu().numpy()  # (D, H, W)
+    pred_dose_np = np.clip(pred_dose_np * C["rx"], 0.0, None)
 
+    print(f"[inference] Prediction complete.")
+    print(f"[inference]   Shape  : {pred_dose_np.shape}  (at target_spacing)")
+    print(f"[inference]   Dose   : [{pred_dose_np.min():.2f}, {pred_dose_np.max():.2f}] Gy")
+
+    # ── 9. Save NIfTI at target_spacing ──────────────────────────────────────
+    # The file is saved with the resampled-grid's origin/direction so that
+    # SimpleITK in nifti_to_rtdose_dicom can reproject it back to the native
+    # CT geometry without any affine mismatch.
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
-        sitk_img = sitk.GetImageFromArray(pred_dose.astype(np.float32))
-        sitk_img.SetSpacing(C["spacing"])
-        sitk_img.SetOrigin(grid_origin)
-        sitk_img.SetDirection(grid_direction)
-        sitk.WriteImage(sitk_img, out_file)
-        print(f"Saved predicted dose to: {out_file}")
+
+        sitk_dose = sitk.GetImageFromArray(pred_dose_np.astype(np.float32))
+        # The dose array is (D, H, W) in voxel order; set spacing as (x, y, z)
+        sitk_dose.SetSpacing(resampled_spacing)   # XYZ order for SimpleITK
+        sitk_dose.SetOrigin(native_origin)         # same physical origin
+        sitk_dose.SetDirection(native_direction)   # same orientation cosines
+        sitk.WriteImage(sitk_dose, out_file)
+        print(f"[inference] Saved NIfTI → {out_file}")
 
     metadata = {
-        "patient_id": patient_id, "spacing": C["spacing"],
-        "origin": grid_origin, "direction": grid_direction,
-        "shape": pred_dose.shape,
-        "dose_min": float(pred_dose.min()), "dose_max": float(pred_dose.max()),
+        "patient_id"   : patient_id,
+        "spacing"      : resampled_spacing,
+        "origin"       : native_origin,
+        "direction"    : native_direction,
+        "shape"        : pred_dose_np.shape,
+        "dose_min"     : float(pred_dose_np.min()),
+        "dose_max"     : float(pred_dose_np.max()),
+        "native_spacing": native_spacing,
+        "native_size"  : native_size,
     }
-    return pred_dose, metadata
+    return pred_dose_np, metadata
 
 
 def run_pipeline(dicom_dir, config_path="config.yml", model_path=None,
@@ -560,7 +673,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="End-to-end dose prediction pipeline")
     parser.add_argument("--dicom-dir", required=True, type=str)
     parser.add_argument("--config", default="config.yml", type=str)
-    parser.add_argument("--model", default="/mnt/nvme/nvme-2TB-storage/sougata/python/Multichannel-Dose-Prediction-for-Radiotherapy-Planning/01 ICON/model/best_dose_model_clinical_june10.pth", type=str)
+    parser.add_argument("--model", default="best_dose_model_clinical_jun3.pth", type=str)
     parser.add_argument("--dose-spacing", default=None, type=float)
     parser.add_argument("--keep-temp", action="store_true")
     args = parser.parse_args()
