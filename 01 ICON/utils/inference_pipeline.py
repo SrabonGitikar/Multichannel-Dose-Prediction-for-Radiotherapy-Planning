@@ -18,7 +18,8 @@ from monai.networks.nets import UNet
 from monai.inferers import sliding_window_inference
 from monai.transforms import (
     Compose, LoadImaged, EnsureChannelFirstd, Spacingd,
-    NormalizeIntensityd, ConcatItemsd, ToTensord, DeleteItemsd, MapTransform,
+    NormalizeIntensityd, ConcatItemsd, ToTensord, DeleteItemsd,
+    MapTransform, Invertd,
 )
 from monai.data import Dataset, DataLoader
 
@@ -27,7 +28,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from nifti_to_rtdose import nifti_to_rtdose_dicom
+    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
@@ -575,42 +576,75 @@ def run_inference(patient_id, images_dir, config, C, output_dir=".",
 
     print(f"[inference] Body-masked output shape : {tuple(outputs_activated.shape)}")
 
-    # ── 8. Denormalise: [0, 1] → Gy ──────────────────────────────────────────
+    # ── 8. Denormalise: [0, 1] → Gy (still at target_spacing) ───────────────────
     pred_dose_np = outputs_activated[0, 0].cpu().numpy()  # (D, H, W)
     pred_dose_np = np.clip(pred_dose_np * C["rx"], 0.0, None)
 
     print(f"[inference] Prediction complete.")
-    print(f"[inference]   Shape  : {pred_dose_np.shape}  (at target_spacing)")
-    print(f"[inference]   Dose   : [{pred_dose_np.min():.2f}, {pred_dose_np.max():.2f}] Gy")
+    print(f"[inference]   Shape at target_spacing : {pred_dose_np.shape}")
+    print(f"[inference]   Dose range              : [{pred_dose_np.min():.2f}, "
+          f"{pred_dose_np.max():.2f}] Gy")
 
-    # ── 9. Save NIfTI at target_spacing ──────────────────────────────────────
-    # The file is saved with the resampled-grid's origin/direction so that
-    # SimpleITK in nifti_to_rtdose_dicom can reproject it back to the native
-    # CT geometry without any affine mismatch.
+    # ── 9. Inverse spatial transform (Invertd-equivalent) ───────────────────────
+    # The model ran on a tensor that was resampled by Spacingd from the
+    # native CT grid to target_spacing=[1.27, 1.27, 2.5].  Simply stamping
+    # 'native_origin' on the resampled array gives the wrong geometry because
+    # Spacingd can shift the grid origin by up to half a voxel during resampling.
+    #
+    # The correct fix (equivalent to MONAI Invertd applied to Spacingd) is to
+    # resample the prediction from the target-spacing grid back onto the
+    # exact native CT grid using sitk.ResampleImageFilter.  Using
+    # native_ct_sitk as the reference image guarantees pixel-perfect alignment
+    # with the CT: identical origin, direction cosines, size, and spacing.
+    print(f"[inference] Applying inverse spatial transform → native CT grid ...")
+
+    # Build a sitk image for the prediction at target_spacing.
+    # Use native_origin / native_direction as the starting point; the
+    # ResampleImageFilter will correct any sub-voxel shift automatically.
+    pred_sitk_target = sitk.GetImageFromArray(pred_dose_np.astype(np.float32))
+    pred_sitk_target.SetSpacing(resampled_spacing)     # XYZ: (1.27, 1.27, 2.5)
+    pred_sitk_target.SetOrigin(native_origin)           # physical world origin
+    pred_sitk_target.SetDirection(native_direction)     # orientation cosines
+
+    # Resample back to the native CT grid (reverses Spacingd exactly)
+    inv_resampler = sitk.ResampleImageFilter()
+    inv_resampler.SetReferenceImage(native_ct_sitk)     # defines output grid
+    inv_resampler.SetInterpolator(sitk.sitkLinear)      # dose is continuous
+    inv_resampler.SetDefaultPixelValue(0.0)             # outside-FOV = 0 Gy
+    pred_sitk_native = inv_resampler.Execute(pred_sitk_target)
+
+    pred_dose_native_np = np.clip(
+        sitk.GetArrayFromImage(pred_sitk_native).astype(np.float32), 0.0, None
+    )  # (D_native, H_native, W_native) — exact native CT geometry
+
+    print(f"[inference]   Shape at native grid   : {pred_dose_native_np.shape}")
+    print(f"[inference]   Native spacing         : {native_ct_sitk.GetSpacing()}")
+    print(f"[inference]   Dose range (native)    : [{pred_dose_native_np.min():.2f}, "
+          f"{pred_dose_native_np.max():.2f}] Gy")
+
+    # ── 10. Save NIfTI at native CT geometry ──────────────────────────────────
+    # pred_sitk_native already has native_ct_sitk's exact origin/direction/
+    # spacing embedded in it (set by ResampleImageFilter.SetReferenceImage).
+    # nifti_to_rtdose_dicom will resample this to its own dose grid, but
+    # because the spatial metadata is now exact the resampling is geometrically
+    # accurate and produces no dose-drop artefacts.
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
-
-        sitk_dose = sitk.GetImageFromArray(pred_dose_np.astype(np.float32))
-        # The dose array is (D, H, W) in voxel order; set spacing as (x, y, z)
-        sitk_dose.SetSpacing(resampled_spacing)   # XYZ order for SimpleITK
-        sitk_dose.SetOrigin(native_origin)         # same physical origin
-        sitk_dose.SetDirection(native_direction)   # same orientation cosines
-        sitk.WriteImage(sitk_dose, out_file)
-        print(f"[inference] Saved NIfTI → {out_file}")
+        sitk.WriteImage(pred_sitk_native, out_file)
+        print(f"[inference] Saved NIfTI (native grid) → {out_file}")
 
     metadata = {
-        "patient_id"   : patient_id,
-        "spacing"      : resampled_spacing,
-        "origin"       : native_origin,
-        "direction"    : native_direction,
-        "shape"        : pred_dose_np.shape,
-        "dose_min"     : float(pred_dose_np.min()),
-        "dose_max"     : float(pred_dose_np.max()),
-        "native_spacing": native_spacing,
-        "native_size"  : native_size,
+        "patient_id"    : patient_id,
+        "spacing"       : native_ct_sitk.GetSpacing(),
+        "origin"        : native_ct_sitk.GetOrigin(),
+        "direction"     : native_ct_sitk.GetDirection(),
+        "shape"         : pred_dose_native_np.shape,
+        "dose_min"      : float(pred_dose_native_np.min()),
+        "dose_max"      : float(pred_dose_native_np.max()),
+        "target_spacing": resampled_spacing,
     }
-    return pred_dose_np, metadata
+    return pred_dose_native_np, metadata
 
 
 def run_pipeline(dicom_dir, config_path="config.yml", model_path=None,
