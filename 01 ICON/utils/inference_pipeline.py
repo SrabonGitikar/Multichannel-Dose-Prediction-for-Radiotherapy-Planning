@@ -28,7 +28,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 try:
-    from nifti_to_rtdose import nifti_to_rtdose_dicom
+    from utils.nifti_to_rtdose import nifti_to_rtdose_dicom
 except ImportError:
     nifti_to_rtdose_dicom = None
 
@@ -438,8 +438,11 @@ def _build_inference_transforms(C, config):
         k for k in ch_keys[1:] if k != "ch_1"
     ]
 
-    # Keys to clean up after concat (do NOT include ch_1 — already gone)
-    delete_keys = [k for k in ch_keys if k != "ch_1"] + ["discrete_ptv"]
+    # Keys to clean up after concat.
+    # IMPORTANT: ch_0 is intentionally KEPT in the dict so that Invertd
+    # can read its Spacingd applied_operations trace in post-processing.
+    # ch_1 is already gone (consumed by CreateDiscretePTVMapd).
+    delete_keys = [k for k in ch_keys if k not in ("ch_0", "ch_1")] + ["discrete_ptv"]
 
     return Compose([
         # 1. Load every NIfTI from disk
@@ -493,23 +496,7 @@ def run_inference(patient_id, images_dir, config, C, output_dir=".",
     ).to(device)
 
     if not os.path.exists(model_path):
-        _script_dir = Path(__file__).resolve().parent.parent  # 01 ICON/
-        _basename = Path(model_path).name
-        _candidates = [
-            _script_dir / model_path,
-            _script_dir.parent / model_path,
-            _script_dir / _basename,
-            _script_dir.parent / _basename,
-        ]
-        for _candidate in _candidates:
-            if _candidate.exists():
-                model_path = str(_candidate)
-                break
-        else:
-            raise FileNotFoundError(
-                f"Model file '{model_path}' not found. Searched:\n"
-                + "\n".join(f"  {c}" for c in _candidates)
-            )
+        raise FileNotFoundError(f"Model file '{model_path}' not found.")
     ckpt = torch.load(model_path, map_location=device)
     # Support both raw state-dict and wrapped checkpoint dicts
     if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
@@ -578,87 +565,117 @@ def run_inference(patient_id, images_dir, config, C, output_dir=".",
                 mode="gaussian",
             )
 
-    # ── 6. Post-activation: softplus keeps output positive & smooth ───────────
-    outputs = torch.nan_to_num(outputs, nan=0.0, posinf=10.0, neginf=-10.0)
-    outputs_activated = F.softplus(outputs.float())
+    # ── 6. Post-inference: softplus + body mask + Gy scaling ─────────────────
+    # All done together in target-spacing space before Invertd.
+    outputs      = torch.nan_to_num(outputs, nan=0.0, posinf=10.0, neginf=-10.0)
+    outputs_gy   = F.softplus(outputs.float()) * C["rx"]
 
-    # ── 7. Apply RTStruct body mask (suppresses out-of-body ghosting) ─────────
-    # We read the body mask directly from the input tensor using the
-    # config-driven channel index (_BODY_CH_IDX = 4 for this config).
-    # This avoids HU-threshold artefacts from the couch/immobilisation hardware.
     _BODY_CH_IDX = C["body_ch_idx"]
-    body_mask_hard = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX + 1, ...] > 0.5).float()
-    outputs_activated = outputs_activated * body_mask_hard
+    body_mask    = (inputs[:, _BODY_CH_IDX:_BODY_CH_IDX + 1, ...] > 0.5).float()
+    masked_dose  = torch.clamp(outputs_gy * body_mask, min=0.0)  # (1, 1, D, H, W)
 
-    print(f"[inference] Body-masked output shape : {tuple(outputs_activated.shape)}")
+    print(f"[inference] Body-masked dose (target spacing): shape={tuple(masked_dose.shape)}"
+          f"  range=[{masked_dose.min():.2f}, {masked_dose.max():.2f}] Gy")
 
-    # ── 8. Denormalise: [0, 1] → Gy (still at target_spacing) ───────────────────
-    pred_dose_np = outputs_activated[0, 0].cpu().numpy()  # (D, H, W)
-    pred_dose_np = np.clip(pred_dose_np * C["rx"], 0.0, None)
+    # ── 9. Inverse spatial transform via MONAI Invertd ───────────────────────────
+    # ch_0 was deliberately kept in the batch (not deleted by DeleteItemsd).
+    # It is a MetaTensor whose applied_operations list records the exact Spacingd
+    # transform that was applied during preprocessing.  Invertd reads those
+    # breadcrumbs and reverses Spacingd to restore the native CT grid geometry.
+    try:
+        from monai.data import MetaTensor as _MetaTensor
 
-    print(f"[inference] Prediction complete.")
-    print(f"[inference]   Shape at target_spacing : {pred_dose_np.shape}")
-    print(f"[inference]   Dose range              : [{pred_dose_np.min():.2f}, "
-          f"{pred_dose_np.max():.2f}] Gy")
+        # Work with a single (un-batched) item for Invertd
+        ch0_batched = batch["ch_0"]           # (1, 1, D, H, W) MetaTensor
+        ch0_single  = ch0_batched[0]          # (1, D, H, W)  — one sample
 
-    # ── 9. Inverse spatial transform (Invertd-equivalent) ───────────────────────
-    # The model ran on a tensor that was resampled by Spacingd from the
-    # native CT grid to target_spacing=[1.27, 1.27, 2.5].  Simply stamping
-    # 'native_origin' on the resampled array gives the wrong geometry because
-    # Spacingd can shift the grid origin by up to half a voxel during resampling.
-    #
-    # The correct fix (equivalent to MONAI Invertd applied to Spacingd) is to
-    # resample the prediction from the target-spacing grid back onto the
-    # exact native CT grid using sitk.ResampleImageFilter.  Using
-    # native_ct_sitk as the reference image guarantees pixel-perfect alignment
-    # with the CT: identical origin, direction cosines, size, and spacing.
-    print(f"[inference] Applying inverse spatial transform → native CT grid ...")
+        # Build pred_dose MetaTensor: copy ch_0's spatial metadata so that
+        # Invertd has the Spacingd trace attached to it.
+        pred_single = masked_dose[0].cpu()    # (1, D, H, W)
+        if isinstance(ch0_single, _MetaTensor):
+            pred_meta = _MetaTensor(pred_single, meta=ch0_single.meta.copy())
+        else:
+            # Older MONAI without MetaTensor — fall through to sitk fallback
+            raise RuntimeError("batch['ch_0'] is not a MetaTensor")
 
-    # Build a sitk image for the prediction at target_spacing.
-    # Use native_origin / native_direction as the starting point; the
-    # ResampleImageFilter will correct any sub-voxel shift automatically.
-    pred_sitk_target = sitk.GetImageFromArray(pred_dose_np.astype(np.float32))
-    pred_sitk_target.SetSpacing(resampled_spacing)     # XYZ: (1.27, 1.27, 2.5)
-    pred_sitk_target.SetOrigin(native_origin)           # physical world origin
-    pred_sitk_target.SetDirection(native_direction)     # orientation cosines
+        invert_data = {
+            "ch_0"     : ch0_single,   # provides the Spacingd trace
+            "pred_dose": pred_meta,    # carries the same trace → Invertd reverses it
+        }
 
-    # Resample back to the native CT grid (reverses Spacingd exactly)
-    inv_resampler = sitk.ResampleImageFilter()
-    inv_resampler.SetReferenceImage(native_ct_sitk)     # defines output grid
-    inv_resampler.SetInterpolator(sitk.sitkLinear)      # dose is continuous
-    inv_resampler.SetDefaultPixelValue(0.0)             # outside-FOV = 0 Gy
-    pred_sitk_native = inv_resampler.Execute(pred_sitk_target)
+        inverter = Invertd(
+            keys         = "pred_dose",
+            transform    = transforms,   # the full preprocessing Compose chain
+            orig_keys    = "ch_0",       # CRITICAL: read Spacingd trace from ch_0
+            nearest_interp = False,      # linear interpolation for dose
+            to_tensor    = True,
+        )
 
-    pred_dose_native_np = np.clip(
-        sitk.GetArrayFromImage(pred_sitk_native).astype(np.float32), 0.0, None
-    )  # (D_native, H_native, W_native) — exact native CT geometry
+        inverted        = inverter(invert_data)
+        final_dose_mt   = inverted["pred_dose"]  # MetaTensor at native CT geometry
 
-    print(f"[inference]   Shape at native grid   : {pred_dose_native_np.shape}")
-    print(f"[inference]   Native spacing         : {native_ct_sitk.GetSpacing()}")
-    print(f"[inference]   Dose range (native)    : [{pred_dose_native_np.min():.2f}, "
-          f"{pred_dose_native_np.max():.2f}] Gy")
+        # Extract numpy array — channel-first after inversion, so squeeze channel 0
+        pred_arr = final_dose_mt.numpy() if hasattr(final_dose_mt, "numpy") \
+                   else final_dose_mt.cpu().numpy()
+        if pred_arr.ndim == 4:   # (1, D, H, W) → (D, H, W)
+            pred_arr = pred_arr[0]
+        pred_dose_native_np = np.clip(pred_arr.astype(np.float32), 0.0, None)
 
-    # ── 10. Save NIfTI at native CT geometry ──────────────────────────────────
-    # pred_sitk_native already has native_ct_sitk's exact origin/direction/
-    # spacing embedded in it (set by ResampleImageFilter.SetReferenceImage).
-    # nifti_to_rtdose_dicom will resample this to its own dose grid, but
-    # because the spatial metadata is now exact the resampling is geometrically
-    # accurate and produces no dose-drop artefacts.
+        print(f"[inference] Invertd succeeded.")
+        print(f"[inference]   Shape at native grid : {pred_dose_native_np.shape}")
+        _used_invertd = True
+
+    except Exception as _exc:
+        # ── Fallback: sitk ResampleImageFilter ────────────────────────────────
+        # If Invertd fails (old MONAI / missing MetaTensor), resample the
+        # target-spacing prediction back to the native CT grid via sitk.
+        print(f"[inference] WARNING: Invertd failed ({_exc}). "
+              f"Falling back to sitk ResampleImageFilter.")
+        _used_invertd = False
+
+        pred_np_tgt = masked_dose[0, 0].cpu().numpy().astype(np.float32)  # (D,H,W)
+        pred_sitk_tgt = sitk.GetImageFromArray(pred_np_tgt)
+        pred_sitk_tgt.SetSpacing(resampled_spacing)
+        pred_sitk_tgt.SetOrigin(native_origin)
+        pred_sitk_tgt.SetDirection(native_direction)
+
+        fb = sitk.ResampleImageFilter()
+        fb.SetReferenceImage(native_ct_sitk)
+        fb.SetInterpolator(sitk.sitkLinear)
+        fb.SetDefaultPixelValue(0.0)
+        pred_dose_native_np = np.clip(
+            sitk.GetArrayFromImage(fb.Execute(pred_sitk_tgt)).astype(np.float32),
+            0.0, None,
+        )
+
+    print(f"[inference]   Native grid shape   : {pred_dose_native_np.shape}")
+    print(f"[inference]   Dose range (native) : "
+          f"[{pred_dose_native_np.min():.2f}, {pred_dose_native_np.max():.2f}] Gy")
+
+    # ── 10. Save NIfTI anchored to native CT geometry ────────────────────────
+    # Use native_ct_sitk.CopyInformation() as a hard anchor: this copies the
+    # origin, direction, and spacing from the original CT DICOM — so even if
+    # Invertd's affine has a tiny floating-point residual, the saved NIfTI is
+    # guaranteed to register perfectly with the CT.
     if save_nifti:
         os.makedirs(output_dir, exist_ok=True)
         out_file = os.path.join(output_dir, f"{patient_id}_predicted_dose.nii.gz")
-        sitk.WriteImage(pred_sitk_native, out_file)
-        print(f"[inference] Saved NIfTI (native grid) → {out_file}")
+        dose_sitk = sitk.GetImageFromArray(pred_dose_native_np)
+        dose_sitk.CopyInformation(native_ct_sitk)  # hard-anchor: origin/dir/spacing
+        sitk.WriteImage(dose_sitk, out_file)
+        method = "Invertd" if _used_invertd else "sitk-fallback"
+        print(f"[inference] Saved NIfTI (native grid, {method}) → {out_file}")
 
     metadata = {
-        "patient_id"    : patient_id,
-        "spacing"       : native_ct_sitk.GetSpacing(),
-        "origin"        : native_ct_sitk.GetOrigin(),
-        "direction"     : native_ct_sitk.GetDirection(),
-        "shape"         : pred_dose_native_np.shape,
-        "dose_min"      : float(pred_dose_native_np.min()),
-        "dose_max"      : float(pred_dose_native_np.max()),
-        "target_spacing": resampled_spacing,
+        "patient_id"     : patient_id,
+        "spacing"        : native_ct_sitk.GetSpacing(),
+        "origin"         : native_ct_sitk.GetOrigin(),
+        "direction"      : native_ct_sitk.GetDirection(),
+        "shape"          : pred_dose_native_np.shape,
+        "dose_min"       : float(pred_dose_native_np.min()),
+        "dose_max"       : float(pred_dose_native_np.max()),
+        "target_spacing" : resampled_spacing,
+        "used_invertd"   : _used_invertd if "_used_invertd" in dir() else False,
     }
     return pred_dose_native_np, metadata
 
@@ -714,8 +731,6 @@ def run_pipeline(dicom_dir, config_path="config.yml", model_path=None,
     print("\n" + "="*50)
     print("  PIPELINE COMPLETE")
     print("="*50)
-    if keep_temp:
-        print(f"  NIfTI dose saved to: {nifti_dose_file}")
     if rtdose_path:
         print(f"  RTDOSE saved to: {rtdose_path}")
     return rtdose_path
