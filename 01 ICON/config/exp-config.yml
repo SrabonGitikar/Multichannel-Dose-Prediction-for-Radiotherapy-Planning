@@ -32,7 +32,7 @@ dataset:
 # Training hyperparameters
 # ---------------------------------------------------------------------------
 training:
-  epochs: 500
+  epochs: 300
   warmup_epochs: 30
   val_every_n_epochs: 1
   batch_size: 1
@@ -208,27 +208,27 @@ body_hu_threshold: -300.0        # HU below this → outside body
 # SIB target levels  (lowest to highest — Painter's Algorithm order)
 # ---------------------------------------------------------------------------
 clinical_targets:
-  prescription_dose_gy: 62.0
-  physical_max_gy: 70.0
+  prescription_dose_gy: 40.0
+  physical_max_gy: 40.0
 
   targets:
-    - name: "PTV_62_20"
-      rx_gy: 64.0
-      ceil_gy: 66.34
-      patterns: ["PTV_62/20"]
+    - name: "PTV_36.25_5"
+      rx_gy: 36.25
+      ceil_gy: 40
+      patterns: ["PTV_36.25/5"]
 
-    - name: "PTV_44_20"
-      rx_gy: 44.0
-      ceil_gy: 66.34
-      patterns: ["PTV_44/20"]
+    - name: "PTV_25_5"
+      rx_gy: 25.0
+      ceil_gy: 40
+      patterns: ["PTV_25/5"]
 
 # ---------------------------------------------------------------------------
 # Physics engine
 # ---------------------------------------------------------------------------
 physics_engine:
   thresholds:
-    global_ceil_gy: 66.34
-    ring_thresh_gy: 62.0
+    global_ceil_gy: 40.0
+    ring_thresh_gy: 38.79
     in_beam_ceil_gy: 15.0
     out_beam_ceil_gy: 2.0
     out_beam_multiplier: 5.0
@@ -245,8 +245,8 @@ physics_engine:
   target_lambdas:
     mse: 25.0
     optional: 2.0
-    mandatory: 70.0
-    ptv: 75.0
+    mandatory: 50.0
+    ptv: 45.0
     ptv_max: 30.0
     ring: 25.0
     smooth: 0.125
@@ -273,7 +273,7 @@ model:
 # Scoring
 # ---------------------------------------------------------------------------
 scoring:
-  clinical_ptv_weight: 5.0   # penalty multiplier on PTV D95 deficit in clinical score
+  clinical_ptv_weight: 3.0   # penalty multiplier on PTV D95 deficit in clinical score
 
 # ---------------------------------------------------------------------------
 # Inline clinical constraints
@@ -311,3 +311,4 @@ constraints:
 # ---------------------------------------------------------------------------
 evaluation:
   oar_v_metrics_gy: [59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0]
+

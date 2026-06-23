@@ -213,8 +213,8 @@ clinical_targets:
 
   targets:
     - name: "PTV_62_20"
-      rx_gy: 64.0
-      ceil_gy: 66.34
+      rx_gy: 63.5
+      ceil_gy: 66
       patterns: ["PTV_62/20"]
 
     - name: "PTV_44_20"
@@ -245,8 +245,8 @@ physics_engine:
   target_lambdas:
     mse: 25.0
     optional: 2.0
-    mandatory: 70.0
-    ptv: 75.0
+    mandatory: 50.0
+    ptv: 45.0
     ptv_max: 30.0
     ring: 25.0
     smooth: 0.125
@@ -273,7 +273,7 @@ model:
 # Scoring
 # ---------------------------------------------------------------------------
 scoring:
-  clinical_ptv_weight: 5.0   # penalty multiplier on PTV D95 deficit in clinical score
+  clinical_ptv_weight: 3.0   # penalty multiplier on PTV D95 deficit in clinical score
 
 # ---------------------------------------------------------------------------
 # Inline clinical constraints
@@ -311,3 +311,4 @@ constraints:
 # ---------------------------------------------------------------------------
 evaluation:
   oar_v_metrics_gy: [59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0]
+

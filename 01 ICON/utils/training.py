@@ -1429,7 +1429,7 @@ def main():
 
             if is_physically_valid and val_loss_avg < best_val_loss:
                 best_val_loss = val_loss_avg
-                torch.save(model.state_dict(), "best_dose_model_physics_jun3.pth")
+                torch.save(model.state_dict(), "best_dose_model_physics_june23.pth")
                 checkpoint_msg = f"[PHYSICS] Saved best model val_loss={best_val_loss:.4f}"
                 print(f"  --> {checkpoint_msg}")
                 logger.info(checkpoint_msg)
@@ -1440,7 +1440,7 @@ def main():
 
             if is_physically_valid and clinical_score < best_clinical_score:
                 best_clinical_score = clinical_score
-                torch.save(model.state_dict(), "best_dose_model_clinical_jun3.pth")
+                torch.save(model.state_dict(), "best_dose_model_clinical_june23.pth")
                 clinical_msg = (
                     f"[CLINICAL] Saved best model Score={clinical_score:.3f} "
                     f"{_PTV_PRIMARY_NAME}_D95={avg_ptv60_d95:.2f}Gy {_PTV_SECONDARY_NAME}_D95={avg_ptv44_d95:.2f}Gy "
@@ -1451,7 +1451,7 @@ def main():
 
             if val_loss_avg < best_diagnostic_mse:
                 best_diagnostic_mse = val_loss_avg
-                torch.save(model.state_dict(), "best_dose_model_diagnostic_jun3.pth")
+                torch.save(model.state_dict(), "best_dose_model_diagnostic_june23.pth")
                 diag_msg = f"[DIAGNOSTIC] Saved fallback model MSE={best_diagnostic_mse:.4f}"
                 print(f"  --> {diag_msg}")
                 logger.info(diag_msg)
@@ -1497,9 +1497,9 @@ def main():
 
     # ---- Dual-model evaluation loop ------------------------------------
     for model_path, csv_name in [
-        ("best_dose_model_physics_jun3.pth",    "validation_physics_summary_jun3.csv"),
-        ("best_dose_model_clinical_jun3.pth",   "validation_clinical_summary_jun3.csv"),
-        ("best_dose_model_diagnostic_jun3.pth", "validation_diagnostic_summary_jun3.csv"),
+        ("best_dose_model_physics_june23.pth",    "validation_physics_summary_june23.csv"),
+        ("best_dose_model_clinical_june23.pth",   "validation_clinical_summary_june23.csv"),
+        ("best_dose_model_diagnostic_june23.pth", "validation_diagnostic_summary_june23.csv"),
     ]:
         print(f"\n--- Evaluating: {model_path} -> {csv_name} ---")
 
