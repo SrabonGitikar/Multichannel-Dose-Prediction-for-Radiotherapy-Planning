@@ -1,0 +1,223 @@
+# =============================================================================
+# Pipeline Configuration - SBRT Prostate — MSE-ONLY BASELINE
+# All physics-guided loss lambdas are set to 0.0.
+# Purpose: ablation study / reviewer baseline to demonstrate the necessity
+#          of the physics-guided losses.
+# =============================================================================
+
+preprocessing:
+  dicom_dir: "/home/ankit/Dose_pred/SBRT_Prostate"
+  output_dir: "/home/ankit/Dose_pred/nnUNet_raw/Dataset002_SBRTProstate"
+  case_prefix: "sbrt"
+  dataset_name: "Dataset002_SBRTProstate"
+  bev:
+    sad_mm: 1000.0
+    penumbra_mm: 7.0
+    default_gantry_angles: [0, 51, 102, 154, 205, 257, 308]
+
+dataset:
+  data_dir: "./nnUNet_raw/Dataset002_SBRTProstate"
+  constraint_csv: "./sbrt_experimental_constraints.csv"
+  target_spacing: [1.27, 1.27, 2.5]
+  patch_size: [128, 128, 64]
+
+training:
+  epochs: 300
+  warmup_epochs: 30
+  val_every_n_epochs: 1
+  batch_size: 1
+  num_workers: 2
+  grad_accum_steps: 2
+  val_split: 0.20
+  learning_rate: 1.0e-4
+  min_learning_rate: 1.0e-6
+
+channels:
+  - index: 0
+    key: "ch_0"
+    role: "CT"
+    interpolation: "bilinear"
+    normalize: true
+
+  - index: 1
+    key: "ch_1"
+    role: "PTV_binary"
+    interpolation: "nearest"
+    normalize: false
+
+  - index: 2
+    key: "ch_2"
+    role: "SDM"
+    organ: "Bladder"
+    interpolation: "bilinear"
+    normalize: false
+
+  - index: 3
+    key: "ch_3"
+    role: "SDM"
+    organ: "Anorectum"
+    interpolation: "bilinear"
+    normalize: false
+
+  - index: 4
+    key: "ch_4"
+    role: "Binary_Mask"
+    organ: "Small_Bowel"
+    interpolation: "nearest"
+    normalize: false
+
+  - index: 5
+    key: "ch_5"
+    role: "Binary_Mask"
+    organ: "Femur_R"
+    interpolation: "nearest"
+    normalize: false
+
+  - index: 6
+    key: "ch_6"
+    role: "Binary_Mask"
+    organ: "Femur_L"
+    interpolation: "nearest"
+    normalize: false
+
+organs_at_risk:
+  - canonical: "Bladder"
+    aliases: ["Bladder", "BLADDER", "bladder", "Urinary_Bladder"]
+    requires_sdm: true
+    sdm_channel_key: "ch_2"
+    loss_key: "bladder"
+    csv_constraint_name: "Bladder"
+    crop_class: 3
+
+  - canonical: "Anorectum"
+    aliases: ["Anorectum", "ANORECTUM", "Rectum", "RECTUM", "rectum", "Anorectum_NOS", "Ano-rectum"]
+    requires_sdm: true
+    sdm_channel_key: "ch_3"
+    loss_key: "anorectum"
+    csv_constraint_name: "Anorectum"
+    crop_class: 4
+
+  - canonical: "Small_Bowel"
+    aliases: ['^Small_?Bowel.*', '^SmallBowel.*', '^Sm_?Bowl.*', '^BowelSmall.*', '^Bowel_Small.*']
+    requires_sdm: false
+    binary_channel_key: "ch_4"
+    loss_key: "small_bowel"
+    crop_class: 0
+
+  - canonical: "Femur_R"
+    aliases: ['^Femur_?Head_?R.*', '^R_?Femur.*', '^Right_?Femur.*', '^FemoralHead_?R.*', '^Femoral_Head_R.*', '^Right_Femoral.*']
+    requires_sdm: false
+    binary_channel_key: "ch_5"
+    loss_key: "femur_r"
+    crop_class: 0
+
+  - canonical: "Femur_L"
+    aliases: ['^Femur_?Head_?L.*', '^L_?Femur.*', '^Left_?Femur.*', '^FemoralHead_?L.*', '^Femoral_Head_L.*', '^Left_Femoral.*']
+    requires_sdm: false
+    binary_channel_key: "ch_6"
+    loss_key: "femur_l"
+    crop_class: 0
+
+crop_classes:
+  - class_id: 0
+    label: "Air_Background"
+    source: "hu_threshold"
+    sample_ratio: 0.0
+  - class_id: 1
+    label: "Healthy_Tissue"
+    source: "body_minus_oars"
+    sample_ratio: 1.0
+  - class_id: 2
+    label: "PTV"
+    source: "ptv_channel"
+    sample_ratio: 1.0
+  - class_id: 3
+    label: "Bladder"
+    source: "sdm_channel"
+    sdm_channel_key: "ch_2"
+    sample_ratio: 1.0
+  - class_id: 4
+    label: "Anorectum"
+    source: "sdm_channel"
+    sdm_channel_key: "ch_3"
+    sample_ratio: 1.0
+
+body_hu_threshold: -300.0
+
+clinical_targets:
+  prescription_dose_gy: 36.25
+  physical_max_gy: 38.8
+
+  targets:
+    - name: "PTV25"
+      rx_gy: 25.0
+      ceil_gy: 26.75
+      patterns: ["^PTV25$", "^CTV25$"]
+
+    - name: "PTV30"
+      rx_gy: 30.0
+      ceil_gy: 32.1
+      patterns: ["^PTV30$", "^CTV30$"]
+
+    - name: "PTV36_25"
+      rx_gy: 36.25
+      ceil_gy: 38.8
+      patterns: ["^PTV36\.?25$", "^CTV36\.?25$", "^PTV36$", "^PTV$", "^CTV$",
+                 "^PTV_prostate$", "^CTV_prostate$", "^GTV_prostate$", "^GTV$"]
+
+physics_engine:
+  thresholds:
+    global_ceil_gy: 38.8
+    ring_thresh_gy: 36.25
+    in_beam_ceil_gy: 8.0
+    out_beam_ceil_gy: 1.0
+    out_beam_multiplier: 5.0
+    bowel_opt_gy: 25.0
+    bowel_opt_limit_frac: 0.20
+    bowel_mand_gy: 28.0
+    bowel_mand_limit_frac: 0.50
+    femur_max_gy: 14.0
+    dose_weight_scale: 9.0
+    dose_weight_clamp: 0.96
+    anti_collapse_thresh: 0.50
+    global_ceil_k: 100
+    bowel_mandatory_scale: 5.0
+  target_lambdas:
+    mse: 25.0        # ONLY active loss — all physics terms below are zeroed
+    optional: 0.0
+    mandatory: 0.0
+    ptv: 0.0
+    ptv_max: 0.0
+    ring: 0.0
+    smooth: 0.0
+    laplacian: 0.0
+    anticollapse: 0.0
+    homogeneity: 0.0
+    body: 0.0
+    bowel: 0.0
+    femur: 0.0
+    penile: 0.0
+    global_ceil: 0.0
+    bg: 0.0
+
+scoring:
+  clinical_ptv_weight: 5.0
+
+constraints:
+  patient_class: "N0"
+  v_type:
+    Bladder:
+      - { dose_gy: 14.0,  optimal_v: 0.25, mandatory_v: 0.35 }
+      - { dose_gy: 17.5,  optimal_v: 0.15, mandatory_v: 0.20 }
+      - { dose_gy: 28.0,  optimal_v: 0.07, mandatory_v: 0.10 }
+      - { dose_gy: 31.5,  optimal_v: 0.05, mandatory_v: 0.08 }
+      - { dose_gy: 35.0,  optimal_v: 0.03, mandatory_v: 0.04 }
+    Anorectum:
+      - { dose_gy: 14.0,  optimal_v: 0.40, mandatory_v: 0.45 }
+      - { dose_gy: 17.5,  optimal_v: 0.30, mandatory_v: 0.35 }
+      - { dose_gy: 28.0,  optimal_v: 0.10, mandatory_v: 0.15 }
+      - { dose_gy: 31.5,  optimal_v: 0.08, mandatory_v: 0.10 }
+      - { dose_gy: 35.0,  optimal_v: 0.03, mandatory_v: 0.05 }
+
+evaluation:
+  oar_v_metrics_gy: [35.0, 31.5, 28.0, 17.5, 14.0, 10.0]
