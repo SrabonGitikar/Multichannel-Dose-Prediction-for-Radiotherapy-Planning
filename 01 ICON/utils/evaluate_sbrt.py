@@ -329,24 +329,9 @@ def main():
     log.info(f"Loaded weights from '{weights_path}'")
     model.eval()
 
-    # --- Prepare SIB target table -----------------------------------------
-    # KEY FIX: use rx_gy as the float ID that CreateDiscretePTVMapd painted.
-    # For PTV36_25, rx_gy=36.25 — torch.isclose will correctly match 36.25.
-    # The bug in training was: it was comparing against PRESCRIPTION_DOSE_GY
-    # (also 36.25) which matched the primary target but produced 0 when the
-    # painter actually stored a different rx_gy (e.g. 37.5 used in an older run).
-    # Here we explicitly show the corrected value; change PTV_PRIMARY_RX_PAINTED
-    # to 37.5 if that is what was stored during your specific preprocessing run.
-    PTV_PRIMARY_RX_PAINTED = 37.5   # <<< THE FIX: actual value painted in discrete map
-    sib_eval_targets = {}
-    for lvl in config["clinical_targets"]["targets"]:
-        name   = lvl["name"]
-        rx_gy  = float(lvl["rx_gy"])
-        # If this is the primary (highest) target, substitute the corrected value
-        is_primary = (rx_gy == max(t["rx_gy"] for t in config["clinical_targets"]["targets"]))
-        id_val = PTV_PRIMARY_RX_PAINTED if is_primary else rx_gy
-        sib_eval_targets[name] = id_val
-        log.info(f"  SIB target '{name}': rx_gy={rx_gy}  discrete map id={id_val}")
+    # SIB target names from config (for labelling CSV columns)
+    sib_target_names = [lvl["name"] for lvl in config["clinical_targets"]["targets"]]
+    primary_name = max(config["clinical_targets"]["targets"], key=lambda t: t["rx_gy"])["name"]
 
     # Bladder / Rectum SDM channel indices
     _bladder_key = next(
@@ -414,34 +399,35 @@ def main():
 
             row = {"Patient_ID": patient_id}
 
-            # --- SIB PTV metrics (THE FIX: uses discrete-map id_val) -----
-            for name, id_val in sib_eval_targets.items():
-                mask     = torch.isclose(
-                    discrete_ptv,
-                    torch.tensor(id_val, dtype=torch.float32),
-                    atol=1e-3,
-                )
-                sib_dose = outputs_gy_cpu[mask]
+            # --- SIB PTV metrics (ROBUST: bypass float-matching entirely) ----
+            # Print unique discrete values on first patient to verify cache state
+            unique_vals = torch.unique(discrete_ptv)
+            if idx == 0:
+                print(f"  [Debug] Unique values in PTV channel: {unique_vals.tolist()}")
+                log.info(f"  [Debug] Unique values in PTV channel: {unique_vals.tolist()}")
 
-                if sib_dose.numel() > 0:
-                    row[f"{name}_D95 (Gy)"]  = quantile_dose(sib_dose, 95)
-                    row[f"{name}_D98 (Gy)"]  = quantile_dose(sib_dose, 98)
-                    row[f"{name}_Mean (Gy)"] = sib_dose.mean().item()
-                    row[f"{name}_Max (Gy)"]  = sib_dose.max().item()
-                    row[f"{name}_HI"]        = float("nan")
+            # Grab ALL PTV voxels by ignoring background (0.0).
+            # This is robust to float precision and stale cache issues since
+            # we no longer depend on a specific painted value.
+            ptv_mask_all = (discrete_ptv > 0.5)
+            ptv_dose_all = outputs_gy_cpu[ptv_mask_all]
 
-                    # ICRU 83 Homogeneity Index
-                    d2  = quantile_dose(sib_dose, 2)
-                    d98 = quantile_dose(sib_dose, 98)
-                    d50 = torch.median(sib_dose.float()).item()
-                    if d50 > 0:
-                        row[f"{name}_HI"] = round((d2 - d98) / d50, 4)
-                else:
-                    row[f"{name}_D95 (Gy)"]  = float("nan")
-                    row[f"{name}_D98 (Gy)"]  = float("nan")
-                    row[f"{name}_Mean (Gy)"] = float("nan")
-                    row[f"{name}_Max (Gy)"]  = float("nan")
-                    row[f"{name}_HI"]        = float("nan")
+            # Report under the primary target name (unified single-PTV SBRT)
+            if ptv_dose_all.numel() > 0:
+                row[f"{primary_name}_D95 (Gy)"]  = quantile_dose(ptv_dose_all, 95)
+                row[f"{primary_name}_D98 (Gy)"]  = quantile_dose(ptv_dose_all, 98)
+                row[f"{primary_name}_Mean (Gy)"] = ptv_dose_all.mean().item()
+                row[f"{primary_name}_Max (Gy)"]  = ptv_dose_all.max().item()
+
+                # ICRU 83 Homogeneity Index
+                d2  = quantile_dose(ptv_dose_all, 2)
+                d98 = quantile_dose(ptv_dose_all, 98)
+                d50 = torch.median(ptv_dose_all.float()).item()
+                row[f"{primary_name}_HI"] = round((d2 - d98) / d50, 4) if d50 > 0 else float("nan")
+            else:
+                log.warning(f"  WARNING: {patient_id} — PTV channel is all zeros! Check cache.")
+                for col in ["_D95 (Gy)", "_D98 (Gy)", "_Mean (Gy)", "_Max (Gy)", "_HI"]:
+                    row[f"{primary_name}{col}"] = float("nan")
 
             # --- Bladder --------------------------------------------------
             bladder_dose = outputs_gy_cpu[bladder_mask_cpu.bool()]
@@ -470,7 +456,6 @@ def main():
             row["Dmax (Gy)"] = outputs_gy_cpu.max().item()
 
             # --- Print summary row ----------------------------------------
-            primary_name = max(config["clinical_targets"]["targets"], key=lambda t: t["rx_gy"])["name"]
             log.info(
                 f"  [{idx+1}/{len(val_loader)}] {patient_id}  "
                 f"{primary_name}_D95={row.get(f'{primary_name}_D95 (Gy)', float('nan')):.2f} Gy  "
