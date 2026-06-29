@@ -1,36 +1,23 @@
 # =============================================================================
-# Pipeline Configuration
-# Swap this file for a different treatment site — the Python scripts are agnostic.
+# Pipeline Configuration - SBRT Prostate
 # =============================================================================
 
-# ---------------------------------------------------------------------------
-# Preprocessing  (dicom_to_nnunet.py)
-# ---------------------------------------------------------------------------
 preprocessing:
-  # Raw DICOM source directory (one sub-folder per patient)
-  dicom_dir: "../data/standard arm cleaned"
-  output_dir: "preprocess"
-  case_prefix: "prostate"
-  dataset_name: "Dataset001_ProstateDose"
-
-  # ---- BEV frustum beam mask parameters --------------------------------
+  dicom_dir: "/home/ankit/Dose_pred/SBRT_Prostate"
+  output_dir: "/home/ankit/Dose_pred/nnUNet_raw/Dataset002_SBRTProstate"
+  case_prefix: "sbrt"
+  dataset_name: "Dataset002_SBRTProstate"
   bev:
-    sad_mm: 1000.0          # Source-to-Axis Distance (mm)
-    penumbra_mm: 7.0        # Isotropic penumbra margin (mm)
-    default_gantry_angles: [0, 51, 102, 154, 205, 257, 308]   # fallback if no RTPlan
+    sad_mm: 1000.0
+    penumbra_mm: 7.0
+    default_gantry_angles: [0, 51, 102, 154, 205, 257, 308]
 
-# ---------------------------------------------------------------------------
-# Filesystem paths
-# ---------------------------------------------------------------------------
 dataset:
-  data_dir: "preprocess/Dataset001_ProstateDose"
-  constraint_csv: "prostate_prime_constraints_62_20.csv"   # used as fallback only
+  data_dir: "./nnUNet_raw/Dataset002_SBRTProstate"
+  constraint_csv: "./sbrt_experimental_constraints.csv"
   target_spacing: [1.27, 1.27, 2.5]
   patch_size: [128, 128, 64]
 
-# ---------------------------------------------------------------------------
-# Training hyperparameters
-# ---------------------------------------------------------------------------
 training:
   epochs: 300
   warmup_epochs: 30
@@ -41,24 +28,7 @@ training:
   val_split: 0.20
   learning_rate: 1.0e-4
   min_learning_rate: 1.0e-6
-  prefetch_factor: 1
-  grad_clip_norm: 1.0
-  log_step_freq: 20
-  val_sw_overlap: 0.25
-  val_sw_batch_size: 1
 
-# ---------------------------------------------------------------------------
-# Input channel layout
-# Every channel consumed by the model is declared here.
-# 'role' drives logic in the training script:
-#   CT           — normalised by NormalizeIntensityd
-#   PTV_binary   — consumed by CreateDiscretePTVMapd
-#   SDM          — signed distance map; ≤0 inside organ  (requires organ:)
-#   Body_Mask    — binary body outline; used for ghost suppression
-#   Binary_Mask  — binary organ mask                      (requires organ:)
-#   BEV_Beam     — beam frustum prior
-# 'interpolation' is the Spacingd mode for that channel.
-# ---------------------------------------------------------------------------
 channels:
   - index: 0
     key: "ch_0"
@@ -88,37 +58,28 @@ channels:
 
   - index: 4
     key: "ch_4"
-    role: "Body_Mask"
+    role: "Binary_Mask"
+    organ: "Small_Bowel"
     interpolation: "nearest"
     normalize: false
 
   - index: 5
     key: "ch_5"
     role: "Binary_Mask"
-    organ: "Penile_Bulb"
+    organ: "Femur_R"
     interpolation: "nearest"
     normalize: false
 
   - index: 6
     key: "ch_6"
-    role: "BEV_Beam"
+    role: "Binary_Mask"
+    organ: "Femur_L"
     interpolation: "nearest"
     normalize: false
 
-# ---------------------------------------------------------------------------
-# Organs At Risk
-# 'requires_sdm'      — true  → a signed-distance-map channel exists for this organ
-# 'sdm_channel_key'   — which ch_N carries the SDM (must match channels block)
-# 'binary_channel_key'— which ch_N carries the binary mask
-# 'extra_file_key'    — MONAI dataloader key for a separately-written .nii.gz
-# 'file_suffix'       — stem used to build the filename: {patient_id}_{file_suffix}.nii.gz
-# 'loss_key'          — key returned in the loss-component dict from forward()
-# 'csv_constraint_name'— name as it appears in the constraint CSV / inline block
-# 'crop_class'        — integer label used by Create5ClassCropMaskd (0 = skip)
-# ---------------------------------------------------------------------------
 organs_at_risk:
   - canonical: "Bladder"
-    aliases: ["Bladder"]
+    aliases: ["Bladder", "BLADDER", "bladder", "Urinary_Bladder"]
     requires_sdm: true
     sdm_channel_key: "ch_2"
     loss_key: "bladder"
@@ -126,127 +87,103 @@ organs_at_risk:
     crop_class: 3
 
   - canonical: "Anorectum"
-    aliases: ["Anorectum"]
+    aliases: ["Anorectum", "ANORECTUM", "Rectum", "RECTUM", "rectum", "Anorectum_NOS", "Ano-rectum"]
     requires_sdm: true
     sdm_channel_key: "ch_3"
     loss_key: "anorectum"
     csv_constraint_name: "Anorectum"
     crop_class: 4
 
-  - canonical: "Body"
-    aliases: ["BODY"]
+  - canonical: "Small_Bowel"
+    aliases: ['^Small_?Bowel.*', '^SmallBowel.*', '^Sm_?Bowl.*', '^BowelSmall.*', '^Bowel_Small.*']
     requires_sdm: false
     binary_channel_key: "ch_4"
-    loss_key: "body"
-    crop_class: 0    # drives HU-threshold fallback in Create5ClassCropMaskd
+    loss_key: "small_bowel"
+    crop_class: 0
 
-  - canonical: "Penile_Bulb"
-    aliases: ["PenileBulb"]
+  - canonical: "Femur_R"
+    aliases: ['^Femur_?Head_?R.*', '^R_?Femur.*', '^Right_?Femur.*', '^FemoralHead_?R.*', '^Femoral_Head_R.*', '^Right_Femoral.*']
     requires_sdm: false
     binary_channel_key: "ch_5"
-    loss_key: "penile"
-    csv_constraint_name: "Penile_Bulb"
+    loss_key: "femur_r"
     crop_class: 0
 
-  - canonical: "Bag_Bowel"
-    aliases: ["Bag_Bowel"]
+  - canonical: "Femur_L"
+    aliases: ['^Femur_?Head_?L.*', '^L_?Femur.*', '^Left_?Femur.*', '^FemoralHead_?L.*', '^Femoral_Head_L.*', '^Left_Femoral.*']
     requires_sdm: false
-    extra_file_key: "bowel_mask"
-    file_suffix: "bowel"
-    loss_key: "bowel"
+    binary_channel_key: "ch_6"
+    loss_key: "femur_l"
     crop_class: 0
 
-  - canonical: "Femur"
-    aliases: ["Femur_Head_L", "Femur_Head_R"]
-    split_laterality: true
-    patterns_left:
-      - "Femur_Head_L"
-    patterns_right:
-      - "Femur_Head_R"
-    requires_sdm: false
-    extra_file_key: "femur_mask"
-    file_suffix: "femur"
-    loss_key: "femur"
-    crop_class: 0
-
-# ---------------------------------------------------------------------------
-# Crop class map for Create5ClassCropMaskd
-# The class integers here must be unique and contiguous starting at 0.
-# Class 0 is always Air/background (never sampled by RandCropByLabelClassesd).
-# ---------------------------------------------------------------------------
 crop_classes:
   - class_id: 0
     label: "Air_Background"
-    source: "hu_threshold"       # CT < body_hu_threshold  → outside body
+    source: "hu_threshold"
     sample_ratio: 0.0
-
   - class_id: 1
     label: "Healthy_Tissue"
-    source: "body_minus_oars"    # inside body, not PTV/Bladder/Rectum
+    source: "body_minus_oars"
     sample_ratio: 1.0
-
   - class_id: 2
     label: "PTV"
-    source: "ptv_channel"        # PTV channel ≥ 0.5
+    source: "ptv_channel"
     sample_ratio: 1.0
-
   - class_id: 3
     label: "Bladder"
     source: "sdm_channel"
-    sdm_channel_key: "ch_2"      # SDM ≤ 0 inside bladder
+    sdm_channel_key: "ch_2"
     sample_ratio: 1.0
-
   - class_id: 4
     label: "Anorectum"
     source: "sdm_channel"
     sdm_channel_key: "ch_3"
     sample_ratio: 1.0
 
-body_hu_threshold: -300.0        # HU below this → outside body
+body_hu_threshold: -300.0
 
-# ---------------------------------------------------------------------------
-# SIB target levels  (lowest to highest — Painter's Algorithm order)
-# ---------------------------------------------------------------------------
 clinical_targets:
-  prescription_dose_gy: 40.0
-  physical_max_gy: 40.0
+  prescription_dose_gy: 36.25
+  physical_max_gy: 38.8
 
   targets:
-    - name: "PTV_36.25_5"
-      rx_gy: 36.25
-      ceil_gy: 40
-      patterns: ["PTV_36.25/5"]
-
-    - name: "PTV_25_5"
+    - name: "PTV25"
       rx_gy: 25.0
-      ceil_gy: 40
-      patterns: ["PTV_25/5"]
+      ceil_gy: 26.75
+      patterns: ["^PTV25$", "^CTV25$"]
 
-# ---------------------------------------------------------------------------
-# Physics engine
-# ---------------------------------------------------------------------------
+    - name: "PTV30"
+      rx_gy: 30.0
+      ceil_gy: 32.1
+      patterns: ["^PTV30$", "^CTV30$"]
+
+    - name: "PTV36_25"
+      rx_gy: 36.25
+      ceil_gy: 38.8
+      patterns: ["^PTV36\.?25$", "^CTV36\.?25$", "^PTV36$", "^PTV$", "^CTV$",
+                 "^PTV_prostate$", "^CTV_prostate$", "^GTV_prostate$", "^GTV$"]
+
 physics_engine:
   thresholds:
-    global_ceil_gy: 40.0
-    ring_thresh_gy: 38.79
-    in_beam_ceil_gy: 15.0
-    out_beam_ceil_gy: 2.0
+    global_ceil_gy: 38.8
+    ring_thresh_gy: 36.25
+    in_beam_ceil_gy: 8.0
+    out_beam_ceil_gy: 1.0
     out_beam_multiplier: 5.0
-    bowel_opt_gy: 45.0
-    bowel_opt_limit_frac: 0.30
-    bowel_mand_gy: 50.0
+    bowel_opt_gy: 25.0
+    bowel_opt_limit_frac: 0.20
+    bowel_mand_gy: 28.0
     bowel_mand_limit_frac: 0.50
-    femur_max_gy: 40.0
-    dose_weight_scale: 9.0        # coefficient in dose-weighted MSE
-    dose_weight_clamp: 0.96       # upper clamp for dose-weight computation
-    anti_collapse_thresh: 0.50    # normalised dose floor for anti-collapse penalty
-    global_ceil_k: 100            # top-K violations used in global ceiling loss
-    bowel_mandatory_scale: 5.0    # mandatory vs optimal weighting for bowel loss
+    femur_max_gy: 14.0
+    dose_weight_scale: 9.0
+    dose_weight_clamp: 0.96
+    anti_collapse_thresh: 0.50
+    global_ceil_k: 100
+    bowel_mandatory_scale: 5.0
   target_lambdas:
     mse: 25.0
     optional: 2.0
-    mandatory: 50.0
-    ptv: 45.0
+    mandatory: 70.0
+    ptv: 75.0
     ptv_max: 30.0
     ring: 25.0
     smooth: 0.125
@@ -256,59 +193,28 @@ physics_engine:
     body: 20.0
     bowel: 15.0
     femur: 10.0
-    penile: 10.0
+    penile: 0.0
     global_ceil: 300.0
     bg: 10.0
 
-# ---------------------------------------------------------------------------
-# Model architecture
-# ---------------------------------------------------------------------------
-model:
-  channels: [16, 32, 64, 128]
-  strides: [2, 2, 2]
-  num_res_units: 2
-  k_steepness: 50.0       # sigmoid steepness for differentiable DVH
-
-# ---------------------------------------------------------------------------
-# Scoring
-# ---------------------------------------------------------------------------
 scoring:
-  clinical_ptv_weight: 3.0   # penalty multiplier on PTV D95 deficit in clinical score
+  clinical_ptv_weight: 5.0
 
-# ---------------------------------------------------------------------------
-# Inline clinical constraints
-# These replace reading the CSV at runtime.
-# norm_dose is computed automatically: norm_dose = dose_gy / prescription_dose_gy
-# ---------------------------------------------------------------------------
 constraints:
   patient_class: "N0"
   v_type:
     Bladder:
-      - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
-      - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optimal_v: 0.70, mandatory_v: 0.80 }
-      - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
-      - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
-      - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }
-      - { dose_gy: 53.0, optimal_v: 0.25, mandatory_v: 0.30 }
-      - { dose_gy: 56.0, optimal_v: 0.08, mandatory_v: 0.10 }
-      - { dose_gy: 59.0, optimal_v: 0.02, mandatory_v: 0.03 }
+      - { dose_gy: 14.0,  optimal_v: 0.25, mandatory_v: 0.35 }
+      - { dose_gy: 17.5,  optimal_v: 0.15, mandatory_v: 0.20 }
+      - { dose_gy: 28.0,  optimal_v: 0.07, mandatory_v: 0.10 }
+      - { dose_gy: 31.5,  optimal_v: 0.05, mandatory_v: 0.08 }
+      - { dose_gy: 35.0,  optimal_v: 0.03, mandatory_v: 0.04 }
     Anorectum:
-      - { dose_gy: 10.0, optimal_v: 0.90, mandatory_v: 0.95 }
-      - { dose_gy: 15.0, optimal_v: 0.80, mandatory_v: 0.90 }
-      - { dose_gy: 24.0, optimal_v: 0.65, mandatory_v: 0.75 }
-      - { dose_gy: 32.0, optimal_v: 0.55, mandatory_v: 0.65 }
-      - { dose_gy: 40.0, optimal_v: 0.45, mandatory_v: 0.55 }
-      - { dose_gy: 47.0, optimal_v: 0.35, mandatory_v: 0.45 }
-      - { dose_gy: 53.0, optimal_v: 0.20, mandatory_v: 0.25 }
-      - { dose_gy: 56.0, optimal_v: 0.08, mandatory_v: 0.12 }
-      - { dose_gy: 59.0, optimal_v: 0.02, mandatory_v: 0.03 }
-    Penile_Bulb:
-      - { dose_gy: 47.0, optimal_v: .nan, mandatory_v: 0.50 }
+      - { dose_gy: 14.0,  optimal_v: 0.40, mandatory_v: 0.45 }
+      - { dose_gy: 17.5,  optimal_v: 0.30, mandatory_v: 0.35 }
+      - { dose_gy: 28.0,  optimal_v: 0.10, mandatory_v: 0.15 }
+      - { dose_gy: 31.5,  optimal_v: 0.08, mandatory_v: 0.10 }
+      - { dose_gy: 35.0,  optimal_v: 0.03, mandatory_v: 0.05 }
 
-# ---------------------------------------------------------------------------
-# Evaluation — OAR V-metric dose thresholds reported in the CSV output
-# ---------------------------------------------------------------------------
 evaluation:
-  oar_v_metrics_gy: [59.0, 56.0, 53.0, 47.0, 40.0, 32.0, 24.0, 15.0, 10.0]
-
+  oar_v_metrics_gy: [35.0, 31.5, 28.0, 17.5, 14.0, 10.0]
